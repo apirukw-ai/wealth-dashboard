@@ -22,7 +22,8 @@ async function loadDashboard() {
     console.log('START LOAD');
 
     let gpfTotal = 0;
-    let mfcTotal = 0;
+    let mfcTotal = 157516.96;
+``
 
     // GPF
     const gpfRes = await fetch(
@@ -36,9 +37,9 @@ async function loadDashboard() {
     });
 
     // MFC
-    const { data, error } = await supabaseClient
-    .from('mfc_policies')
-    .select('*');
+    // const { data, error } = await supabaseClient
+//     .from('mfc_policies')
+//     .select('*');
 
 console.log('MFC DATA', data);
 console.log('MFC ERROR', error);
