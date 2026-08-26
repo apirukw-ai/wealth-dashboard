@@ -43,6 +43,10 @@ async function loadDashboard() {
 console.log('MFC DATA', data);
 console.log('MFC ERROR', error);
 
+console.log(error.message);
+console.log(error.details);
+console.log(error.code);
+
 
     if (data) {
     data.forEach(p => {
