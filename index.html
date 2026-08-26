@@ -33,6 +33,19 @@
     ● LIVE DATA
 Updated: 26/08/2026 17:20
 </div>
+<div id="lastUpdated" style="
+    margin-top:8px;
+    color:#666;
+    font-size:12px;
+">
+</div>
+    <div style="
+    margin-top:8px;
+    color:#666;
+    font-size:12px;
+">
+    2 Active Portfolios
+</div>
 </div> <!-- ปิด Hero Card Total Wealth -->
 
 <div style="
@@ -97,13 +110,19 @@ Updated: 26/08/2026 17:20
         Daily Change
     </div>
 
-    <div id="dailyChange" style="
-        font-size:24px;
+    <div id="dailyChangeValue"
+     style="
+        font-size:36px;
         font-weight:bold;
-        margin-top:8px;
-    ">
-        Coming Soon
-    </div>
+     ">
+</div>
+
+<div id="dailyChangePct"
+     style="
+        margin-top:4px;
+        font-weight:bold;
+     ">
+</div>
 
 </div>
     <div style="
@@ -226,6 +245,13 @@ async function loadDashboard() {
 
 
     const totalWealth = mfcTotal + gpfTotal;
+    const now = new Date();
+    const yesterdayWealth = 1850000;
+    const dailyChange =
+    totalWealth - yesterdayWealth;
+
+const dailyChangePct =
+    (dailyChange / yesterdayWealth) * 100;
     localStorage.setItem(
     'wealth_current',
     totalWealth
@@ -273,6 +299,8 @@ document.getElementById('gpfBar').style.width =
 
 document.getElementById('largestAssetPct').innerText =
     largestAssetPct.toFixed(2) + '%';
+    document.getElementById('lastUpdated').innerText =
+    'Updated: ' + now.toLocaleString();
 }
 
 loadDashboard();
