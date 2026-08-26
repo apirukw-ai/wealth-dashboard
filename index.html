@@ -106,7 +106,30 @@
 ">
     Portfolio Gain
 </div>
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+">
 
+    <div style="
+        color:#666;
+        font-size:13px;
+    ">
+        History Records
+    </div>
+
+    <div id="historyCount" style="
+        font-size:24px;
+        font-weight:bold;
+        margin-top:8px;
+    ">
+        -
+    </div>
+
+</div>
 <div id="dailyChangeValue" style="
     font-size:28px;
     font-weight:bold;
@@ -353,6 +376,8 @@ document.getElementById('largestAssetValue').innerText =
     });
     document.getElementById('lastUpdated').innerText =
     'Updated: ' + now.toLocaleString();
+    document.getElementById('historyCount').innerText =
+    history.length + ' Day';
 }
 
 loadDashboard();
