@@ -8,7 +8,8 @@
 <script>
 
 const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw
+';
 
 console.log('SUPABASE LOADED', supabase);
 
@@ -23,7 +24,6 @@ async function loadDashboard() {
 
     let gpfTotal = 0;
     let mfcTotal = 157516.96;
-``
 
     // GPF
     const gpfRes = await fetch(
@@ -41,19 +41,7 @@ async function loadDashboard() {
 //     .from('mfc_policies')
 //     .select('*');
 
-console.log('MFC DATA', data);
-console.log('MFC ERROR', error);
 
-console.log(error.message);
-console.log(error.details);
-console.log(error.code);
-
-
-    if (data) {
-    data.forEach(p => {
-        mfcTotal += Number(p.units) * Number(p.navToday);
-    });
-}
 
 
     const totalWealth = mfcTotal + gpfTotal;
