@@ -20,6 +20,37 @@
         Loading...
     </div>
 
+</div> <!-- ปิด Hero Card Total Wealth -->
+
+<div style="
+    margin-bottom:20px;
+    max-width:500px;
+">
+
+    <div style="
+        font-size:14px;
+        color:#666;
+        margin-bottom:8px;
+    ">
+        Asset Allocation
+    </div>
+
+    <div style="
+        display:flex;
+        height:16px;
+        border-radius:8px;
+        overflow:hidden;
+        background:#eee;
+    ">
+        <div id="mfcBar"
+             style="background:#2563eb;width:0%">
+        </div>
+
+        <div id="gpfBar"
+             style="background:#16a34a;width:0%">
+        </div>
+    </div>
+
 </div>
 
 <div style="
@@ -44,10 +75,11 @@
     ">-</div>
 
     <div id="mfcPct" style="
-        margin-top:8px;
-        color:#666;
-        font-size:14px;
-    "></div>
+    margin-top:8px;
+    color:#2563eb;
+    font-size:14px;
+    font-weight:bold;
+"></div>
 
 </div>
 
@@ -66,8 +98,9 @@
         ">-</div>
 <div id="gpfPct" style="
     margin-top:8px;
-    color:#666;
+    color:#16a34a;
     font-size:14px;
+    font-weight:bold;
 "></div>
         
     </div>
@@ -133,11 +166,11 @@ async function loadDashboard() {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-    document.getElementById('mfcPct').innerText =
-    mfcPct.toFixed(2) + '%';
+    document.getElementById('mfcBar').style.width =
+    mfcPct + '%';
 
-document.getElementById('gpfPct').innerText =
-    gpfPct.toFixed(2) + '%';
+document.getElementById('gpfBar').style.width =
+    gpfPct + '%';
 }
 
 loadDashboard();
