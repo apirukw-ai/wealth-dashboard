@@ -68,6 +68,41 @@
     color:#666;
 ">
 </div>
+
+<div id="largestAssetCard" style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+
+    <div style="
+        color:#666;
+        font-size:13px;
+    ">
+        Largest Asset
+    </div>
+
+    <div id="largestAssetName" style="
+        font-size:24px;
+        font-weight:bold;
+        margin-top:8px;
+    ">
+        -
+    </div>
+
+    <div id="largestAssetPct" style="
+        margin-top:4px;
+        font-weight:bold;
+        color:#16a34a;
+    ">
+        -
+    </div>
+
+</div>
+    
 </div>
 
 <div style="
@@ -166,6 +201,11 @@ async function loadDashboard() {
     const mfcPct = (mfcTotal / totalWealth) * 100;
     const gpfPct = (gpfTotal / totalWealth) * 100;
 
+    const largestAsset =
+    gpfTotal > mfcTotal ? 'GPF' : 'MFC';
+
+const largestAssetPct =
+    gpfTotal > mfcTotal ? gpfPct : mfcPct;
     document.getElementById('totalWealth').innerText =
         '฿' + totalWealth.toLocaleString('en-US', {
             minimumFractionDigits: 2,
@@ -194,6 +234,11 @@ document.getElementById('gpfBar').style.width =
     '% &nbsp;&nbsp;&nbsp; <span style="color:#16a34a;">■</span> GPF ' +
     gpfPct.toFixed(2) +
     '%';
+    document.getElementById('largestAssetName').innerText =
+    largestAsset;
+
+document.getElementById('largestAssetPct').innerText =
+    largestAssetPct.toFixed(2) + '%';
 }
 
 loadDashboard();
