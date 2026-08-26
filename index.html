@@ -282,13 +282,13 @@ const largestAssetPct =
     document.getElementById('mfcBar').style.width =
     mfcPct + '%';
 document.getElementById('dailyChangeValue').innerText =
-    '฿' + dailyChange.toLocaleString('en-US', {
+    '▲ ฿' + dailyChange.toLocaleString('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
 
 document.getElementById('dailyChangePct').innerText =
-    dailyChangePct.toFixed(2) + '%';
+    '▲ ' + dailyChangePct.toFixed(2) + '%';
 
 if (dailyChange > 0) {
 
