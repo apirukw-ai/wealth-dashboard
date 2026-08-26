@@ -36,13 +36,20 @@ async function loadDashboard() {
     });
 
     // MFC
-    const { data } = await supabaseClient
-        .from('mfc_policies')
-        .select('*');
+    const { data, error } = await supabaseClient
+    .from('mfc_policies')
+    .select('*');
 
+console.log('MFC DATA', data);
+console.log('MFC ERROR', error);
+
+
+    if (data) {
     data.forEach(p => {
         mfcTotal += Number(p.units) * Number(p.navToday);
     });
+}
+
 
     const totalWealth = mfcTotal + gpfTotal;
 
