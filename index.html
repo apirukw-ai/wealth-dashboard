@@ -17,19 +17,27 @@
 ">
 
     <div style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:20px;
-        min-width:220px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666;">MFC</div>
-        <div id="mfcVal" style="
-            font-size:28px;
-            font-weight:bold;
-            margin-top:10px;
-        ">-</div>
-    </div>
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:20px;
+    min-width:220px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666;">MFC</div>
+
+    <div id="mfcVal" style="
+        font-size:28px;
+        font-weight:bold;
+        margin-top:10px;
+    ">-</div>
+
+    <div id="mfcPct" style="
+        margin-top:8px;
+        color:#666;
+        font-size:14px;
+    "></div>
+
+</div>
 
     <div style="
         border:1px solid #ddd;
@@ -44,6 +52,12 @@
             font-weight:bold;
             margin-top:10px;
         ">-</div>
+<div id="gpfPct" style="
+    margin-top:8px;
+    color:#666;
+    font-size:14px;
+"></div>
+        
     </div>
 
 </div>
@@ -87,6 +101,8 @@ async function loadDashboard() {
 
 
     const totalWealth = mfcTotal + gpfTotal;
+    const mfcPct = (mfcTotal / totalWealth) * 100;
+    const gpfPct = (gpfTotal / totalWealth) * 100;
 
     document.getElementById('totalWealth').innerText =
         '฿' + totalWealth.toLocaleString('en-US', {
@@ -105,6 +121,11 @@ async function loadDashboard() {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+    document.getElementById('mfcPct').innerText =
+    mfcPct.toFixed(2) + '%';
+
+document.getElementById('gpfPct').innerText =
+    gpfPct.toFixed(2) + '%';
 }
 
 loadDashboard();
