@@ -4,23 +4,40 @@
 
 <div id="mfcVal">-</div>
 <div id="gpfVal">-</div>
+<script src="https://cdn.jsdelivr.base/supabase-js@2
 <script>
 
-const mfcTotal = 122113.47;
+const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co';
+const SUPABASE_KEY = 'YOUR_ANON_KEY';
 
-async function loadGPF() {
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
-    const res = await fetch(
+async function loadDashboard() {
+
+    let gpfTotal = 0;
+    let mfcTotal = 0;
+
+    // GPF
+    const gpfRes = await fetch(
         'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
     );
 
-    const data = await res.json();
-console.log('GPF DATA', data);
+    const gpfData = await gpfRes.json();
 
-    let gpfTotal = 0;
-
-    data.funds.forEach(f => {
+    gpfData.funds.forEach(f => {
         gpfTotal += Number(f.units) * Number(f.currentNav);
+    });
+
+    // MFC
+    const { data } = await supabaseClient
+        .from('mfc_policies')
+        .select('*');
+
+    data.forEach(p => {
+        mfcTotal += Number(p.units) * Number(p.navToday);
     });
 
     const totalWealth = mfcTotal + gpfTotal;
@@ -32,19 +49,18 @@ console.log('GPF DATA', data);
         });
 
     document.getElementById('mfcVal').innerText =
-        'MFC : ฿' + mfcTotal.toLocaleString('en-US', {
+        'MFC LIVE : ฿' + mfcTotal.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
 
     document.getElementById('gpfVal').innerText =
-'GPF LIVE : ฿' + gpfTotal.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-});
-
+        'GPF LIVE : ฿' + gpfTotal.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
 }
 
-loadGPF();
+loadDashboard();
 
 </script>
