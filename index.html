@@ -170,6 +170,21 @@
     -
 </div>    
 
+<div style="
+    margin-top:12px;
+    color:#666;
+    font-size:13px;
+">
+    Best Day
+</div>
+
+<div id="bestDayValue" style="
+    margin-top:4px;
+    font-weight:bold;
+    color:#16a34a;
+">
+    -
+</div>
 </div>
 
 <!-- 4. การ์ดสรุปสถานะพอร์ต -->
@@ -364,10 +379,16 @@ async function loadDashboard() {
         maximumFractionDigits: 2
     });
     
+    document.getElementById('bestDayValue').innerText =
+    '▲ ฿' + gainAmount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
     document.getElementById('latestSnapshotDate').innerText =
     latestSnapshot.date;
     document.getElementById('historyCount').innerText =
-    history.length + ' Snapshots';
+    history.length + ' Snapshot';
     
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
