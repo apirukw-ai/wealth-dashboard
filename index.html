@@ -117,7 +117,7 @@
     box-shadow:0 2px 8px rgba(0,0,0,.08);
 ">
     <div style="color:#666; font-size:13px;">
-        History Records
+        Snapshots
     </div>
     <div id="historyCount" style="
         font-size:24px;
@@ -126,7 +126,38 @@
     ">
         -
     </div>
+<div style="
+    margin-top:10px;
+    color:#666;
+    font-size:13px;
+">
+    Tracking Started
 </div>
+
+<div id="trackingStart" style="
+    margin-top:4px;
+    font-weight:bold;
+">
+    26 Aug 2026
+</div>
+</div>
+
+<div style="
+    margin-top:12px;
+    color:#666;
+    font-size:13px;
+">
+    Best Day
+</div>
+
+<div style="
+    margin-top:4px;
+    color:#16a34a;
+    font-weight:bold;
+">
+    ▲ ฿8,550.48
+</div>
+
 
 <!-- 3. Largest Asset Card -->
 <div id="largestAssetCard" style="
@@ -245,7 +276,8 @@ async function loadDashboard() {
     const totalWealth = mfcTotal + gpfTotal;
     const history = JSON.parse(localStorage.getItem('wealthHistory')) || [];
     
-    document.getElementById('historyCount').innerText = history.length + ' Day';
+    document.getElementById('historyCount').innerText =
+    history.length + ' Snapshots';
     
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
