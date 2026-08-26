@@ -234,8 +234,10 @@ document.getElementById('gpfBar').style.width =
     '% &nbsp;&nbsp;&nbsp; <span style="color:#16a34a;">■</span> GPF ' +
     gpfPct.toFixed(2) +
     '%';
-    document.getElementById('largestAssetName').innerText =
-    largestAsset;
+    document.getElementById('largestAssetName').innerHTML =
+    '<span style="color:#16a34a;">' +
+    largestAsset +
+    '</span>';
 
 document.getElementById('largestAssetPct').innerText =
     largestAssetPct.toFixed(2) + '%';
