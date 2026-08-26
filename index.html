@@ -140,6 +140,20 @@
 ">
     26 Aug 2026
 </div>
+<div style="
+    margin-top:12px;
+    color:#666;
+    font-size:13px;
+">
+    Latest Snapshot
+</div>
+
+<div id="latestSnapshotDate" style="
+    margin-top:4px;
+    font-weight:bold;
+">
+    -
+</div>
 </div>
 
 <!-- 4. การ์ดสรุปสถานะพอร์ต -->
@@ -325,7 +339,11 @@ async function loadDashboard() {
 
     const totalWealth = mfcTotal + gpfTotal;
     const history = JSON.parse(localStorage.getItem('wealthHistory')) || [];
+    const latestSnapshot =
+    history[history.length - 1];
     
+    document.getElementById('latestSnapshotDate').innerText =
+    latestSnapshot.date;
     document.getElementById('historyCount').innerText =
     history.length + ' Snapshots';
     
@@ -419,7 +437,7 @@ async function loadDashboard() {
         'Updated: ' + now.toLocaleString();
 
     document.getElementById('historyCount').innerText =
-        history.length + ' Day';
+        history.length + ' Snapshots';
 }
 
 loadDashboard();
