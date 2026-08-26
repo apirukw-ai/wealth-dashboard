@@ -31,6 +31,7 @@
     font-weight:bold;
 ">
     ● LIVE DATA
+Updated: 26/08/2026 17:20
 </div>
 </div> <!-- ปิด Hero Card Total Wealth -->
 
@@ -78,6 +79,33 @@
     box-shadow:0 2px 8px rgba(0,0,0,.08);
 ">
 
+
+
+    <div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+
+    <div style="
+        color:#666;
+        font-size:13px;
+    ">
+        Daily Change
+    </div>
+
+    <div id="dailyChange" style="
+        font-size:24px;
+        font-weight:bold;
+        margin-top:8px;
+    ">
+        Coming Soon
+    </div>
+
+</div>
     <div style="
         color:#666;
         font-size:13px;
@@ -198,6 +226,10 @@ async function loadDashboard() {
 
 
     const totalWealth = mfcTotal + gpfTotal;
+    localStorage.setItem(
+    'wealth_current',
+    totalWealth
+);
     const mfcPct = (mfcTotal / totalWealth) * 100;
     const gpfPct = (gpfTotal / totalWealth) * 100;
 
