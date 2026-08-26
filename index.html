@@ -153,7 +153,23 @@
     font-weight:bold;
 ">
     -
+</div>    
+
+<div style="
+    margin-top:12px;
+    color:#666;
+    font-size:13px;
+">
+    Latest Wealth
 </div>
+
+<div id="latestWealth" style="
+    margin-top:4px;
+    font-weight:bold;
+">
+    -
+</div>    
+
 </div>
 
 <!-- 4. การ์ดสรุปสถานะพอร์ต -->
@@ -341,6 +357,12 @@ async function loadDashboard() {
     const history = JSON.parse(localStorage.getItem('wealthHistory')) || [];
     const latestSnapshot =
     history[history.length - 1];
+
+    document.getElementById('latestWealth').innerText =
+    '฿' + latestSnapshot.wealth.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
     
     document.getElementById('latestSnapshotDate').innerText =
     latestSnapshot.date;
