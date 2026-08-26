@@ -243,10 +243,32 @@ async function loadDashboard() {
 
 
     const totalWealth = mfcTotal + gpfTotal;
+    const history =
+    JSON.parse(
+        localStorage.getItem('wealthHistory')
+    ) || [];
+    const today =
+    new Date().toLocaleDateString('en-CA');
     const now = new Date();
     const yesterdayWealth = 1850000;
     const dailyChange =
     totalWealth - yesterdayWealth;
+    const exists =
+    history.find(h => h.date === today);
+
+if (!exists) {
+
+    history.push({
+        date: today,
+        wealth: totalWealth
+    });
+
+    localStorage.setItem(
+        'wealthHistory',
+        JSON.stringify(history)
+    );
+}
+    console.log(history);
 
 const dailyChangePct =
     (dailyChange / yesterdayWealth) * 100;
