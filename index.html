@@ -13,4 +13,29 @@ document.getElementById('mfcVal').innerText =
 
 document.getElementById('gpfVal').innerText =
 'GPF : ฿1,707,886.53';
+
+async function loadGPF() {
+    const res = await fetch(
+        'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
+    );
+
+    const data = await res.json();
+
+    let gpfTotal = 0;
+
+    data.funds.forEach(f => {
+        gpfTotal += Number(f.units) * Number(f.currentNav);
+    });
+
+    document.getElementById('gpfVal').innerText =
+        'GPF : ฿' + gpfTotal.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    return gpfTotal;
+}
+
+  loadGPF();
+  
 </script>
