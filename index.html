@@ -113,7 +113,31 @@
     max-width:500px;
     margin-bottom:20px;
 ">
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
 
+    <div style="
+        color:#666;
+        font-size:13px;
+    ">
+        History Records
+    </div>
+
+    <div id="historyCount" style="
+        font-size:24px;
+        font-weight:bold;
+        margin-top:8px;
+    ">
+        -
+    </div>
+
+</div>
     <div style="
         color:#666;
         font-size:13px;
@@ -270,6 +294,8 @@ async function loadDashboard() {
     JSON.parse(
         localStorage.getItem('wealthHistory')
     ) || [];
+    document.getElementById('historyCount').innerText =
+    history.length + ' Day';
     const today =
     new Date().toLocaleDateString('en-CA');
     const now = new Date();
