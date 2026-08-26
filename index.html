@@ -94,12 +94,10 @@
 
 
     <div style="
-    border:1px solid #ddd;
+    border:1px solid #bbf7d0;
     border-radius:12px;
     padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    background:#f0fdf4;
 ">
 
     <div style="
@@ -293,11 +291,20 @@ document.getElementById('dailyChangePct').innerText =
     dailyChangePct.toFixed(2) + '%';
 
 if (dailyChange > 0) {
+
     document.getElementById('dailyChangeValue').style.color =
         '#16a34a';
 
     document.getElementById('dailyChangePct').style.color =
         '#16a34a';
+
+} else {
+
+    document.getElementById('dailyChangeValue').style.color =
+        '#dc2626';
+
+    document.getElementById('dailyChangePct').style.color =
+        '#dc2626';
 }
 document.getElementById('gpfBar').style.width =
     gpfPct + '%';
