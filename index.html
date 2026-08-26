@@ -5,6 +5,10 @@
 <div id="mfcVal">-</div>
 <div id="gpfVal">-</div>
 <script>
+
+const mfcTotal = 122113.47;
+const gpfTotal = 1710003.20;
+
 const totalWealth = mfcTotal + gpfTotal;
 
 document.getElementById('totalWealth').innerText =
@@ -12,35 +16,17 @@ document.getElementById('totalWealth').innerText =
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
 });
-    
+
 document.getElementById('mfcVal').innerText =
-'MFC : ฿122,113.47';
+'MFC : ฿' + mfcTotal.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
 
 document.getElementById('gpfVal').innerText =
-'GPF : ฿1,707,886.53';
+'GPF : ฿' + gpfTotal.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
 
-async function loadGPF() {
-    const res = await fetch(
-        'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
-    );
-
-    const data = await res.json();
-
-    let gpfTotal = 0;
-
-    data.funds.forEach(f => {
-        gpfTotal += Number(f.units) * Number(f.currentNav);
-    });
-
-    document.getElementById('gpfVal').innerText =
-        'GPF : ฿' + gpfTotal.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-    return gpfTotal;
-}
-
-  loadGPF();
-  
 </script>
