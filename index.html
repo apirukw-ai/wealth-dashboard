@@ -548,7 +548,7 @@ function renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPc
     if (gradeEl) gradeEl.innerText = piGrade;
 }
 
-function renderHistory(history, dailyChange, dailyChangePct, today) {
+function renderHistory(history, dailyChange, dailyChangePct, yesterdayWealth, today) {
     const countEl = document.getElementById('historyCount');
     if (countEl) countEl.innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
 
@@ -565,13 +565,17 @@ function renderHistory(history, dailyChange, dailyChangePct, today) {
         const ageEl = document.getElementById('trackingAge');
         if (ageEl) ageEl.innerText = diffDays;
 
-        let maxGainVal = dailyChange > 0 ? dailyChange : 0;
-        let maxGainPct = dailyChangePct > 0 ? dailyChangePct : 0;
         const bestEl = document.getElementById('bestDayValue');
         if (bestEl) {
-            bestEl.innerHTML =
-                '<div style="color:#16a34a;">▲ ฿' + maxGainVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>' +
-                '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
+            if (yesterdayWealth === null) {
+                bestEl.innerText = 'Collecting data...';
+            } else {
+                let maxGainVal = dailyChange > 0 ? dailyChange : 0;
+                let maxGainPct = dailyChangePct > 0 ? dailyChangePct : 0;
+                bestEl.innerHTML =
+                    '<div style="color:#16a34a;">▲ ฿' + maxGainVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>' +
+                    '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
+            }
         }
     }
 }
@@ -583,13 +587,7 @@ async function loadDashboard() {
     console.log('START LOAD');
 
     let gpfTotal = 0;
-    const mfcRes = await fetch(
-'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json'
-);
-
-const mfcData = await mfcRes.json();
-
-let mfcTotal = Number(mfcData?.value || 0);
+    let mfcTotal = 157516.96;
 
     try {
         const gpfRes = await fetch(
@@ -608,7 +606,7 @@ let mfcTotal = Number(mfcData?.value || 0);
 
     const totalWealth = mfcTotal + gpfTotal;
 
-// ดึงประวัติจาก Firebase Realtime Database
+    // ดึงประวัติจาก Firebase Realtime Database
     let history = [];
 
     try {
@@ -633,18 +631,20 @@ let mfcTotal = Number(mfcData?.value || 0);
         new Date(a.date) - new Date(b.date)
     );
 
-    let yesterdayWealth = totalWealth;
+    let yesterdayWealth = null;
 
     if (history.length >= 2) {
         yesterdayWealth =
             history[history.length - 2].wealth;
     }
 
-    const dailyChange =
-        totalWealth - yesterdayWealth;
+    let dailyChange = 0;
+    let dailyChangePct = 0;
 
-    const dailyChangePct =
-        (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
+    if (yesterdayWealth !== null) {
+        dailyChange = totalWealth - yesterdayWealth;
+        dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
+    }
     
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
@@ -712,7 +712,7 @@ let mfcTotal = Number(mfcData?.value || 0);
 
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
     renderAchievements(totalWealth, history, fireProgress, diversificationScore);
-    renderHistory(history, dailyChange, dailyChangePct, today);
+    renderHistory(history, dailyChange, dailyChangePct, yesterdayWealth, today);
 
     // อัปเดตข้อมูล Summary Strip
     const summaryFireEl = document.getElementById('summaryFire');
@@ -727,8 +727,12 @@ let mfcTotal = Number(mfcData?.value || 0);
 
     const summaryGainEl = document.getElementById('summaryGain');
     if (summaryGainEl) {
-        const sign = dailyChangePct >= 0 ? '+' : '';
-        summaryGainEl.innerText = '📈 Today ' + sign + dailyChangePct.toFixed(2) + '%';
+        if (yesterdayWealth === null) {
+            summaryGainEl.innerText = '📈 Today: Collecting data...';
+        } else {
+            const sign = dailyChangePct >= 0 ? '+' : '';
+            summaryGainEl.innerText = '📈 Today ' + sign + dailyChangePct.toFixed(2) + '%';
+        }
     }
 
     // Net Worth Ranking
@@ -777,15 +781,27 @@ let mfcTotal = Number(mfcData?.value || 0);
     // Wealth Trend
     let trend = '';
     let trendColor = '';
-    if (dailyChangePct > 0) { trend = '↗ Increasing'; trendColor = '#16a34a'; }
-    else if (dailyChangePct < 0) { trend = '↘ Decreasing'; trendColor = '#dc2626'; }
-    else { trend = '→ Flat'; trendColor = '#666666'; }
+    if (yesterdayWealth === null) {
+        trend = 'Collecting data...';
+        trendColor = '#666666';
+    } else {
+        if (dailyChangePct > 0) { trend = '↗ Increasing'; trendColor = '#16a34a'; }
+        else if (dailyChangePct < 0) { trend = '↘ Decreasing'; trendColor = '#dc2626'; }
+        else { trend = '→ Flat'; trendColor = '#666666'; }
+    }
 
     const trendDirEl = document.getElementById('trendDirection');
     if (trendDirEl) { trendDirEl.innerText = trend; trendDirEl.style.color = trendColor; }
 
     const trendPctEl = document.getElementById('trendPct');
-    if (trendPctEl) { trendPctEl.innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%'; trendPctEl.style.color = trendColor; }
+    if (trendPctEl) {
+        if (yesterdayWealth === null) {
+            trendPctEl.innerText = '-';
+        } else {
+            trendPctEl.innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%';
+        }
+        trendPctEl.style.color = trendColor;
+    }
 
     // Goal ETA Monthly Need
     const etaMonthlyNeedEl = document.getElementById('etaMonthlyNeed');
@@ -795,7 +811,7 @@ let mfcTotal = Number(mfcData?.value || 0);
     const milestonePct = (totalWealth / fireTarget) * 100;
     let grade = 'A+';
     let label = 'Excellent';
-    if (milestonePct >= 90 && dailyChange >= 0) { grade = 'A+'; label = 'Excellent'; }
+    if (milestonePct >= 90 && (yesterdayWealth === null || dailyChange >= 0)) { grade = 'A+'; label = 'Excellent'; }
     else if (milestonePct >= 75) { grade = 'A'; label = 'Very Good'; }
     else { grade = 'B+'; label = 'Good'; }
 
@@ -809,15 +825,20 @@ let mfcTotal = Number(mfcData?.value || 0);
     if (totalWealthEl) totalWealthEl.innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     const dailyValEl = document.getElementById('dailyChangeValue');
-    if (dailyValEl) {
-        dailyValEl.innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        dailyValEl.style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
-    }
-
     const dailyPctEl = document.getElementById('dailyChangePct');
-    if (dailyPctEl) {
-        dailyPctEl.innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
-        dailyPctEl.style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
+
+    if (yesterdayWealth === null) {
+        if (dailyValEl) { dailyValEl.innerText = 'Collecting data...'; dailyValEl.style.color = '#666'; }
+        if (dailyPctEl) { dailyPctEl.innerText = 'Need at least 2 daily snapshots'; dailyPctEl.style.color = '#666'; }
+    } else {
+        if (dailyValEl) {
+            dailyValEl.innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            dailyValEl.style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
+        }
+        if (dailyPctEl) {
+            dailyPctEl.innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
+            dailyPctEl.style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
+        }
     }
 
     const lastUpdEl = document.getElementById('lastUpdated');
