@@ -587,7 +587,14 @@ async function loadDashboard() {
     console.log('START LOAD');
 
     let gpfTotal = 0;
-    let mfcTotal = 157516.96;
+    const mfcRes = await fetch(
+  'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json'
+);
+
+const mfcData = await mfcRes.json();
+
+let mfcTotal =
+    Number(mfcData?.value || 0);
 
     try {
         const gpfRes = await fetch(
