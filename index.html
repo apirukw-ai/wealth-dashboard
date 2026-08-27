@@ -203,7 +203,54 @@
     </div>
 </div>
 
-<!-- 2.1 Recent Snapshot Card -->
+<!-- 2.1 History Summary Card (แทรกใหม่ใต้ Snapshots Card) -->
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="
+        color:#666;
+        font-size:13px;
+    ">
+        History Summary
+    </div>
+
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Highest Wealth
+    </div>
+
+    <div id="highestWealth" style="
+        font-weight:bold;
+        color:#16a34a;
+    ">
+        -
+    </div>
+
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Lowest Wealth
+    </div>
+
+    <div id="lowestWealth" style="
+        font-weight:bold;
+        color:#dc2626;
+    ">
+        -
+    </div>
+</div>
+
+<!-- 2.2 Recent Snapshot Card -->
 <div id="recentSnapshotCard" style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -471,7 +518,6 @@
         Wealth History
     </div>
     
-    <!-- เพิ่ม Header ย่อยใต้ Wealth History -->
     <div style="
         color:#666;
         font-size:12px;
@@ -661,8 +707,17 @@ async function loadDashboard() {
     const dailyChange = totalWealth - yesterdayWealth;
     const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
 
+    let highestWealth = 0;
+    let lowestWealth = 0;
+
     if (history.length > 0) {
         const latestSnapshot = history[history.length - 1];
+        
+        // คำนวณหาค่าสูงสุดและต่ำสุดของประวัติ wealth
+        const wealthValues = history.map(h => h.wealth);
+        highestWealth = Math.max(...wealthValues);
+        lowestWealth = Math.min(...wealthValues);
+
         document.getElementById('latestWealth').innerText =
             '฿' + latestSnapshot.wealth.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
@@ -860,7 +915,7 @@ async function loadDashboard() {
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
 
-    // วาดกราฟ Chart.js (ตั้งค่าปรับแต่งตามโจทย์)
+    // วาดกราฟ Chart.js
     const ctx = document.getElementById('wealthChart');
 
     new Chart(ctx, {
@@ -893,6 +948,19 @@ async function loadDashboard() {
 
     document.getElementById('chartLatestWealth').innerText =
         '฿' + totalWealth.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    // แสดงค่า Highest Wealth และ Lowest Wealth
+    document.getElementById('highestWealth').innerText =
+        '฿' + highestWealth.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    document.getElementById('lowestWealth').innerText =
+        '฿' + lowestWealth.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
