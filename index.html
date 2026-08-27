@@ -467,9 +467,17 @@
     <div style="
         color:#666;
         font-size:13px;
-        margin-bottom:12px;
     ">
         Wealth History
+    </div>
+    
+    <!-- เพิ่ม Header ย่อยใต้ Wealth History -->
+    <div style="
+        color:#666;
+        font-size:12px;
+        margin-bottom:10px;
+    ">
+        Track your net worth growth over time
     </div>
 
     <canvas id="wealthChart" height="220"></canvas>
@@ -852,7 +860,7 @@ async function loadDashboard() {
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
 
-    // วาดกราฟและแสดงสรุปผลใต้กราฟ
+    // วาดกราฟ Chart.js (ตั้งค่าปรับแต่งตามโจทย์)
     const ctx = document.getElementById('wealthChart');
 
     new Chart(ctx, {
@@ -863,9 +871,10 @@ async function loadDashboard() {
                 label: 'Total Wealth',
                 data: chartValues,
                 borderColor: '#16a34a',
-                backgroundColor: 'rgba(22,163,74,0.15)',
                 borderWidth: 3,
-                fill: true,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                fill: false,
                 tension: 0.3
             }]
         },
