@@ -126,65 +126,65 @@
     ">
         -
     </div>
-<div style="
-    margin-top:10px;
-    color:#666;
-    font-size:13px;
-">
-    Tracking Started
-</div>
+    <div style="
+        margin-top:10px;
+        color:#666;
+        font-size:13px;
+    ">
+        Tracking Started
+    </div>
 
-<div id="trackingStart" style="
-    margin-top:4px;
-    font-weight:bold;
-">
-    26 Aug 2026
-</div>
-<div style="
-    margin-top:12px;
-    color:#666;
-    font-size:13px;
-">
-    Latest Snapshot
-</div>
+    <div id="trackingStart" style="
+        margin-top:4px;
+        font-weight:bold;
+    ">
+        26 Aug 2026
+    </div>
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Latest Snapshot
+    </div>
 
-<div id="latestSnapshotDate" style="
-    margin-top:4px;
-    font-weight:bold;
-">
-    -
-</div>    
+    <div id="latestSnapshotDate" style="
+        margin-top:4px;
+        font-weight:bold;
+    ">
+        -
+    </div>    
 
-<div style="
-    margin-top:12px;
-    color:#666;
-    font-size:13px;
-">
-    Latest Wealth
-</div>
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Latest Wealth
+    </div>
 
-<div id="latestWealth" style="
-    margin-top:4px;
-    font-weight:bold;
-">
-    -
-</div>    
+    <div id="latestWealth" style="
+        margin-top:4px;
+        font-weight:bold;
+    ">
+        -
+    </div>    
 
-<div style="
-    margin-top:12px;
-    color:#666;
-    font-size:13px;
-">
-    Best Day
-</div>
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Best Day
+    </div>
 
-<div id="bestDayValue" style="
-    margin-top:4px;
-    font-weight:bold;
-    color:#16a34a;
-">
-    -
-</div>
+    <div id="bestDayValue" style="
+        margin-top:4px;
+        font-weight:bold;
+        color:#16a34a;
+    ">
+        -
+    </div>
 </div>
 
 <!-- 4. การ์ดสรุปสถานะพอร์ต -->
@@ -219,21 +219,21 @@
     ">
         1 Day Gain: +0.46%
     </div>
-<div style="
-    margin-top:8px;
-    color:#666;
-    font-size:13px;
-">
-    Portfolio Health
-</div>
+    <div style="
+        margin-top:8px;
+        color:#666;
+        font-size:13px;
+    ">
+        Portfolio Health
+    </div>
 
-<div style="
-    margin-top:4px;
-    color:#16a34a;
-    font-weight:bold;
-">
-    Strong
-</div>
+    <div style="
+        margin-top:4px;
+        color:#16a34a;
+        font-weight:bold;
+    ">
+        Strong
+    </div>
 </div>
 
 <!-- 3. Largest Asset Card -->
@@ -321,13 +321,15 @@
 
 </div>
 
+<!-- 1. ดึง SDK ของ Supabase มาใช้งาน -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+// 2. ประกาศ URL และ Key
 const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw';
 
-console.log('SUPABASE LOADED', supabase);
-
+// 3. สร้าง Client สำหรับดึงข้อมูล
 const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
@@ -339,59 +341,63 @@ async function loadDashboard() {
     let gpfTotal = 0;
     let mfcTotal = 157516.96;
 
-    // GPF
-    const gpfRes = await fetch(
-        'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
-    );
+    try {
+        // GPF Fetch
+        const gpfRes = await fetch(
+            'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
+        );
+        const gpfData = await gpfRes.json();
 
-    const gpfData = await gpfRes.json();
-
-    gpfData.funds.forEach(f => {
-        gpfTotal += Number(f.units) * Number(f.currentNav);
-    });
+        if (gpfData && gpfData.funds) {
+            gpfData.funds.forEach(f => {
+                gpfTotal += Number(f.units) * Number(f.currentNav);
+            });
+        }
+    } catch (err) {
+        console.error('Error fetching GPF data:', err);
+    }
 
     const totalWealth = mfcTotal + gpfTotal;
     const history = JSON.parse(localStorage.getItem('wealthHistory')) || [];
-    const latestSnapshot =
-    history[history.length - 1];
-
-    document.getElementById('latestWealth').innerText =
-    '฿' + latestSnapshot.wealth.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-    
-    document.getElementById('bestDayValue').innerText =
-    '▲ ฿' + gainAmount.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-    
-    document.getElementById('latestSnapshotDate').innerText =
-    latestSnapshot.date;
-    document.getElementById('historyCount').innerText =
-    history.length + ' Snapshot';
     
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
-    const yesterdayWealth = 1850000;
-    const dailyChange = totalWealth - yesterdayWealth;
-    const exists = history.find(h => h.date === today);
 
+    // บันทึก Snapshot ของวันนี้หากยังไม่มี
+    const exists = history.find(h => h.date === today);
     if (!exists) {
         history.push({
             date: today,
             wealth: totalWealth
         });
-
-        localStorage.setItem(
-            'wealthHistory',
-            JSON.stringify(history)
-        );
+        localStorage.setItem('wealthHistory', JSON.stringify(history));
     }
-    console.log(history);
 
+    // อัปเดตข้อมูลเกี่ยวกับ History/Snapshots
+    document.getElementById('historyCount').innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
+
+    if (history.length > 0) {
+        const latestSnapshot = history[history.length - 1];
+        document.getElementById('latestWealth').innerText =
+            '฿' + latestSnapshot.wealth.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        document.getElementById('latestSnapshotDate').innerText = latestSnapshot.date;
+
+        // คำนวณ Best Day (มูลค่าพอร์ตสูงสุดในประวัติ)
+        const maxWealth = Math.max(...history.map(h => h.wealth));
+        document.getElementById('bestDayValue').innerText =
+            '▲ ฿' + maxWealth.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+    }
+
+    const yesterdayWealth = 1850000;
+    const dailyChange = totalWealth - yesterdayWealth;
     const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
+    
     localStorage.setItem('wealth_current', totalWealth);
 
     const mfcPct = (mfcTotal / totalWealth) * 100;
@@ -401,6 +407,7 @@ async function loadDashboard() {
     const largestAssetPct = gpfTotal > mfcTotal ? gpfPct : mfcPct;
     const largestAssetValue = gpfTotal > mfcTotal ? gpfTotal : mfcTotal;
 
+    // อัปเดตข้อมูลบนหน้าเว็บ
     document.getElementById('totalWealth').innerText =
         '฿' + totalWealth.toLocaleString('en-US', {
             minimumFractionDigits: 2,
@@ -413,25 +420,29 @@ async function loadDashboard() {
             maximumFractionDigits: 2
         });
 
+    document.getElementById('mfcPct').innerText = mfcPct.toFixed(2) + '%';
+
     document.getElementById('gpfVal').innerText =
         '฿' + gpfTotal.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
 
+    document.getElementById('gpfPct').innerText = gpfPct.toFixed(2) + '%';
+
     document.getElementById('mfcBar').style.width = mfcPct + '%';
     document.getElementById('gpfBar').style.width = gpfPct + '%';
 
     document.getElementById('dailyChangeValue').innerText =
-        '▲ ฿' + dailyChange.toLocaleString('en-US', {
+        (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
 
     document.getElementById('dailyChangePct').innerText =
-        '▲ ' + dailyChangePct.toFixed(2) + '%';
+        (dailyChangePct >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
 
-    if (dailyChange > 0) {
+    if (dailyChange >= 0) {
         document.getElementById('dailyChangeValue').style.color = '#16a34a';
         document.getElementById('dailyChangePct').style.color = '#16a34a';
     } else {
@@ -460,9 +471,6 @@ async function loadDashboard() {
 
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
-
-    document.getElementById('historyCount').innerText =
-        history.length + ' Snapshots';
 }
 
 loadDashboard();
