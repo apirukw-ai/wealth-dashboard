@@ -225,10 +225,10 @@
             </div>
         </div>
 
-        <!-- ACHIEVEMENT SYSTEM CARD (ขนาดเต็มแถว วางไว้ใต้ FIRE Progress และ Goal ETA ตามสั่ง) -->
+        <!-- ACHIEVEMENT SYSTEM CARD (ขนาดเต็มแถว พร้อมแสดง Progress ของตัวที่ใกล้ปลดล็อกที่สุด) -->
         <div class="luxury-card card-full">
             <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
-            <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 14px;">
+            <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 14px;">
                 <!-- จะถูกเติมด้วย Javascript ด้านล่าง -->
             </div>
         </div>
@@ -542,29 +542,50 @@ function renderGoalEta(totalWealth) {
     return goalStatus;
 }
 
-// --- ฟังก์ชันระบบ Achievements ใหม่ตามโจทย์ ---
+// --- ฟังก์ชันระบบ Achievements (อัปเดตแสดง Progress ของตัวที่ใกล้ปลดล็อกที่สุด) ---
 function renderAchievementsList(totalWealth, fireProgress) {
     const achievementsEl = document.getElementById('achievementsGridList');
     if (!achievementsEl) return;
 
+    // รายการ Achievement ทั้งหมดพร้อม target เงื่อนไข
     const list = [
-        { name: 'Millionaire', unlocked: totalWealth >= 1000000 },
-        { name: 'Two Million Club', unlocked: totalWealth >= 2000000 },
-        { name: 'FIRE 50%', unlocked: fireProgress >= 50 },
-        { name: 'Three Million Club', unlocked: totalWealth >= 3000000 },
-        { name: 'FIRE 75%', unlocked: fireProgress >= 75 },
-        { name: 'FIRE Achieved', unlocked: fireProgress >= 100 }
+        { name: 'Millionaire', unlocked: totalWealth >= 1000000, target: 1000000 },
+        { name: 'Two Million Club', unlocked: totalWealth >= 2000000, target: 2000000 },
+        { name: 'FIRE 50%', unlocked: fireProgress >= 50, target: 2500000 }, // สมมติ 50% ของ 5M คือ 2.5M
+        { name: 'Three Million Club', unlocked: totalWealth >= 3000000, target: 3000000 },
+        { name: 'FIRE 75%', unlocked: fireProgress >= 75, target: 3750000 }, // 75% ของ 5M คือ 3.75M
+        { name: 'FIRE Achieved', unlocked: fireProgress >= 100, target: 5000000 }
     ];
 
     let html = '';
     list.forEach(item => {
         const icon = item.unlocked ? '✅' : '🔒';
-        const color = item.unlocked ? '#34d399' : '#64748b';
-        const fontWeight = item.unlocked ? '600' : '400';
+        const color = item.unlocked ? '#34d399' : '#cbd5e1';
+        const fontWeight = item.unlocked ? '600' : '500';
+        
+        let extraDetails = '';
+        // หากยังไม่ปลดล็อก ให้คำนวณหาตัวที่ใกล้ที่สุดเพื่อแสดง Progress
+        if (!item.unlocked) {
+            // เช็คว่าเป็นตัวที่ยังไม่ปลดล็อกตัวแรกสุด (ใกล้ที่สุด)
+            const isClosest = list.find(l => !l.unlocked).name === item.name;
+            if (isClosest) {
+                const pct = Math.min((totalWealth / item.target) * 100, 100).toFixed(1);
+                const remainingVal = Math.max(item.target - totalWealth, 0);
+                extraDetails = `
+                    <div style="font-size: 12px; color: #38bdf8; margin-top: 6px; font-weight: 600;">
+                        ${pct}% &bull; ฿${remainingVal.toLocaleString('en-US', {maximumFractionDigits: 0})} Remaining
+                    </div>
+                `;
+            }
+        }
+
         html += `
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: ${color}; font-weight: ${fontWeight};">
-                <span>${icon}</span>
-                <span>${item.name}</span>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; color: ${color}; font-weight: ${fontWeight};">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>${icon}</span>
+                    <span>${item.name}</span>
+                </div>
+                ${extraDetails}
             </div>
         `;
     });
@@ -780,7 +801,7 @@ async function loadDashboard() {
     const fireProgress = (totalWealth / fireTarget) * 100;
     const diversificationScore = 100 - largestAssetPctVal;
 
-    // เรียกใช้งานฟังก์ชันเรนเดอร์ Achievements ตามโจทย์
+    // เรียกใช้งานฟังก์ชันเรนเดอร์ Achievements
     renderAchievementsList(totalWealth, fireProgress);
 
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
