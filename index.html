@@ -107,7 +107,7 @@
     "></div>
 </div>
 
-<!-- 2. History Records Card -->
+<!-- 2. History Records Card (Snapshots) -->
 <div id="historyCard" style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -198,6 +198,36 @@
         margin-top:4px;
         font-weight:bold;
         color:#16a34a;
+    ">
+        -
+    </div>
+</div>
+
+<!-- 2.1 Recent Snapshot Card (วางใต้ Snapshots Card) -->
+<div id="recentSnapshotCard" style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666; font-size:13px;">
+        Recent Snapshot
+    </div>
+    <div style="margin-top:8px; color:#666; font-size:13px;">
+        Latest Change
+    </div>
+    <div id="latestChangeValue" style="
+        font-size:24px;
+        font-weight:bold;
+        margin-top:4px;
+    ">
+        -
+    </div>
+    <div id="latestChangePct" style="
+        margin-top:4px;
+        font-weight:bold;
     ">
         -
     </div>
@@ -452,13 +482,40 @@ async function loadDashboard() {
 
         document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
 
-        // Days Tracking (แสดงผลเฉพาะตัวเลข)
+        // Days Tracking
         const startDate = new Date('2026-08-26');
         const endDate = new Date(latestSnapshot.date || today);
         const diffTime = Math.abs(endDate - startDate);
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
         document.getElementById('trackingAge').innerText = diffDays;
 
+        // คำนวณ Latest Change สำหรับ Recent Snapshot Card
+        let recentValChange = dailyChange;
+        let recentPctChange = dailyChangePct;
+
+        if (history.length >= 2) {
+            const current = history[history.length - 1].wealth;
+            const previous = history[history.length - 2].wealth;
+            recentValChange = current - previous;
+            recentPctChange = (recentValChange / previous) * 100;
+        }
+
+        const signVal = recentValChange >= 0 ? '▲ ฿' : '▼ ฿';
+        const signPct = recentValChange >= 0 ? '▲ ' : '▼ ';
+        const colorChange = recentValChange >= 0 ? '#16a34a' : '#dc2626';
+
+        document.getElementById('latestChangeValue').innerText =
+            signVal + Math.abs(recentValChange).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        document.getElementById('latestChangeValue').style.color = colorChange;
+
+        document.getElementById('latestChangePct').innerText =
+            signPct + Math.abs(recentPctChange).toFixed(2) + '%';
+        document.getElementById('latestChangePct').style.color = colorChange;
+
+        // คำนวณ Best Day Gain
         let maxGainVal = 0;
         let maxGainPct = 0;
 
