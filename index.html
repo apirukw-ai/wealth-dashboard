@@ -370,6 +370,7 @@ async function loadDashboard() {
     let gpfTotal = 0;
     let mfcTotal = 157516.96;
 
+    // ครอบ try...catch แยกเฉพาะส่วนดึงข้อมูลภายนอก เพื่อกัน Error หยุดการทำงานของหน้าเว็บ
     try {
         const gpfRes = await fetch(
             'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
@@ -382,16 +383,21 @@ async function loadDashboard() {
             });
         }
     } catch (err) {
-        console.error('Error fetching GPF data:', err);
+        console.error('Error fetching GPF data (Using fallback 0):', err);
     }
 
     const totalWealth = mfcTotal + gpfTotal;
 
-    // โหลด History จริงจาก Firebase
-    const historyUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
-    const historyRes = await fetch(historyUrl);
-    const historyData = await historyRes.json() || {};
-    const history = Object.values(historyData);
+    // โหลด History จริงจาก Firebase แบบปลอดภัย
+    let history = [];
+    try {
+        const historyUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
+        const historyRes = await fetch(historyUrl);
+        const historyData = await historyRes.json() || {};
+        history = Object.values(historyData);
+    } catch (err) {
+        console.error('Error fetching history:', err);
+    }
 
     const yesterdayWealth = 1850000;
     const dailyChange = totalWealth - yesterdayWealth;
@@ -406,37 +412,37 @@ async function loadDashboard() {
     ];
     ports.sort((a, b) => b.value - a.value);
 
-    // Auto Save Snapshot ไปที่ Firebase
-    const today = new Date().toLocaleDateString('en-CA');
-    const now = new Date();
-    const snapshotKey = today.replaceAll('-', '');
-    const snapshotUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history/' + snapshotKey + '.json';
+    // Auto Save Snapshot ไปที่ Firebase แบบปลอดภัย
+    try {
+        const today = new Date().toLocaleDateString('en-CA');
+        const snapshotKey = today.replaceAll('-', '');
+        const snapshotUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history/' + snapshotKey + '.json';
 
-    const snapRes = await fetch(snapshotUrl);
-    const existing = await snapRes.json();
+        const snapRes = await fetch(snapshotUrl);
+        const existing = await snapRes.json();
 
-    if (!existing) {
-        await fetch(snapshotUrl, {
-            method: 'PUT',
-            headers: {
-                'Content-Type':'application/json'
-            },
-            body: JSON.stringify({
+        if (!existing) {
+            await fetch(snapshotUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: today,
+                    wealth: totalWealth,
+                    mfc: mfcTotal,
+                    gpf: gpfTotal,
+                    createdAt: new Date().toISOString()
+                })
+            });
+            history.push({
                 date: today,
                 wealth: totalWealth,
                 mfc: mfcTotal,
                 gpf: gpfTotal,
                 createdAt: new Date().toISOString()
-            })
-        });
-        // เพิ่มเข้าไปใน history array ทันทีเพื่อให้กราฟและข้อมูลอัปเดตปัจจุบัน
-        history.push({
-            date: today,
-            wealth: totalWealth,
-            mfc: mfcTotal,
-            gpf: gpfTotal,
-            createdAt: new Date().toISOString()
-        });
+            });
+        }
+    } catch (err) {
+        console.error('Error auto-saving snapshot:', err);
     }
 
     // Net Worth Ranking
@@ -589,7 +595,7 @@ async function loadDashboard() {
         document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
 
         const startDate = new Date('2026-08-26');
-        const diffDays = Math.floor(Math.abs(new Date(latestSnapshot.date || today) - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const diffDays = Math.floor(Math.abs(new Date(latestSnapshot.date || new Date()) - startDate) / (1000 * 60 * 60 * 24)) + 1;
         document.getElementById('trackingAge').innerText = diffDays;
 
         let maxGainVal = dailyChange > 0 ? dailyChange : 0;
@@ -617,7 +623,6 @@ async function loadDashboard() {
     document.getElementById('etaMonthlyNeed').innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
 
     // Financial Health
-    const milestonePct = (totalWealth / fireTarget) * 100;
     let grade = 'A+';
     let label = 'Excellent';
     if (milestonePct >= 90 && dailyChange >= 0) { grade = 'A+'; label = 'Excellent'; }
@@ -652,7 +657,7 @@ async function loadDashboard() {
     document.getElementById('dailyChangeValue').style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
     document.getElementById('dailyChangePct').style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
 
-    document.getElementById('lastUpdated').innerText = 'Updated: ' + now.toLocaleString();
+    document.getElementById('lastUpdated').innerText = 'Updated: ' + new Date().toLocaleString();
 
     // Chart.js
     const ctx = document.getElementById('wealthChart');
