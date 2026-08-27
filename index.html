@@ -627,7 +627,7 @@
         Goal ETA
     </div>
 
-    <!-- สถานะ Ahead of Schedule / On Track / Behind Schedule -->
+    <!-- สถานะ Ahead of Schedule / On Track / Needs Improvement / Behind Schedule -->
     <div id="etaStatus" style="
         font-size:24px;
         font-weight:bold;
@@ -1052,18 +1052,21 @@ async function loadDashboard() {
     document.getElementById('monthlyNeed').innerText =
         'Need ฿' + Math.round(monthlyNeed).toLocaleString('en-US') + ' / Month for 12 Months';
 
-    // คำนวณ Goal ETA (ประเมินสถานะจาก monthlyNeed)
+    // คำนวณ Goal ETA (ประเมินสถานะจาก monthlyNeed ตามเกณฑ์ใหม่ 4 ระดับ)
     let etaStatusText = '';
     let etaStatusColor = '';
 
-    if (monthlyNeed <= 10000) {
-        etaStatusText = '🎯 Ahead of Schedule';
+    if (monthlyNeed <= 5000) {
+        etaStatusText = '🚀 Ahead of Schedule';
         etaStatusColor = '#16a34a'; // เขียว
     } else if (monthlyNeed <= 15000) {
         etaStatusText = '✅ On Track';
         etaStatusColor = '#2563eb'; // น้ำเงิน
+    } else if (monthlyNeed <= 25000) {
+        etaStatusText = '⚠ Needs Improvement';
+        etaStatusColor = '#d97706'; // ส้ม
     } else {
-        etaStatusText = '⚠ Behind Schedule';
+        etaStatusText = '🔴 Behind Schedule';
         etaStatusColor = '#dc2626'; // แดง
     }
 
