@@ -370,7 +370,7 @@
     </div>
 </div>
 
-<!-- 6. Goal ETA Card (เพิ่มตามโจทย์) -->
+<!-- 6. Goal ETA Card -->
 <div id="goalEtaCard" style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -405,7 +405,7 @@
     </div>
 </div>
 
-<!-- 7. Financial Health Score Card (เพิ่มตามโจทย์) -->
+<!-- 7. Financial Health Score Card -->
 <div id="financialHealthCard" style="
     border:1px solid #bbf7d0;
     border-radius:12px;
@@ -452,6 +452,33 @@
         box-shadow:0 4px 10px rgba(22,163,74,0.3);
     ">
         A+
+    </div>
+</div>
+
+<!-- 8. Chart Card (แทรกใต้ Financial Health Score) -->
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="
+        color:#666;
+        font-size:13px;
+        margin-bottom:12px;
+    ">
+        Wealth History
+    </div>
+
+    <canvas id="wealthChart" height="220"></canvas>
+
+    <div id="chartSummary" style="
+        margin-top:10px;
+        color:#666;
+        font-size:13px;
+    ">
     </div>
 </div>
 
@@ -540,14 +567,17 @@
 
 </div>
 
+<!-- โหลด Supabase SDK และ Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw';
+const SUPABASE_KEY = '';
 
 const supabaseClient = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
+    const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw';
 );
 
 function formatDate(dateStr) {
@@ -585,6 +615,10 @@ async function loadDashboard() {
     const totalWealth = mfcTotal + gpfTotal;
     const history = JSON.parse(localStorage.getItem('wealthHistory')) || [];
     
+    // สร้างข้อมูลสำหรับวาดกราฟ
+    const chartLabels = history.map(h => h.date);
+    const chartValues = history.map(h => h.wealth);
+
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
 
@@ -701,7 +735,7 @@ async function loadDashboard() {
     document.getElementById('monthlyNeed').innerText =
         'Need ฿' + Math.round(monthlyNeed).toLocaleString('en-US') + ' / Month for 12 Months';
 
-    // คำนวณ Goal ETA (12 เดือนนับจากปัจจุบัน)
+    // คำนวณ Goal ETA
     const etaMonths = 12;
     const targetDate = new Date();
     targetDate.setMonth(targetDate.getMonth() + etaMonths);
@@ -711,7 +745,7 @@ async function loadDashboard() {
     document.getElementById('etaDuration').innerText = etaMonths + ' Months';
     document.getElementById('etaTargetDate').innerText = `${etaMonthName} ${etaYear}`;
 
-    // คำนวณ Financial Health Score อัตโนมัติ
+    // คำนวณ Financial Health Score
     let grade = 'A+';
     let label = 'Excellent';
 
@@ -801,6 +835,36 @@ async function loadDashboard() {
 
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
+
+    // วาดกราฟและแสดงสรุปผลใต้กราฟ
+    const ctx = document.getElementById('wealthChart');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Total Wealth',
+                data: chartValues,
+                borderColor: '#16a34a',
+                backgroundColor: 'rgba(22,163,74,0.15)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    document.getElementById('chartSummary').innerText =
+        'Tracking ' + history.length + ' snapshots';
 }
 
 loadDashboard();
