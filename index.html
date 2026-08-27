@@ -140,7 +140,7 @@
         <div style="margin-top:12px; color:#666; font-size:13px;">Estimated Time</div>
         <div id="etaDuration" style="font-size:18px; font-weight:bold; margin-top:4px;">12 Months</div>
         <div style="margin-top:12px; color:#666; font-size:13px;">Target Date</div>
-        <div id="etaTargetDate" style="font-size:18px; font-weight:bold; color:#2563eb; margin-top:4px;">Aug 2027</div>
+        <div id="etaTargetDate" style="font-size:18px; font-weight:bold; color:#2563eb; margin-top:4px;">2027</div>
     </div>
 
     <!-- Wealth History Chart Card -->
@@ -241,7 +241,7 @@
     </div>
 
     <!-- Concentration Risk Card -->
-    <div id="concentrationRiskCard" style="
+    <div style="
         border:1px solid #ddd;
         border-radius:12px;
         padding:16px;
@@ -279,7 +279,7 @@
     </div>
 
     <!-- Net Worth Ranking Card -->
-    <div id="netWorthRankingCard" style="
+    <div style="
         border:1px solid #ddd;
         border-radius:12px;
         padding:16px;
@@ -316,7 +316,7 @@
     </div>
 
     <!-- Largest Asset Card -->
-    <div id="largestAssetCard" style="
+    <div style="
         border:1px solid #ddd;
         border-radius:12px;
         padding:16px;
@@ -450,25 +450,35 @@ function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
     if (needPctEl) needPctEl.innerText = 'Need ' + fireNeedPct.toFixed(2) + '% More';
 }
 
-function renderGoalEta(fireRemaining, dailyChange) {
-    const gainAmount = dailyChange > 0 ? dailyChange : 0;
-    const annualGrowth = gainAmount * 365;
+function renderGoalEta(monthlyNeed) {
+    let goalStatus = '';
+
+    if (monthlyNeed <= 5000) {
+        goalStatus = '🚀 Ahead of Schedule';
+    }
+    else if (monthlyNeed <= 15000) {
+        goalStatus = '✅ On Track';
+    }
+    else if (monthlyNeed <= 25000) {
+        goalStatus = '⚠ Needs Improvement';
+    }
+    else {
+        goalStatus = '🔴 Behind Schedule';
+    }
+
+    const etaStatusEl = document.getElementById('etaStatus');
+    if (etaStatusEl) {
+        etaStatusEl.innerText = goalStatus;
+    }
 
     const etaDurationEl = document.getElementById('etaDuration');
-    const etaTargetDateEl = document.getElementById('etaTargetDate');
-
     if (etaDurationEl) {
-        if (annualGrowth > 0) {
-            const yearsToFire = fireRemaining / annualGrowth;
-            const currentYear = new Date().getFullYear();
-            const targetYear = Math.round(currentYear + yearsToFire);
-            etaDurationEl.innerText = `${yearsToFire.toFixed(1)} Years`;
-            if (etaTargetDateEl) {
-                etaTargetDateEl.innerText = targetYear.toString();
-            }
-        } else {
-            etaDurationEl.innerText = 'Calculating...';
-        }
+        etaDurationEl.innerText = '12 Months';
+    }
+
+    const etaTargetDateEl = document.getElementById('etaTargetDate');
+    if (etaTargetDateEl) {
+        etaTargetDateEl.innerText = '2027';
     }
 }
 
@@ -533,7 +543,6 @@ function renderHistory(history, dailyChange, dailyChangePct, today) {
     const countEl = document.getElementById('historyCount');
     if (countEl) countEl.innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
 
-    // คำนวณ History Progress ตามโจทย์
     const historyProgress = Math.min((history.length / 7) * 100, 100);
     const progressPctEl = document.getElementById('progressPctLabel');
     if (progressPctEl) progressPctEl.innerText = Math.round(historyProgress) + '%';
@@ -658,7 +667,11 @@ async function loadDashboard() {
     const fireTarget = 5000000;
     const fireRemaining = fireTarget - totalWealth;
     renderFireProgress(totalWealth, dailyChange, fireRemaining);
-    renderGoalEta(fireRemaining, dailyChange);
+
+    const remainingToGoal = fireTarget - totalWealth;
+    const monthlyNeed = remainingToGoal / 12;
+
+    renderGoalEta(monthlyNeed);
 
     const fireProgress = (totalWealth / fireTarget) * 100;
     const diversificationScore = 100 - largestAssetPctVal;
@@ -724,8 +737,6 @@ async function loadDashboard() {
     if (trendPctEl) { trendPctEl.innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%'; trendPctEl.style.color = trendColor; }
 
     // Goal ETA Monthly Need
-    const remainingToGoal = fireTarget - totalWealth;
-    const monthlyNeed = remainingToGoal / 12;
     const etaMonthlyNeedEl = document.getElementById('etaMonthlyNeed');
     if (etaMonthlyNeedEl) etaMonthlyNeedEl.innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
 
