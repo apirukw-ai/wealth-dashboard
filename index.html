@@ -107,6 +107,68 @@
     "></div>
 </div>
 
+<!-- 1.1 FIRE Progress Card -->
+<div id="fireProgressCard" style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666; font-size:13px; font-weight:bold;">
+        FIRE Progress
+    </div>
+
+    <div style="margin-top:12px; color:#666; font-size:13px;">
+        Current Wealth
+    </div>
+    <div id="fireCurrentWealth" style="
+        font-size:18px;
+        font-weight:bold;
+        margin-top:4px;
+    ">
+        -
+    </div>
+
+    <div style="margin-top:12px; color:#666; font-size:13px;">
+        FIRE Target
+    </div>
+    <div id="fireTarget" style="
+        font-size:18px;
+        font-weight:bold;
+        margin-top:4px;
+    ">
+        -
+    </div>
+
+    <div id="firePct" style="
+        font-size:36px;
+        font-weight:bold;
+        margin-top:12px;
+        color:#16a34a;
+    ">
+        -
+    </div>
+
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Remaining
+    </div>
+
+    <div id="fireRemaining" style="
+        margin-top:4px;
+        font-size:18px;
+        font-weight:bold;
+        color:#dc2626;
+    ">
+        -
+    </div>
+</div>
+
 <!-- 2. History Records Card (Snapshots) -->
 <div id="historyCard" style="
     border:1px solid #ddd;
@@ -870,6 +932,32 @@ async function loadDashboard() {
     const totalWealth = mfcTotal + gpfTotal;
     const history = JSON.parse(localStorage.getItem('wealthHistory')) || [];
     
+    // คำนวณ FIRE Progress Card
+    const fireTarget = 5000000;
+    const fireProgress = (totalWealth / fireTarget) * 100;
+    const fireRemaining = fireTarget - totalWealth;
+
+    document.getElementById('fireCurrentWealth').innerText =
+        '฿' + totalWealth.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    document.getElementById('fireTarget').innerText =
+        '฿' + fireTarget.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    document.getElementById('firePct').innerText =
+        fireProgress.toFixed(2) + '%';
+
+    document.getElementById('fireRemaining').innerText =
+        '฿' + fireRemaining.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
     // เตรียมข้อมูลกราฟ
     const chartLabels = history.map(h => h.date);
     const chartValues = history.map(h => h.wealth);
