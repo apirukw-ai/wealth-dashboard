@@ -370,6 +370,91 @@
     </div>
 </div>
 
+<!-- 6. Goal ETA Card (เพิ่มตามโจทย์) -->
+<div id="goalEtaCard" style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666; font-size:13px;">
+        Goal ETA
+    </div>
+    <div id="etaDuration" style="
+        font-size:24px;
+        font-weight:bold;
+        margin-top:8px;
+    ">
+        12 Months
+    </div>
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Target Date
+    </div>
+    <div id="etaTargetDate" style="
+        margin-top:4px;
+        font-weight:bold;
+        color:#2563eb;
+    ">
+        Aug 2027
+    </div>
+</div>
+
+<!-- 7. Financial Health Score Card (เพิ่มตามโจทย์) -->
+<div id="financialHealthCard" style="
+    border:1px solid #bbf7d0;
+    border-radius:12px;
+    padding:16px;
+    background:#f0fdf4;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+">
+    <div>
+        <div style="color:#666; font-size:13px;">
+            Financial Health Score
+        </div>
+        <div id="healthScoreLabel" style="
+            font-size:20px;
+            font-weight:bold;
+            color:#166534;
+            margin-top:4px;
+        ">
+            Excellent
+        </div>
+        <div style="
+            font-size:11px;
+            color:#15803d;
+            margin-top:4px;
+        ">
+            High Progress • Positive Trend • Stable Assets
+        </div>
+    </div>
+    <div id="healthScoreGrade" style="
+        font-size:36px;
+        font-weight:bold;
+        color:#ffffff;
+        background:#16a34a;
+        width:64px;
+        height:64px;
+        border-radius:16px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:0 4px 10px rgba(22,163,74,0.3);
+    ">
+        A+
+    </div>
+</div>
+
 <!-- 3. Largest Asset Card -->
 <div id="largestAssetCard" style="
     border:1px solid #ddd;
@@ -587,7 +672,7 @@ async function loadDashboard() {
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
-    // คำนวณ Wealth Milestone, Progress Bar, Goal Gap และ Monthly Need
+    // คำนวณ Wealth Milestone
     const wealthTarget = 2000000;
     const milestonePct = (totalWealth / wealthTarget) * 100;
     const remainingToGoal = wealthTarget - totalWealth;
@@ -615,6 +700,34 @@ async function loadDashboard() {
     document.getElementById('goalGapPct').innerText = 'Need +' + goalGapPct.toFixed(2) + '%';
     document.getElementById('monthlyNeed').innerText =
         'Need ฿' + Math.round(monthlyNeed).toLocaleString('en-US') + ' / Month for 12 Months';
+
+    // คำนวณ Goal ETA (12 เดือนนับจากปัจจุบัน)
+    const etaMonths = 12;
+    const targetDate = new Date();
+    targetDate.setMonth(targetDate.getMonth() + etaMonths);
+    const etaMonthName = targetDate.toLocaleString('en-US', { month: 'short' });
+    const etaYear = targetDate.getFullYear();
+
+    document.getElementById('etaDuration').innerText = etaMonths + ' Months';
+    document.getElementById('etaTargetDate').innerText = `${etaMonthName} ${etaYear}`;
+
+    // คำนวณ Financial Health Score อัตโนมัติ
+    let grade = 'A+';
+    let label = 'Excellent';
+
+    if (milestonePct >= 90 && dailyChange >= 0) {
+        grade = 'A+';
+        label = 'Excellent';
+    } else if (milestonePct >= 75) {
+        grade = 'A';
+        label = 'Very Good';
+    } else {
+        grade = 'B+';
+        label = 'Good';
+    }
+
+    document.getElementById('healthScoreGrade').innerText = grade;
+    document.getElementById('healthScoreLabel').innerText = label;
 
     localStorage.setItem('wealth_current', totalWealth);
 
