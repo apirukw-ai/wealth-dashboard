@@ -113,7 +113,7 @@
             <div id="dailyChangePct" class="financial-val" style="margin-top:4px; font-size:15px;"></div>
         </div>
 
-        <!-- 2. FIRE Forecast Card (รูปแบบใหม่ตามโจทย์) -->
+        <!-- 2. FIRE Forecast Card -->
         <div id="fireForecastCard" class="luxury-card">
             <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🔥 FIRE Forecast</div>
             
@@ -159,29 +159,35 @@
                 <div id="mfcBar" style="background:#3b82f6; width:0%; transition: width 0.4s;"></div>
                 <div id="gpfBar" style="background:#10b981; width:0%; transition: width 0.4s;"></div>
                 <div id="scbBar" style="background:#a855f7; width:0%; transition: width 0.4s;"></div>
+                <div id="dimeBar" style="background:#f59e0b; width:0%; transition: width 0.4s;"></div>
             </div>
             <div id="allocationLegend" style="margin-top:12px; font-size:12px; color:#94a3b8;"></div>
             
-            <div style="display:flex; gap:10px; margin-top:16px;">
-                <div style="flex:1; background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:16px;">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
                     <div style="color:#94a3b8; font-size:11px;">MFC</div>
-                    <div id="mfcVal" class="financial-val" style="font-size:14px; margin-top:4px;">-</div>
+                    <div id="mfcVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
                     <div id="mfcPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
                 </div>
-                <div style="flex:1; background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
                     <div style="color:#94a3b8; font-size:11px;">GPF</div>
-                    <div id="gpfVal" class="financial-val" style="font-size:14px; margin-top:4px;">-</div>
+                    <div id="gpfVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
                     <div id="gpfPct" style="color:#10b981; font-size:11px; font-weight:600; margin-top:2px;"></div>
                 </div>
-                <div style="flex:1; background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
                     <div style="color:#94a3b8; font-size:11px;">SCB</div>
-                    <div id="scbVal" class="financial-val" style="font-size:14px; margin-top:4px;">-</div>
+                    <div id="scbVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
                     <div id="scbPct" style="color:#a855f7; font-size:11px; font-weight:600; margin-top:2px;"></div>
+                </div>
+                <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
+                    <div style="color:#94a3b8; font-size:11px;">DIME</div>
+                    <div id="dimeVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+                    <div id="dimePct" style="color:#f59e0b; font-size:11px; font-weight:600; margin-top:2px;"></div>
                 </div>
             </div>
         </div>
 
-        <!-- FIRE Progress Card เดิม -->
+        <!-- FIRE Progress Card -->
         <div id="fireProgressCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
             <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
@@ -232,7 +238,7 @@
 
         <div id="analyticsContainer" style="display:none; margin-top:16px;" class="dashboard-grid">
 
-            <!-- Wealth Trend Card (ย้ายมาไว้ที่นี่) -->
+            <!-- Wealth Trend Card -->
             <div id="wealthTrendCard" class="luxury-card">
                 <div style="color:#94a3b8; font-size:13px; font-weight:500;">Wealth Trend</div>
                 <div id="trendDirection" class="financial-val" style="font-size:24px; margin-top:10px;">-</div>
@@ -330,7 +336,7 @@
                 <div id="largestAssetValue" class="financial-val" style="margin-top:2px; font-size:13px; color:#94a3b8;"></div>
             </div>
 
-            <!-- Wealth History Chart Card (ย้ายมาไว้ล่างสุดของ Analytics หรือวางตามต้องการ) -->
+            <!-- Wealth History Chart Card -->
             <div class="luxury-card card-full">
                 <div style="color:#94a3b8; font-size:13px; font-weight:500; margin-bottom:12px;">Wealth History Terminal</div>
                 <canvas id="wealthChart" height="90"></canvas>
@@ -380,7 +386,7 @@ function calculateFireEta(currentWealth, targetWealth, monthlyContribution, annu
     let wealth = currentWealth;
     const r = annualRate / 12;
     
-    while (wealth < targetWealth && months < 1200) { // Limit 100 years
+    while (wealth < targetWealth && months < 1200) { 
         wealth = (wealth + monthlyContribution) * (1 + r);
         months++;
     }
@@ -423,45 +429,44 @@ function renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue)
     if (valEl) valEl.innerText = '฿' + largestAssetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function renderAllocation(mfcTotal, gpfTotal, scbTotal, totalWealth) {
+function renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotal, totalWealth) {
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
     const scbPctVal = (scbTotal / totalWealth) * 100;
+    const dimePctVal = (dimeTotal / totalWealth) * 100;
 
     const mfcValEl = document.getElementById('mfcVal');
     if (mfcValEl) mfcValEl.innerText = '฿' + mfcTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
     const mfcPctEl = document.getElementById('mfcPct');
     if (mfcPctEl) mfcPctEl.innerText = mfcPctVal.toFixed(2) + '%';
 
     const gpfValEl = document.getElementById('gpfVal');
     if (gpfValEl) gpfValEl.innerText = '฿' + gpfTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
     const gpfPctEl = document.getElementById('gpfPct');
     if (gpfPctEl) gpfPctEl.innerText = gpfPctVal.toFixed(2) + '%';
 
     const scbValEl = document.getElementById('scbVal');
-    if (scbValEl) {
-        scbValEl.innerText = '฿' + scbTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
+    if (scbValEl) scbValEl.innerText = '฿' + scbTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const scbPctEl = document.getElementById('scbPct');
-    if (scbPctEl) {
-        scbPctEl.innerText = scbPctVal.toFixed(2) + '%';
-    }
+    if (scbPctEl) scbPctEl.innerText = scbPctVal.toFixed(2) + '%';
+
+    const dimeValEl = document.getElementById('dimeVal');
+    if (dimeValEl) dimeValEl.innerText = '฿' + dimeTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const dimePctEl = document.getElementById('dimePct');
+    if (dimePctEl) dimePctEl.innerText = dimePctVal.toFixed(2) + '%';
 
     const mfcBarEl = document.getElementById('mfcBar');
     if (mfcBarEl) mfcBarEl.style.width = mfcPctVal + '%';
-
     const gpfBarEl = document.getElementById('gpfBar');
     if (gpfBarEl) gpfBarEl.style.width = gpfPctVal + '%';
-
     const scbBarEl = document.getElementById('scbBar');
     if (scbBarEl) scbBarEl.style.width = scbPctVal + '%';
+    const dimeBarEl = document.getElementById('dimeBar');
+    if (dimeBarEl) dimeBarEl.style.width = dimePctVal + '%';
 
     const legendEl = document.getElementById('allocationLegend');
     if (legendEl) {
-        legendEl.innerHTML = `<span style="color:#3b82f6;">■</span> MFC ${mfcPctVal.toFixed(2)}% &nbsp;&nbsp;&nbsp; <span style="color:#10b981;">■</span> GPF ${gpfPctVal.toFixed(2)}% &nbsp;&nbsp;&nbsp; <span style="color:#a855f7;">■</span> SCB ${scbPctVal.toFixed(2)}%`;
+        legendEl.innerHTML = `<span style="color:#3b82f6;">■</span> MFC ${mfcPctVal.toFixed(2)}% &nbsp; <span style="color:#10b981;">■</span> GPF ${gpfPctVal.toFixed(2)}% &nbsp; <span style="color:#a855f7;">■</span> SCB ${scbPctVal.toFixed(2)}% &nbsp; <span style="color:#f59e0b;">■</span> DIME ${dimePctVal.toFixed(2)}%`;
     }
 }
 
@@ -640,10 +645,9 @@ async function loadDashboard() {
     let mfcTotal = 157516.96;
 
     try {
-        const gpfRes = await fetch(
+        const gpfData = await fetch(
             'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
-        );
-        const gpfData = await gpfRes.json();
+        ).then(r => r.json());
 
         if (gpfData && gpfData.funds) {
             gpfData.funds.forEach(f => {
@@ -656,16 +660,40 @@ async function loadDashboard() {
 
     let scbTotal = 0;
     try {
-        const scbRes = await fetch(
+        const scbData = await fetch(
             'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json'
-        );
-        const scbData = await scbRes.json();
+        ).then(r => r.json());
         scbTotal = Number(scbData.value || 0);
     } catch (err) {
         console.error('Error fetching SCB data:', err);
     }
 
-    const totalWealth = mfcTotal + gpfTotal + scbTotal;
+    // เพิ่มการดึง DIME
+    let dime = 0;
+    try {
+        const dimeData = await fetch(
+            'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json'
+        ).then(r => r.json());
+        dime = Number(dimeData?.value || 0);
+    } catch (err) {
+        console.error('Error fetching DIME data:', err);
+    }
+
+    const gpf = gpfTotal;
+    const mfc = mfcTotal;
+    const scb = scbTotal;
+
+    // รวมเข้า Total Wealth
+    const totalWealth = mfc + gpf + scb + dime;
+
+    // เพิ่ม Debug ชั่วคราวตามโจทย์
+    console.log({
+        mfc,
+        gpf,
+        scb,
+        dime,
+        totalWealth
+    });
 
     let history = [];
 
@@ -708,11 +736,13 @@ async function loadDashboard() {
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
     const scbPctVal = (scbTotal / totalWealth) * 100;
+    const dimePctVal = (dime / totalWealth) * 100;
 
     const ports = [
         { name: 'GPF', value: gpfTotal, pct: gpfPctVal },
         { name: 'MFC', value: mfcTotal, pct: mfcPctVal },
-        { name: 'SCB', value: scbTotal, pct: scbPctVal }
+        { name: 'SCB', value: scbTotal, pct: scbPctVal },
+        { name: 'DIME', value: dime, pct: dimePctVal }
     ];
     ports.sort((a, b) => b.value - a.value);
 
@@ -735,6 +765,7 @@ async function loadDashboard() {
                     mfc: mfcTotal,
                     gpf: gpfTotal,
                     scb: scbTotal,
+                    dime: dime,
                     createdAt: new Date().toISOString()
                 })
             });
@@ -744,6 +775,7 @@ async function loadDashboard() {
                 mfc: mfcTotal,
                 gpf: gpfTotal,
                 scb: scbTotal,
+                dime: dime,
                 createdAt: new Date().toISOString()
             });
             history.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -752,7 +784,7 @@ async function loadDashboard() {
         console.error('Error auto-saving snapshot:', err);
     }
 
-    renderAllocation(mfcTotal, gpfTotal, scbTotal, totalWealth);
+    renderAllocation(mfcTotal, gpfTotal, scbTotal, dime, totalWealth);
     renderFireForecast(totalWealth);
 
     const largestAsset = ports[0].name;
@@ -852,12 +884,12 @@ async function loadDashboard() {
     } else {
         if (dailyValEl) {
             dailyValEl.innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            dailyValEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171'; // text-emerald-400 / text-red-400
+            dailyValEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171';
             dailyValEl.style.fontSize = '26px';
         }
         if (dailyPctEl) {
             dailyPctEl.innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
-            dailyPctEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171'; // text-emerald-400 / text-red-400
+            dailyPctEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171';
             dailyPctEl.style.fontSize = '14px';
         }
     }
