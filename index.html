@@ -156,7 +156,6 @@
         -
     </div>    
 
-    <!-- เพิ่ม Tracking Age ต่อจาก Latest Snapshot -->
     <div style="
         margin-top:12px;
         color:#666;
@@ -250,6 +249,31 @@
         font-weight:bold;
     ">
         Strong
+    </div>
+</div>
+
+<!-- 5. การ์ด Wealth Milestone -->
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666; font-size:13px;">
+        Wealth Milestone
+    </div>
+    <div id="milestonePct" style="
+        font-size:24px;
+        font-weight:bold;
+        margin-top:8px;
+        color:#2563eb;
+    ">
+        -
+    </div>
+    <div style="margin-top:4px; color:#666; font-size:13px;">
+        Target: ฿2,000,000.00
     </div>
 </div>
 
@@ -348,7 +372,6 @@ const supabaseClient = supabase.createClient(
     SUPABASE_KEY
 );
 
-// ฟังก์ชันแปลงรูปแบบวันที่ให้เป็น "DD MMM YYYY" (เช่น 27 Aug 2026)
 function formatDate(dateStr) {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
@@ -410,17 +433,14 @@ async function loadDashboard() {
                 maximumFractionDigits: 2
             });
 
-        // แสดงผล Latest Snapshot Date ให้อยู่ในฟอร์แมต "DD MMM YYYY"
         document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
 
-        // คำนวณ Tracking Age (จำนวนวันที่เริ่มคำนวณจาก Tracking Started)
         const startDate = new Date('2026-08-26');
         const endDate = new Date(latestSnapshot.date || today);
         const diffTime = Math.abs(endDate - startDate);
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
         document.getElementById('trackingAge').innerText = diffDays + (diffDays > 1 ? ' Days' : ' Day');
 
-        // คำนวณ Best Day Gain
         let maxGainVal = 0;
         let maxGainPct = 0;
 
@@ -448,6 +468,11 @@ async function loadDashboard() {
             }) + '</div>' +
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
+
+    // คำนวณ Wealth Milestone
+    const wealthTarget = 2000000;
+    const milestonePct = (totalWealth / wealthTarget) * 100;
+    document.getElementById('milestonePct').innerText = milestonePct.toFixed(2) + '%';
 
     localStorage.setItem('wealth_current', totalWealth);
 
