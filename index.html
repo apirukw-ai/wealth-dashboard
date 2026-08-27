@@ -602,7 +602,7 @@ async function loadDashboard() {
 
     const totalWealth = mfcTotal + gpfTotal;
 
-    // ดึงประวัติจาก Firebase Realtime Database
+// ดึงประวัติจาก Firebase Realtime Database
     let history = [];
 
     try {
@@ -634,8 +634,11 @@ async function loadDashboard() {
             history[history.length - 2].wealth;
     }
 
-    const dailyChange = totalWealth - yesterdayWealth;
-    const dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
+    const dailyChange =
+        totalWealth - yesterdayWealth;
+
+    const dailyChangePct =
+        (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
     
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
