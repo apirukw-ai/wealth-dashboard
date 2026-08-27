@@ -203,7 +203,7 @@
     </div>
 </div>
 
-<!-- 2.1 Combined Card: History Summary & Recent Snapshot -->
+<!-- 2.1 History Summary & Recent Snapshot Card -->
 <div id="historySummaryCard" style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -266,6 +266,23 @@
         font-size:18px;
         font-weight:bold;
         color:#16a34a;
+        margin-top:4px;
+    ">
+        -
+    </div>
+
+    <!-- เพิ่ม Average Gain -->
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Average Gain
+    </div>
+    <div id="avgGain" style="
+        font-size:18px;
+        font-weight:bold;
+        color:#2563eb;
         margin-top:4px;
     ">
         -
@@ -373,12 +390,41 @@
     ">
     </div>
 
+    <!-- เพิ่ม Next Milestone & Remaining -->
     <div style="
-        margin-top:12px;
+        margin-top:16px;
+        padding-top:12px;
+        border-top:1px dashed #eee;
+    ">
+        <div style="color:#666; font-size:13px;">
+            Next Milestone
+        </div>
+        <div id="nextMilestoneVal" style="
+            font-size:18px;
+            font-weight:bold;
+            margin-top:2px;
+        ">
+            ฿1,900,000.00
+        </div>
+        <div style="margin-top:6px; color:#666; font-size:13px;">
+            Remaining
+        </div>
+        <div id="nextMilestoneRemaining" style="
+            font-size:16px;
+            font-weight:bold;
+            color:#dc2626;
+            margin-top:2px;
+        ">
+            -
+        </div>
+    </div>
+
+    <div style="
+        margin-top:16px;
         color:#666;
         font-size:13px;
     ">
-        Remaining to Goal
+        Remaining to Goal (Full Target)
     </div>
     <div id="remainingGoal" style="
         margin-top:4px;
@@ -799,6 +845,20 @@ async function loadDashboard() {
     }
     document.getElementById('milestoneMessage').innerText = milestoneMessage;
 
+    // คำนวณ Next Milestone (1,900,000)
+    const nextMilestone = 1900000;
+    const nextMilestoneRemaining = Math.max(nextMilestone - totalWealth, 0);
+    document.getElementById('nextMilestoneVal').innerText =
+        '฿' + nextMilestone.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    document.getElementById('nextMilestoneRemaining').innerText =
+        '฿' + nextMilestoneRemaining.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
     document.getElementById('remainingGoal').innerText =
         '฿' + remainingToGoal.toLocaleString('en-US', {
             minimumFractionDigits: 2,
@@ -961,6 +1021,14 @@ async function loadDashboard() {
 
     document.getElementById('wealthRange').innerText =
         '▲ ฿' + wealthRange.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    // คำนวณและแสดงค่า Average Gain
+    const avgGain = wealthRange / Math.max(history.length, 1);
+    document.getElementById('avgGain').innerText =
+        '฿' + avgGain.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
