@@ -41,6 +41,48 @@
         <div style="margin-top:8px;color:#666;font-size:12px;">2 Active Portfolios</div>
     </div>
 
+    <!-- Summary Strip แทรกใต้ Total Wealth Card -->
+    <div style="
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+        margin-bottom:20px;
+        max-width:500px;
+    ">
+        <div id="summaryFire" style="
+            background:#fef3c7;
+            color:#b45309;
+            padding:8px 12px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:bold;
+        ">
+            -
+        </div>
+
+        <div id="summaryEta" style="
+            background:#dbeafe;
+            color:#1e40af;
+            padding:8px 12px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:bold;
+        ">
+            -
+        </div>
+
+        <div id="summaryGain" style="
+            background:#dcfce7;
+            color:#166534;
+            padding:8px 12px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:bold;
+        ">
+            -
+        </div>
+    </div>
+
     <!-- Portfolio Gain Card -->
     <div id="dailyChangeCard" style="
         border:1px solid #bbf7d0;
@@ -480,8 +522,10 @@ function renderGoalEta(monthlyNeed) {
     if (etaTargetDateEl) {
         etaTargetDateEl.innerText = '2027';
     }
+
+    return goalStatus;
 }
-    
+
 function renderAchievements(totalWealth, history, fireProgress, diversificationScore) {
     let achievements = [];
     if (history.length >= 1) achievements.push('✅ First Snapshot');
@@ -671,7 +715,7 @@ async function loadDashboard() {
     const remainingToGoal = fireTarget - totalWealth;
     const monthlyNeed = remainingToGoal / 12;
 
-    renderGoalEta(monthlyNeed);
+    const goalStatus = renderGoalEta(monthlyNeed);
 
     const fireProgress = (totalWealth / fireTarget) * 100;
     const diversificationScore = 100 - largestAssetPctVal;
@@ -679,6 +723,23 @@ async function loadDashboard() {
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
     renderAchievements(totalWealth, history, fireProgress, diversificationScore);
     renderHistory(history, dailyChange, dailyChangePct, today);
+
+    // อัปเดตข้อมูล Summary Strip
+    const summaryFireEl = document.getElementById('summaryFire');
+    if (summaryFireEl) {
+        summaryFireEl.innerText = '🔥 FIRE ' + fireProgress.toFixed(2) + '%';
+    }
+
+    const summaryEtaEl = document.getElementById('summaryEta');
+    if (summaryEtaEl) {
+        summaryEtaEl.innerText = '🎯 Goal ETA: ' + goalStatus.replace(/^[^\w\s]+\s*/, '');
+    }
+
+    const summaryGainEl = document.getElementById('summaryGain');
+    if (summaryGainEl) {
+        const sign = dailyChangePct >= 0 ? '+' : '';
+        summaryGainEl.innerText = '📈 Today ' + sign + dailyChangePct.toFixed(2) + '%';
+    }
 
     // Net Worth Ranking
     let rankingHtml = '';
