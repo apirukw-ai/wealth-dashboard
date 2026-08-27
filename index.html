@@ -151,6 +151,16 @@
         -
     </div>
 
+    <!-- FIRE Level Section -->
+    <div id="fireLevel" style="
+        font-size:14px;
+        font-weight:bold;
+        color:#2563eb;
+        margin-top:4px;
+    ">
+        -
+    </div>
+
     <!-- FIRE Dynamic Progress Bar -->
     <div style="
         height:14px;
@@ -1022,7 +1032,22 @@ async function loadDashboard() {
     document.getElementById('firePct').innerText =
         fireProgress.toFixed(2) + '%';
 
-    // 1. FIRE Progress Bar สีแบ่งช่วง (0-25% แดง, 25-50% ส้ม, 50-75% เหลือง, 75-100% เขียว)
+    // 1. คำนวณ FIRE Level (0-20 Beginner, 20-40 Builder, 40-60 Investor, 60-80 Advanced, 80-100 FIRE Ready)
+    let fireLevelText = '';
+    if (fireProgress < 20) {
+        fireLevelText = 'Level 1 • Beginner';
+    } else if (fireProgress < 40) {
+        fireLevelText = 'Level 2 • Builder';
+    } else if (fireProgress < 60) {
+        fireLevelText = 'Level 3 • Investor';
+    } else if (fireProgress < 80) {
+        fireLevelText = 'Level 4 • Advanced';
+    } else {
+        fireLevelText = 'Level 5 • FIRE Ready 🚀';
+    }
+    document.getElementById('fireLevel').innerText = fireLevelText;
+
+    // 2. FIRE Progress Bar สีแบ่งช่วง (0-25% แดง, 25-50% ส้ม, 50-75% เหลือง, 75-100% เขียว)
     const fireBar = document.getElementById('fireBar');
     fireBar.style.width = Math.min(fireProgress, 100) + '%';
     if (fireProgress < 25) {
@@ -1044,7 +1069,7 @@ async function loadDashboard() {
     document.getElementById('fireNeedPct').innerText =
         'Need ' + fireNeedPct.toFixed(2) + '% More';
 
-    // 2. คำนวณ FIRE ETA
+    // 3. คำนวณ FIRE ETA
     const gainAmount = dailyChange > 0 ? dailyChange : 0;
     const annualGrowth = gainAmount * 365;
 
@@ -1057,19 +1082,28 @@ async function loadDashboard() {
         document.getElementById('fireEta').innerText = 'Calculating growth...';
     }
 
-    // 3. คำนวณ FIRE Milestone Ladder
+    // 4. คำนวณ FIRE Milestone Ladder แบบใหม่ (⏳, 🔒, 🏆)
     const milestones = [40, 50, 60, 70, 80, 100];
     let ladderHtml = '';
     let foundNext = false;
 
     milestones.forEach(m => {
         if (fireProgress >= m) {
-            ladderHtml += `<div><strong>${m}%</strong> ✅</div>`;
+            if (m === 100) {
+                ladderHtml += `<div><strong>🏆 100%</strong></div>`;
+            } else {
+                ladderHtml += `<div><strong>✅ ${m}%</strong></div>`;
+            }
         } else if (!foundNext) {
-            ladderHtml += `<div style="color:#2563eb;"><strong>${m}%</strong> ⏳</div>`;
+            const awayPct = (m - fireProgress).toFixed(2);
+            ladderHtml += `<div style="color:#2563eb;"><strong>⏳ ${m}%</strong> &nbsp;(${awayPct}% Away)</div>`;
             foundNext = true;
         } else {
-            ladderHtml += `<div style="color:#9ca3af;"><strong>${m}%</strong></div>`;
+            if (m === 100) {
+                ladderHtml += `<div style="color:#9ca3af;"><strong>🏆 100%</strong></div>`;
+            } else {
+                ladderHtml += `<div style="color:#9ca3af;"><strong>🔒 ${m}%</strong></div>`;
+            }
         }
     });
 
