@@ -140,6 +140,7 @@
     ">
         26 Aug 2026
     </div>
+
     <div style="
         margin-top:12px;
         color:#666;
@@ -154,6 +155,22 @@
     ">
         -
     </div>    
+
+    <!-- เพิ่ม Tracking Age ต่อจาก Latest Snapshot -->
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Tracking Age
+    </div>
+
+    <div id="trackingAge" style="
+        margin-top:4px;
+        font-weight:bold;
+    ">
+        -
+    </div>
 
     <div style="
         margin-top:12px;
@@ -321,19 +338,27 @@
 
 </div>
 
-<!-- 1. ดึง SDK ของ Supabase มาใช้งาน -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-// 2. ประกาศ URL และ Key
 const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw';
 
-// 3. สร้าง Client สำหรับดึงข้อมูล
 const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
+// ฟังก์ชันแปลงรูปแบบวันที่ให้เป็น "DD MMM YYYY" (เช่น 27 Aug 2026)
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+}
 
 async function loadDashboard() {
     console.log('START LOAD');
@@ -342,7 +367,6 @@ async function loadDashboard() {
     let mfcTotal = 157516.96;
 
     try {
-        // GPF Fetch
         const gpfRes = await fetch(
             'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
         );
@@ -363,7 +387,6 @@ async function loadDashboard() {
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
 
-    // บันทึก Snapshot ของวันนี้หากยังไม่มี
     const exists = history.find(h => h.date === today);
     if (!exists) {
         history.push({
@@ -373,7 +396,6 @@ async function loadDashboard() {
         localStorage.setItem('wealthHistory', JSON.stringify(history));
     }
 
-    // อัปเดตข้อมูลเกี่ยวกับ History/Snapshots
     document.getElementById('historyCount').innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
 
     const yesterdayWealth = 1850000;
@@ -387,7 +409,16 @@ async function loadDashboard() {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
-        document.getElementById('latestSnapshotDate').innerText = latestSnapshot.date;
+
+        // แสดงผล Latest Snapshot Date ให้อยู่ในฟอร์แมต "DD MMM YYYY"
+        document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
+
+        // คำนวณ Tracking Age (จำนวนวันที่เริ่มคำนวณจาก Tracking Started)
+        const startDate = new Date('2026-08-26');
+        const endDate = new Date(latestSnapshot.date || today);
+        const diffTime = Math.abs(endDate - startDate);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        document.getElementById('trackingAge').innerText = diffDays + (diffDays > 1 ? ' Days' : ' Day');
 
         // คำนวณ Best Day Gain
         let maxGainVal = 0;
@@ -427,7 +458,6 @@ async function loadDashboard() {
     const largestAssetPct = gpfTotal > mfcTotal ? gpfPct : mfcPct;
     const largestAssetValue = gpfTotal > mfcTotal ? gpfTotal : mfcTotal;
 
-    // อัปเดตข้อมูลบนหน้าเว็บ
     document.getElementById('totalWealth').innerText =
         '฿' + totalWealth.toLocaleString('en-US', {
             minimumFractionDigits: 2,
@@ -492,5 +522,6 @@ async function loadDashboard() {
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
 }
+
 loadDashboard();
 </script>
