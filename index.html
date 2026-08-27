@@ -105,21 +105,54 @@
             </div>
         </div>
 
-        <!-- Portfolio Gain Card -->
+        <!--แถวแรก: Portfolio Gain, FIRE Forecast, Asset Allocation -->
+        <!-- 1. Portfolio Gain Card -->
         <div id="dailyChangeCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:500;">Portfolio Gain</div>
             <div id="dailyChangeValue" class="financial-val" style="font-size:28px; margin-top:10px;"></div>
             <div id="dailyChangePct" class="financial-val" style="margin-top:4px; font-size:15px;"></div>
         </div>
 
-        <!-- Wealth Trend Card -->
-        <div id="wealthTrendCard" class="luxury-card">
-            <div style="color:#94a3b8; font-size:13px; font-weight:500;">Wealth Trend</div>
-            <div id="trendDirection" class="financial-val" style="font-size:24px; margin-top:10px;">-</div>
-            <div id="trendPct" class="financial-val" style="font-size:15px; margin-top:4px;">-</div>
+        <!-- 2. FIRE Forecast Card (รูปแบบใหม่ตามโจทย์) -->
+        <div id="fireForecastCard" class="luxury-card">
+            <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🔥 FIRE Forecast</div>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                <div>
+                    <div style="color:#94a3b8; font-size:11px;">Current</div>
+                    <div id="forecastCurrent" class="financial-val" style="font-size:18px; margin-top:2px;">-</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color:#94a3b8; font-size:11px;">Target</div>
+                    <div id="forecastTarget" class="financial-val" style="font-size:18px; margin-top:2px;">฿5.00M</div>
+                </div>
+            </div>
+
+            <hr style="border:none; border-top:1px solid #334155; margin: 12px 0;">
+
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #94a3b8;">🐢 Conservative <strong style="color: #cbd5e1;">5%</strong></span>
+                    <span id="etaConservative" class="financial-val" style="color: #facc15;">-</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #94a3b8;">🚶 Base Case <strong style="color: #cbd5e1;">7%</strong></span>
+                    <span id="etaBase" class="financial-val" style="color: #38bdf8;">-</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #94a3b8;">🚀 Optimistic <strong style="color: #cbd5e1;">10%</strong></span>
+                    <span id="etaOptimistic" class="financial-val" style="color: #34d399;">-</span>
+                </div>
+            </div>
+
+            <hr style="border:none; border-top:1px solid #334155; margin: 12px 0;">
+
+            <div style="font-size: 12px; color: #94a3b8;">
+                Fastest Path: <span style="color: #34d399; font-weight: 600;">+฿25k/month</span>
+            </div>
         </div>
 
-        <!-- Asset Allocation Card -->
+        <!-- 3. Asset Allocation Card -->
         <div class="luxury-card">
             <div style="font-size:13px; color:#94a3b8; font-weight:500; margin-bottom:12px;">Asset Allocation</div>
             <div style="display:flex; height:10px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,0.05);">
@@ -148,7 +181,7 @@
             </div>
         </div>
 
-        <!-- FIRE Progress Card (ใช้ Gradient Emerald to Cyan ตามโจทย์) -->
+        <!-- FIRE Progress Card เดิม -->
         <div id="fireProgressCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
             <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
@@ -184,13 +217,6 @@
             </div>
         </div>
 
-        <!-- Wealth History Chart Card -->
-        <div class="luxury-card card-full">
-            <div style="color:#94a3b8; font-size:13px; font-weight:500; margin-bottom:12px;">Wealth History Terminal</div>
-            <canvas id="wealthChart" height="90"></canvas>
-            <div id="chartSummary" style="margin-top:12px; color:#94a3b8; font-size:12px;"></div>
-        </div>
-
     </div>
 
     <!-- ================= ADVANCED ANALYTICS (Accordion) ================= -->
@@ -205,6 +231,13 @@
         </div>
 
         <div id="analyticsContainer" style="display:none; margin-top:16px;" class="dashboard-grid">
+
+            <!-- Wealth Trend Card (ย้ายมาไว้ที่นี่) -->
+            <div id="wealthTrendCard" class="luxury-card">
+                <div style="color:#94a3b8; font-size:13px; font-weight:500;">Wealth Trend</div>
+                <div id="trendDirection" class="financial-val" style="font-size:24px; margin-top:10px;">-</div>
+                <div id="trendPct" class="financial-val" style="font-size:15px; margin-top:4px;">-</div>
+            </div>
 
             <!-- Financial Health Score Card -->
             <div id="financialHealthCard" class="luxury-card" style="
@@ -297,6 +330,13 @@
                 <div id="largestAssetValue" class="financial-val" style="margin-top:2px; font-size:13px; color:#94a3b8;"></div>
             </div>
 
+            <!-- Wealth History Chart Card (ย้ายมาไว้ล่างสุดของ Analytics หรือวางตามต้องการ) -->
+            <div class="luxury-card card-full">
+                <div style="color:#94a3b8; font-size:13px; font-weight:500; margin-bottom:12px;">Wealth History Terminal</div>
+                <canvas id="wealthChart" height="90"></canvas>
+                <div id="chartSummary" style="margin-top:12px; color:#94a3b8; font-size:12px;"></div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -330,6 +370,44 @@ function formatDate(dateStr) {
     if (isNaN(date.getTime())) return dateStr;
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+// --- ฟังก์ชันคำนวณ FIRE Forecast (Compound Interest Formula) ---
+function calculateFireEta(currentWealth, targetWealth, monthlyContribution, annualRate) {
+    if (currentWealth >= targetWealth) return 'Achieved';
+    
+    let months = 0;
+    let wealth = currentWealth;
+    const r = annualRate / 12;
+    
+    while (wealth < targetWealth && months < 1200) { // Limit 100 years
+        wealth = (wealth + monthlyContribution) * (1 + r);
+        months++;
+    }
+    
+    if (months >= 1200) return '50+ Years';
+    
+    const currentYear = new Date().getFullYear();
+    const targetYear = currentYear + Math.ceil(months / 12);
+    return targetYear.toString();
+}
+
+function renderFireForecast(currentWealth) {
+    const FIRE_TARGET = 5000000;
+    const MONTHLY_CONTRIBUTION = 25000;
+
+    const curEl = document.getElementById('forecastCurrent');
+    if (curEl) {
+        curEl.innerText = '฿' + (currentWealth >= 1000000 ? (currentWealth / 1000000).toFixed(2) + 'M' : currentWealth.toLocaleString());
+    }
+
+    const etaCons = calculateFireEta(currentWealth, FIRE_TARGET, MONTHLY_CONTRIBUTION, 0.05);
+    const etaBase = calculateFireEta(currentWealth, FIRE_TARGET, MONTHLY_CONTRIBUTION, 0.07);
+    const etaOpt = calculateFireEta(currentWealth, FIRE_TARGET, MONTHLY_CONTRIBUTION, 0.10);
+
+    document.getElementById('etaConservative').innerText = etaCons;
+    document.getElementById('etaBase').innerText = etaBase;
+    document.getElementById('etaOptimistic').innerText = etaOpt;
 }
 
 // --- ฟังก์ชันย่อยพร้อมระบบป้องกัน Null Element ---
@@ -401,7 +479,6 @@ function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
     const pctEl = document.getElementById('firePct');
     if (pctEl) pctEl.innerText = fireProgress.toFixed(2) + '%';
 
-    // อัปเดต Hero Card badge ข้างบนด้วย
     const heroFireBadge = document.getElementById('heroFireBadge');
     const doubleMillionTarget = 2000000;
     const fireToTwoMilPct = (totalWealth / doubleMillionTarget) * 100;
@@ -676,6 +753,7 @@ async function loadDashboard() {
     }
 
     renderAllocation(mfcTotal, gpfTotal, scbTotal, totalWealth);
+    renderFireForecast(totalWealth);
 
     const largestAsset = ports[0].name;
     const largestAssetPctVal = (ports[0].value / totalWealth) * 100;
@@ -762,22 +840,6 @@ async function loadDashboard() {
         trendPctEl.style.color = trendColor;
     }
 
-    const etaMonthlyNeedEl = document.getElementById('etaMonthlyNeed');
-    if (etaMonthlyNeedEl) etaMonthlyNeedEl.innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
-
-    const milestonePct = (totalWealth / fireTarget) * 100;
-    let grade = 'A+';
-    let label = 'Excellent';
-    if (milestonePct >= 90 && (yesterdayWealth === null || dailyChange >= 0)) { grade = 'A+'; label = 'Excellent'; }
-    else if (milestonePct >= 75) { grade = 'A'; label = 'Very Good'; }
-    else { grade = 'B+'; label = 'Good'; }
-
-    const healthGradeEl = document.getElementById('healthScoreGrade');
-    if (healthGradeEl) healthGradeEl.innerText = grade;
-
-    const healthLabelEl = document.getElementById('healthScoreLabel');
-    if (healthLabelEl) healthLabelEl.innerText = label;
-
     const totalWealthEl = document.getElementById('totalWealth');
     if (totalWealthEl) totalWealthEl.innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -790,12 +852,12 @@ async function loadDashboard() {
     } else {
         if (dailyValEl) {
             dailyValEl.innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            dailyValEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171'; // emerald-400 / red-400
+            dailyValEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171'; // text-emerald-400 / text-red-400
             dailyValEl.style.fontSize = '26px';
         }
         if (dailyPctEl) {
             dailyPctEl.innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
-            dailyPctEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171'; // emerald-400 / red-400
+            dailyPctEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171'; // text-emerald-400 / text-red-400
             dailyPctEl.style.fontSize = '14px';
         }
     }
