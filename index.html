@@ -376,6 +376,10 @@ async function loadDashboard() {
     // อัปเดตข้อมูลเกี่ยวกับ History/Snapshots
     document.getElementById('historyCount').innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
 
+    const yesterdayWealth = 1850000;
+    const dailyChange = totalWealth - yesterdayWealth;
+    const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
+
     if (history.length > 0) {
         const latestSnapshot = history[history.length - 1];
         document.getElementById('latestWealth').innerText =
@@ -385,19 +389,35 @@ async function loadDashboard() {
             });
         document.getElementById('latestSnapshotDate').innerText = latestSnapshot.date;
 
-        // คำนวณ Best Day (มูลค่าพอร์ตสูงสุดในประวัติ)
-        const maxWealth = Math.max(...history.map(h => h.wealth));
-        document.getElementById('bestDayValue').innerText =
-            '▲ ฿' + maxWealth.toLocaleString('en-US', {
+        // คำนวณ Best Day Gain
+        let maxGainVal = 0;
+        let maxGainPct = 0;
+
+        for (let i = 1; i < history.length; i++) {
+            const prevWealth = history[i - 1].wealth;
+            const currWealth = history[i].wealth;
+            const diffVal = currWealth - prevWealth;
+            const diffPct = (diffVal / prevWealth) * 100;
+
+            if (diffVal > maxGainVal) {
+                maxGainVal = diffVal;
+                maxGainPct = diffPct;
+            }
+        }
+
+        if (maxGainVal === 0 && history.length <= 1) {
+            maxGainVal = dailyChange > 0 ? dailyChange : 0;
+            maxGainPct = dailyChangePct > 0 ? dailyChangePct : 0;
+        }
+
+        document.getElementById('bestDayValue').innerHTML =
+            '<div style="color:#16a34a;">▲ ฿' + maxGainVal.toLocaleString('en-US', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
-            });
+            }) + '</div>' +
+            '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
-    const yesterdayWealth = 1850000;
-    const dailyChange = totalWealth - yesterdayWealth;
-    const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
-    
     localStorage.setItem('wealth_current', totalWealth);
 
     const mfcPct = (mfcTotal / totalWealth) * 100;
@@ -472,6 +492,5 @@ async function loadDashboard() {
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
 }
-
 loadDashboard();
 </script>
