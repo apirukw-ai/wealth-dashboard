@@ -271,7 +271,6 @@
         -
     </div>
 
-    <!-- เพิ่ม Average Gain -->
     <div style="
         margin-top:12px;
         color:#666;
@@ -287,6 +286,35 @@
     ">
         -
     </div>
+</div>
+
+<!-- 2.2 Wealth History Chart Card (แทรกใต้ History Summary & Recent Snapshot) -->
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+
+    <div style="
+        color:#666;
+        font-size:13px;
+        margin-bottom:12px;
+    ">
+        Wealth History
+    </div>
+
+    <canvas id="wealthChart" height="220"></canvas>
+
+    <div id="chartSummary" style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+    </div>
+
 </div>
 
 <!-- 4. การ์ดสรุปสถานะพอร์ต -->
@@ -390,7 +418,6 @@
     ">
     </div>
 
-    <!-- เพิ่ม Next Milestone & Remaining -->
     <div style="
         margin-top:16px;
         padding-top:12px;
@@ -540,55 +567,6 @@
     </div>
 </div>
 
-<!-- 8. Chart Card -->
-<div style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="
-        color:#666;
-        font-size:13px;
-    ">
-        Wealth History
-    </div>
-    
-    <div style="
-        color:#666;
-        font-size:12px;
-        margin-bottom:10px;
-    ">
-        Track your net worth growth over time
-    </div>
-
-    <canvas id="wealthChart" height="220"></canvas>
-
-    <div id="chartSummary" style="
-        margin-top:10px;
-        color:#666;
-        font-size:13px;
-    ">
-    </div>
-
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Latest Wealth
-    </div>
-    <div id="chartLatestWealth" style="
-        margin-top:4px;
-        font-size:18px;
-        font-weight:bold;
-    ">
-        -
-    </div>
-</div>
-
 <!-- 3. Largest Asset Card -->
 <div id="largestAssetCard" style="
     border:1px solid #ddd;
@@ -723,7 +701,7 @@ async function loadDashboard() {
     const totalWealth = mfcTotal + gpfTotal;
     const history = JSON.parse(localStorage.getItem('wealthHistory')) || [];
     
-    // สร้างข้อมูลสำหรับวาดกราฟ
+    // เตรียมข้อมูลกราฟ
     const chartLabels = history.map(h => h.date);
     const chartValues = history.map(h => h.wealth);
 
@@ -752,7 +730,6 @@ async function loadDashboard() {
     if (history.length > 0) {
         const latestSnapshot = history[history.length - 1];
         
-        // คำนวณหาค่าสูงสุด, ต่ำสุด และ Range ของ wealth
         const wealthValues = history.map(h => h.wealth);
         highestWealth = Math.max(...wealthValues);
         lowestWealth = Math.min(...wealthValues);
@@ -845,7 +822,6 @@ async function loadDashboard() {
     }
     document.getElementById('milestoneMessage').innerText = milestoneMessage;
 
-    // คำนวณ Next Milestone (1,900,000)
     const nextMilestone = 1900000;
     const nextMilestoneRemaining = Math.max(nextMilestone - totalWealth, 0);
     document.getElementById('nextMilestoneVal').innerText =
@@ -969,44 +945,7 @@ async function loadDashboard() {
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
 
-    // วาดกราฟ Chart.js
-    const ctx = document.getElementById('wealthChart');
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                label: 'Total Wealth',
-                data: chartValues,
-                borderColor: '#16a34a',
-                borderWidth: 3,
-                pointRadius: 5,
-                pointHoverRadius: 7,
-                fill: false,
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
-
-    document.getElementById('chartSummary').innerText =
-        'Tracking ' + history.length + ' snapshots';
-
-    document.getElementById('chartLatestWealth').innerText =
-        '฿' + totalWealth.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-    // แสดงค่า Highest Wealth, Lowest Wealth และ Range
+    // แสดงค่า Highest, Lowest, Range และ Average Gain
     document.getElementById('highestWealth').innerText =
         '฿' + highestWealth.toLocaleString('en-US', {
             minimumFractionDigits: 2,
@@ -1025,13 +964,53 @@ async function loadDashboard() {
             maximumFractionDigits: 2
         });
 
-    // คำนวณและแสดงค่า Average Gain
     const avgGain = wealthRange / Math.max(history.length, 1);
     document.getElementById('avgGain').innerText =
         '฿' + avgGain.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+
+    // วาดกราฟ Chart.js
+    const ctx = document.getElementById('wealthChart');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Total Wealth',
+                data: chartValues,
+                borderColor: '#16a34a',
+                backgroundColor: 'rgba(22,163,74,0.15)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return '฿' + (value / 1000000).toFixed(1) + 'M';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Summary ใต้กราฟ
+    document.getElementById('chartSummary').innerText =
+        'Tracking ' + history.length + ' snapshot(s)';
 }
 
 loadDashboard();
