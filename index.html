@@ -455,7 +455,7 @@
     </div>
 </div>
 
-<!-- 8. Chart Card (แทรกใต้ Financial Health Score) -->
+<!-- 8. Chart Card -->
 <div style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -479,6 +479,21 @@
         color:#666;
         font-size:13px;
     ">
+    </div>
+
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Latest Wealth
+    </div>
+    <div id="chartLatestWealth" style="
+        margin-top:4px;
+        font-size:18px;
+        font-weight:bold;
+    ">
+        -
     </div>
 </div>
 
@@ -866,6 +881,12 @@ async function loadDashboard() {
 
     document.getElementById('chartSummary').innerText =
         'Tracking ' + history.length + ' snapshots';
+
+    document.getElementById('chartLatestWealth').innerText =
+        '฿' + totalWealth.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
 }
 
 loadDashboard();
