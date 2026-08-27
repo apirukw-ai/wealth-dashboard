@@ -189,7 +189,7 @@
             </div>
         </div>
 
-        <!-- FIRE Progress Card -->
+        <!-- FIRE Progress Card (เพิ่ม Next Milestone FIRE 75%) -->
         <div id="fireProgressCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
             <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
@@ -204,6 +204,20 @@
             <!-- Gradient Progress Bar -->
             <div style="height:10px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; margin-top:12px;">
                 <div id="fireBar" style="height:100%; width:0%; background: linear-gradient(to right, #10b981, #06b6d4); transition: width 0.4s;"></div>
+            </div>
+
+            <hr style="border:none; border-top:1px solid #334155; margin: 14px 0;">
+
+            <!-- เพิ่ม Next Milestone FIRE 75% ตามโจทย์ -->
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px;">
+                <div>
+                    <div style="color:#94a3b8; font-size:11px;">Next Milestone</div>
+                    <div style="color:#38bdf8; font-weight:600; margin-top:2px;">🎯 FIRE 75%</div>
+                </div>
+                <div style="text-align:right;">
+                    <div id="fire75CompletePct" class="financial-val" style="color:#fff;">-</div>
+                    <div id="fire75NeedPct" style="color:#f87171; font-size:11px; margin-top:2px;">-</div>
+                </div>
             </div>
             
             <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:#94a3b8;">
@@ -225,11 +239,33 @@
             </div>
         </div>
 
-        <!-- ACHIEVEMENT SYSTEM CARD (ขนาดเต็มแถว พร้อมแสดง Progress ของตัวที่ใกล้ปลดล็อกที่สุด) -->
+        <!-- ACHIEVEMENT SYSTEM CARD (ขนาดเต็มแถว - ไฮไลท์ตัวที่ใกล้สุดด้วยสไตล์ทอง) -->
         <div class="luxury-card card-full">
             <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
             <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 14px;">
-                <!-- จะถูกเติมด้วย Javascript ด้านล่าง -->
+                <!-- เติมด้วย JS -->
+            </div>
+        </div>
+
+        <!-- PERFORMANCE BADGES CARD (วางไว้ใต้ Achievement Card ตามสั่ง) -->
+        <div class="luxury-card card-full" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(245, 158, 11, 0.3);">
+            <div style="color:#fbbf24; font-size:15px; font-weight:700; margin-bottom:14px;">🏅 Performance Badges</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 14px;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
+                    <span>✅</span><span>First Million Gain</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
+                    <span>✅</span><span>25% Portfolio Return</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+                    <span>🔒</span><span>100 Tracking Days</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+                    <span>🔒</span><span>1 Year Tracking Streak</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+                    <span>🔒</span><span>5M Wealth Reached</span>
+                </div>
             </div>
         </div>
 
@@ -478,6 +514,17 @@ function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
     const pctEl = document.getElementById('firePct');
     if (pctEl) pctEl.innerText = fireProgress.toFixed(2) + '%';
 
+    // คำนวณความคืบหน้า FIRE 75% (Target = 3,750,000)
+    const fire75Target = 3750000;
+    const fire75Complete = Math.min((totalWealth / fire75Target) * 100, 100);
+    const fire75Need = Math.max(100 - fire75Complete, 0);
+
+    const f75CompEl = document.getElementById('fire75CompletePct');
+    if (f75CompEl) f75CompEl.innerText = fire75Complete.toFixed(1) + '% Complete';
+
+    const f75NeedEl = document.getElementById('fire75NeedPct');
+    if (f75NeedEl) f75NeedEl.innerText = 'Need +' + fire75Need.toFixed(2) + '%';
+
     const heroFireBadge = document.getElementById('heroFireBadge');
     const doubleMillionTarget = 2000000;
     const fireToTwoMilPct = (totalWealth / doubleMillionTarget) * 100;
@@ -542,37 +589,54 @@ function renderGoalEta(totalWealth) {
     return goalStatus;
 }
 
-// --- ฟังก์ชันระบบ Achievements (อัปเดตแสดง Progress ของตัวที่ใกล้ปลดล็อกที่สุด) ---
+// --- ฟังก์ชันระบบ Achievements (ไฮไลท์อันที่ใกล้ที่สุดด้วยขอบทองเด่นชัด และเพิ่ม FIRE 75%) ---
 function renderAchievementsList(totalWealth, fireProgress) {
     const achievementsEl = document.getElementById('achievementsGridList');
     if (!achievementsEl) return;
 
-    // รายการ Achievement ทั้งหมดพร้อม target เงื่อนไข
     const list = [
         { name: 'Millionaire', unlocked: totalWealth >= 1000000, target: 1000000 },
         { name: 'Two Million Club', unlocked: totalWealth >= 2000000, target: 2000000 },
-        { name: 'FIRE 50%', unlocked: fireProgress >= 50, target: 2500000 }, // สมมติ 50% ของ 5M คือ 2.5M
+        { name: 'FIRE 50%', unlocked: fireProgress >= 50, target: 2500000 },
         { name: 'Three Million Club', unlocked: totalWealth >= 3000000, target: 3000000 },
-        { name: 'FIRE 75%', unlocked: fireProgress >= 75, target: 3750000 }, // 75% ของ 5M คือ 3.75M
+        { name: 'FIRE 75%', unlocked: fireProgress >= 75, target: 3750000 },
         { name: 'FIRE Achieved', unlocked: fireProgress >= 100, target: 5000000 }
     ];
 
+    // ค้นหาตัวแรกที่ยังไม่ปลดล็อก เพื่อทำ Highlight เด่นชัด
+    const closestIdx = list.findIndex(item => !item.unlocked);
+
     let html = '';
-    list.forEach(item => {
+    list.forEach((item, index) => {
         const icon = item.unlocked ? '✅' : '🔒';
-        const color = item.unlocked ? '#34d399' : '#cbd5e1';
-        const fontWeight = item.unlocked ? '600' : '500';
-        
+        const isClosest = (index === closestIdx);
+
+        // กำหนดสไตล์การ์ดเด่น (Highlight) หรือการ์ดปกติ
+        let cardBg = 'rgba(255,255,255,0.02)';
+        let cardBorder = '#334155';
+        let textColor = item.unlocked ? '#34d399' : '#cbd5e1';
+        let fontWeight = item.unlocked ? '600' : '500';
+
+        if (isClosest) {
+            cardBg = 'rgba(245, 158, 11, 0.05)'; // bg-amber-500/5
+            cardBorder = '#fbbf24'; // border-amber-400
+            textColor = '#fbbf24';
+        }
+
         let extraDetails = '';
-        // หากยังไม่ปลดล็อก ให้คำนวณหาตัวที่ใกล้ที่สุดเพื่อแสดง Progress
         if (!item.unlocked) {
-            // เช็คว่าเป็นตัวที่ยังไม่ปลดล็อกตัวแรกสุด (ใกล้ที่สุด)
-            const isClosest = list.find(l => !l.unlocked).name === item.name;
-            if (isClosest) {
+            if (item.name === 'FIRE 75%') {
+                const fire75Complete = Math.min((totalWealth / 3750000) * 100, 100).toFixed(1);
+                extraDetails = `
+                    <div style="font-size: 12px; color: ${isClosest ? '#facc15' : '#38bdf8'}; margin-top: 6px; font-weight: 600;">
+                        ${fire75Complete}% Complete
+                    </div>
+                `;
+            } else if (isClosest) {
                 const pct = Math.min((totalWealth / item.target) * 100, 100).toFixed(1);
                 const remainingVal = Math.max(item.target - totalWealth, 0);
                 extraDetails = `
-                    <div style="font-size: 12px; color: #38bdf8; margin-top: 6px; font-weight: 600;">
+                    <div style="font-size: 12px; color: #facc15; margin-top: 6px; font-weight: 600;">
                         ${pct}% &bull; ฿${remainingVal.toLocaleString('en-US', {maximumFractionDigits: 0})} Remaining
                     </div>
                 `;
@@ -580,10 +644,10 @@ function renderAchievementsList(totalWealth, fireProgress) {
         }
 
         html += `
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; color: ${color}; font-weight: ${fontWeight};">
+            <div style="background: ${cardBg}; border: 1.5px solid ${cardBorder}; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; color: ${textColor}; font-weight: ${fontWeight};">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span>${icon}</span>
-                    <span>${item.name}</span>
+                    <span>${item.name} ${isClosest ? '⭐' : ''}</span>
                 </div>
                 ${extraDetails}
             </div>
