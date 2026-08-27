@@ -151,6 +151,22 @@
         -
     </div>
 
+    <!-- FIRE Progress Bar -->
+    <div style="
+        height:14px;
+        background:#e5e7eb;
+        border-radius:999px;
+        overflow:hidden;
+        margin-top:10px;
+    ">
+        <div id="fireBar" style="
+            height:100%;
+            width:0%;
+            background:#16a34a;
+        ">
+        </div>
+    </div>
+
     <div style="
         margin-top:12px;
         color:#666;
@@ -162,6 +178,16 @@
     <div id="fireRemaining" style="
         margin-top:4px;
         font-size:18px;
+        font-weight:bold;
+        color:#dc2626;
+    ">
+        -
+    </div>
+
+    <!-- FIRE Need % More -->
+    <div id="fireNeedPct" style="
+        margin-top:4px;
+        font-size:13px;
         font-weight:bold;
         color:#dc2626;
     ">
@@ -936,6 +962,7 @@ async function loadDashboard() {
     const fireTarget = 5000000;
     const fireProgress = (totalWealth / fireTarget) * 100;
     const fireRemaining = fireTarget - totalWealth;
+    const fireNeedPct = 100 - fireProgress;
 
     document.getElementById('fireCurrentWealth').innerText =
         '฿' + totalWealth.toLocaleString('en-US', {
@@ -952,11 +979,17 @@ async function loadDashboard() {
     document.getElementById('firePct').innerText =
         fireProgress.toFixed(2) + '%';
 
+    document.getElementById('fireBar').style.width =
+        Math.min(fireProgress, 100) + '%';
+
     document.getElementById('fireRemaining').innerText =
         '฿' + fireRemaining.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+
+    document.getElementById('fireNeedPct').innerText =
+        'Need ' + fireNeedPct.toFixed(2) + '% More';
 
     // เตรียมข้อมูลกราฟ
     const chartLabels = history.map(h => h.date);
