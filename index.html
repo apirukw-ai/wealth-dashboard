@@ -1062,8 +1062,35 @@
     
     <div style="color:#666; font-size:12px; margin-bottom:4px;">Next Achievement</div>
     <div id="nextAchievementTitle" style="font-size:16px; font-weight:bold; color:#2563eb;">-</div>
+    
     <div style="color:#666; font-size:12px; margin-top:8px; margin-bottom:4px;">Progress</div>
-    <div id="nextAchievementProgress" style="font-size:16px; font-weight:bold; margin-bottom:12px;">-</div>
+    <div id="nextAchievementProgress" style="font-size:16px; font-weight:bold; margin-bottom:4px;">-</div>
+
+    <!-- Achievement Progress Bar -->
+    <div style="
+        height:10px;
+        background:#e5e7eb;
+        border-radius:999px;
+        overflow:hidden;
+        margin-top:8px;
+    ">
+        <div id="achievementBar" style="
+            height:100%;
+            background:#2563eb;
+            width:0%;
+        ">
+        </div>
+    </div>
+
+    <!-- ETA หรือข้อความปลุกใจ (🔥 Almost Unlocked) -->
+    <div id="achievementEta" style="
+        margin-top:6px;
+        font-size:12px;
+        font-weight:bold;
+        color:#16a34a;
+    ">
+        -
+    </div>
 
     <hr style="border:none; border-top:1px solid #eee; margin:12px 0;">
 
@@ -1263,24 +1290,18 @@ async function loadDashboard() {
 
     // 2.1 Portfolio Advisor (Rebalancing Advisor) Logic
     let advisorStatusText = '';
-    let advisorStatusColor = '';
     if (largestAssetPct > 80) {
         advisorStatusText = '⚠ Highly Concentrated';
-        advisorStatusColor = '#dc2626';
     } else if (largestAssetPct > 60) {
         advisorStatusText = '⚠ Moderately Concentrated';
-        advisorStatusColor = '#d97706';
     } else {
         advisorStatusText = '✔ Well Diversified';
-        advisorStatusColor = '#16a34a';
     }
 
     document.getElementById('advisorStatus').innerText = advisorStatusText;
-    document.getElementById('advisorStatus').style.color = advisorStatusColor;
     document.getElementById('advisorCurrent').innerText = `GPF ${gpfPctVal.toFixed(2)}%\nMFC ${mfcPctVal.toFixed(2)}%`.replace(/\n/g, '<br>');
     document.getElementById('advisorTarget').innerHTML = 'GPF 70%<br>MFC 30%';
     
-    // คำนวณ Action Required ย้ายเงิน (อิงเป้าหมาย Target GPF 70%)
     const targetGpfAmount = totalWealth * 0.70;
     const diffGpf = gpfTotal - targetGpfAmount;
     if (diffGpf > 0) {
@@ -1371,18 +1392,28 @@ async function loadDashboard() {
         achievements.push('⏳ Wealth > ฿1.5M');
 
     const doubleMillionTarget = 2000000;
-    const doubleMillionPct = Math.min((totalWealth / doubleMillionTarget) * 100, 100);
+    const achievementPct = Math.min((totalWealth / doubleMillionTarget) * 100, 100);
     const doubleMillionRemaining = Math.max(doubleMillionTarget - totalWealth, 0);
 
     if (totalWealth >= doubleMillionTarget) {
         achievements.push('✅ Wealth > ฿2M');
         document.getElementById('nextAchievementTitle').innerText = '💎 Ultimate Freedom';
         document.getElementById('nextAchievementProgress').innerText = 'Completed!';
+        document.getElementById('achievementEta').innerText = '🏆 Goal Achieved!';
     } else {
-        achievements.push(`⏳ Wealth > ฿2M (${doubleMillionPct.toFixed(2)}% หรือ Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`);
+        achievements.push(`⏳ Wealth > ฿2M (${achievementPct.toFixed(2)}% หรือ Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`);
         document.getElementById('nextAchievementTitle').innerText = '💎 Double Million';
-        document.getElementById('nextAchievementProgress').innerText = `${doubleMillionPct.toFixed(2)}% (Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`;
+        document.getElementById('nextAchievementProgress').innerText = `${achievementPct.toFixed(2)}% (Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`;
+        
+        // กำหนด ETA หรือ 🔥 Almost Unlocked
+        if (achievementPct >= 90) {
+            document.getElementById('achievementEta').innerText = '🔥 Almost Unlocked';
+        } else {
+            document.getElementById('achievementEta').innerText = 'ETA: ~12 Months';
+        }
     }
+
+    document.getElementById('achievementBar').style.width = achievementPct + '%';
 
     if (fireProgress >= 50)
         achievements.push('✅ FIRE Progress > 50%');
@@ -1413,17 +1444,17 @@ async function loadDashboard() {
     }
     document.getElementById('fireLevel').innerText = fireLevelText;
 
-    // FIRE Progress Bar สีแบ่งช่วง (0-25% แดง, 25-50% ส้ม, 50-75% เหลือง, 75-100% เขียว)
+    // FIRE Progress Bar สีแบ่งช่วง
     const fireBar = document.getElementById('fireBar');
     fireBar.style.width = Math.min(fireProgress, 100) + '%';
     if (fireProgress < 25) {
-        fireBar.style.backgroundColor = '#dc2626'; // แดง
+        fireBar.style.backgroundColor = '#dc2626';
     } else if (fireProgress < 50) {
-        fireBar.style.backgroundColor = '#f97316'; // ส้ม
+        fireBar.style.backgroundColor = '#f97316';
     } else if (fireProgress < 75) {
-        fireBar.style.backgroundColor = '#eab308'; // เหลือง
+        fireBar.style.backgroundColor = '#eab308';
     } else {
-        fireBar.style.backgroundColor = '#16a34a'; // เขียว
+        fireBar.style.backgroundColor = '#16a34a';
     }
 
     document.getElementById('fireRemaining').innerText =
@@ -1448,7 +1479,7 @@ async function loadDashboard() {
         document.getElementById('fireEta').innerText = 'Calculating growth...';
     }
 
-    // คำนวณ FIRE Milestone Ladder (⏳, 🔒, 🏆)
+    // คำนวณ FIRE Milestone Ladder
     const milestones = [40, 50, 60, 70, 80, 100];
     let ladderHtml = '';
     let foundNext = false;
@@ -1653,28 +1684,27 @@ async function loadDashboard() {
     document.getElementById('monthlyNeed').innerText =
         'Need ฿' + Math.round(monthlyNeed).toLocaleString('en-US') + ' / Month for 12 Months';
 
-    // คำนวณ Goal ETA (ประเมินสถานะจาก monthlyNeed ตามเกณฑ์ใหม่ 4 ระดับ)
+    // คำนวณ Goal ETA
     let etaStatusText = '';
     let etaStatusColor = '';
 
     if (monthlyNeed <= 5000) {
         etaStatusText = '🚀 Ahead of Schedule';
-        etaStatusColor = '#16a34a'; // เขียว
+        etaStatusColor = '#16a34a';
     } else if (monthlyNeed <= 15000) {
         etaStatusText = '✅ On Track';
-        etaStatusColor = '#2563eb'; // น้ำเงิน
+        etaStatusColor = '#2563eb';
     } else if (monthlyNeed <= 25000) {
         etaStatusText = '⚠ Needs Improvement';
-        etaStatusColor = '#d97706'; // ส้ม
+        etaStatusColor = '#d97706';
     } else {
         etaStatusText = '🔴 Behind Schedule';
-        etaStatusColor = '#dc2626'; // แดง
+        etaStatusColor = '#dc2626';
     }
 
     document.getElementById('etaStatus').innerText = etaStatusText;
     document.getElementById('etaStatus').style.color = etaStatusColor;
 
-    // แสดง Monthly Need ในการ์ด Goal ETA
     document.getElementById('etaMonthlyNeed').innerText =
         '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
 
@@ -1778,7 +1808,6 @@ async function loadDashboard() {
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
 
-    // แสดงค่า Highest & Lowest Wealth
     document.getElementById('highestWealth').innerText =
         '฿' + highestWealth.toLocaleString('en-US', {
             minimumFractionDigits: 2,
@@ -1791,7 +1820,6 @@ async function loadDashboard() {
             maximumFractionDigits: 2
         });
 
-    // ตรวจสอบจำนวน Snapshot
     if (history.length < 2) {
         document.getElementById('historyCalcSection').style.display = 'none';
         document.getElementById('notEnoughHistory').style.display = 'block';
@@ -1820,7 +1848,6 @@ async function loadDashboard() {
             });
     }
 
-    // วาดกราฟ Chart.js
     const ctx = document.getElementById('wealthChart');
 
     new Chart(ctx, {
@@ -1860,7 +1887,6 @@ async function loadDashboard() {
         }
     });
 
-    // Summary ใต้กราฟ
     if (history.length < 2) {
         document.getElementById('chartSummary').innerText =
             'Collecting data for trend analysis';
