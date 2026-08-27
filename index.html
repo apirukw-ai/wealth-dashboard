@@ -203,7 +203,7 @@
     </div>
 </div>
 
-<!-- 2.1 Recent Snapshot Card (วางใต้ Snapshots Card) -->
+<!-- 2.1 Recent Snapshot Card -->
 <div id="recentSnapshotCard" style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -282,7 +282,7 @@
     </div>
 </div>
 
-<!-- 5. การ์ด Wealth Milestone -->
+<!-- 5. การ์ด Wealth Milestone (พร้อม Progress Bar & Need Goal) -->
 <div style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -308,6 +308,23 @@
     ">
         -
     </div>
+
+    <!-- Progress Bar -->
+    <div style="
+        margin-top:10px;
+        height:14px;
+        background:#dbeafe;
+        border-radius:999px;
+        overflow:hidden;
+    ">
+        <div id="milestoneBar" style="
+            height:100%;
+            background:#2563eb;
+            width:0%;
+        ">
+        </div>
+    </div>
+
     <div style="
         margin-top:12px;
         color:#666;
@@ -317,6 +334,16 @@
     </div>
     <div id="remainingGoal" style="
         margin-top:4px;
+        font-weight:bold;
+        color:#dc2626;
+    ">
+        -
+    </div>
+
+    <!-- แสดง Need % -->
+    <div id="goalGapPct" style="
+        margin-top:4px;
+        font-size:13px;
         font-weight:bold;
         color:#dc2626;
     ">
@@ -482,14 +509,12 @@ async function loadDashboard() {
 
         document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
 
-        // Days Tracking
         const startDate = new Date('2026-08-26');
         const endDate = new Date(latestSnapshot.date || today);
         const diffTime = Math.abs(endDate - startDate);
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
         document.getElementById('trackingAge').innerText = diffDays;
 
-        // คำนวณ Latest Change สำหรับ Recent Snapshot Card
         let recentValChange = dailyChange;
         let recentPctChange = dailyChangePct;
 
@@ -515,7 +540,6 @@ async function loadDashboard() {
             signPct + Math.abs(recentPctChange).toFixed(2) + '%';
         document.getElementById('latestChangePct').style.color = colorChange;
 
-        // คำนวณ Best Day Gain
         let maxGainVal = 0;
         let maxGainPct = 0;
 
@@ -544,17 +568,21 @@ async function loadDashboard() {
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
-    // คำนวณ Wealth Milestone & Remaining to Goal
-    const targetWealth = 2000000;
-    const milestonePct = (totalWealth / targetWealth) * 100;
-    const remainingToGoal = targetWealth - totalWealth;
+    // คำนวณ Wealth Milestone, Progress Bar และ Goal Gap
+    const wealthTarget = 2000000;
+    const milestonePct = (totalWealth / wealthTarget) * 100;
+    const remainingToGoal = wealthTarget - totalWealth;
+    const goalGapPct = ((wealthTarget - totalWealth) / wealthTarget) * 100;
 
     document.getElementById('milestonePct').innerText = milestonePct.toFixed(2) + '%';
+    document.getElementById('milestoneBar').style.width = Math.min(milestonePct, 100) + '%';
+
     document.getElementById('remainingGoal').innerText =
         '฿' + remainingToGoal.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+    document.getElementById('goalGapPct').innerText = 'Need +' + goalGapPct.toFixed(2) + '%';
 
     localStorage.setItem('wealth_current', totalWealth);
 
