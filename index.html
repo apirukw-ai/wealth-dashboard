@@ -244,6 +244,61 @@
     </div>
 </div>
 
+<!-- 1.2 Net Worth Ranking Card -->
+<div id="netWorthRankingCard" style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666; font-size:13px; font-weight:bold;">
+        Net Worth Ranking
+    </div>
+    <div style="color:#666; font-size:12px; margin-top:2px; margin-bottom:12px;">
+        Portfolio Ranking
+    </div>
+    <div id="rankingList" style="
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+    ">
+        -
+    </div>
+</div>
+
+<!-- 1.3 Top Concentration Risk Card -->
+<div id="concentrationRiskCard" style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666; font-size:13px; font-weight:bold;">
+        Top Concentration Risk
+    </div>
+    <div style="color:#666; font-size:12px; margin-top:2px;">
+        Concentration Risk
+    </div>
+    <div id="concentrationPct" style="
+        font-size:36px;
+        font-weight:bold;
+        margin-top:8px;
+    ">
+        -
+    </div>
+    <div id="concentrationLevel" style="
+        font-size:18px;
+        font-weight:bold;
+        margin-top:4px;
+    ">
+        -
+    </div>
+</div>
+
 <!-- 2. History Records Card (Snapshots) -->
 <div id="historyCard" style="
     border:1px solid #ddd;
@@ -873,6 +928,38 @@
     </div>
 </div>
 
+<!-- 7.1 Diversification Score Card -->
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="
+        color:#666;
+        font-size:13px;
+    ">
+        Diversification Score
+    </div>
+
+    <div id="diversificationScore" style="
+        margin-top:8px;
+        font-size:36px;
+        font-weight:bold;
+    ">
+        -
+    </div>
+
+    <div id="diversificationRating" style="
+        margin-top:4px;
+        font-weight:bold;
+    ">
+        -
+    </div>
+</div>
+
 <!-- 3. Largest Asset Card -->
 <div id="largestAssetCard" style="
     border:1px solid #ddd;
@@ -1011,6 +1098,70 @@ async function loadDashboard() {
     const dailyChange = totalWealth - yesterdayWealth;
     const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
     
+    // คำนวณ Net Worth Ranking & Concentration Risk
+    const ports = [
+        { name: 'GPF', value: gpfTotal },
+        { name: 'MFC', value: mfcTotal }
+    ];
+    ports.sort((a, b) => b.value - a.value);
+
+    // 1. อัปเดต Net Worth Ranking List
+    let rankingHtml = '';
+    ports.forEach((p, index) => {
+        rankingHtml += `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:16px;">
+                <span><strong>#${index + 1} ${p.name}</strong></span>
+                <span style="font-weight:bold;">฿${p.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+        `;
+    });
+    document.getElementById('rankingList').innerHTML = rankingHtml;
+
+    // 2. อัปเดต Top Concentration Risk Card
+    const largestAssetPct = (ports[0].value / totalWealth) * 100;
+    let riskLevel = 'Low';
+    let riskColor = '#16a34a'; // เขียว
+
+    if (largestAssetPct >= 80) {
+        riskLevel = 'High';
+        riskColor = '#dc2626'; // แดง
+    } else if (largestAssetPct >= 50) {
+        riskLevel = 'Medium';
+        riskColor = '#d97706'; // ส้ม
+    }
+
+    document.getElementById('concentrationPct').innerText = largestAssetPct.toFixed(2) + '%';
+    document.getElementById('concentrationPct').style.color = riskColor;
+    document.getElementById('concentrationLevel').innerText = riskLevel;
+    document.getElementById('concentrationLevel').style.color = riskColor;
+
+    // 3. คำนวณ Diversification Score
+    const diversificationScore = 100 - largestAssetPct;
+    let diversificationRating = '';
+    let divColor = '';
+
+    if (diversificationScore >= 80) {
+        diversificationRating = 'Excellent';
+        divColor = '#16a34a';
+    } else if (diversificationScore >= 60) {
+        diversificationRating = 'Good';
+        divColor = '#2563eb';
+    } else if (diversificationScore >= 40) {
+        diversificationRating = 'Moderate';
+        divColor = '#d97706';
+    } else if (diversificationScore >= 20) {
+        diversificationRating = 'Weak';
+        divColor = '#f97316';
+    } else {
+        diversificationRating = 'Highly Concentrated';
+        divColor = '#dc2626';
+    }
+
+    document.getElementById('diversificationScore').innerText = diversificationScore.toFixed(0) + '/100';
+    document.getElementById('diversificationScore').style.color = divColor;
+    document.getElementById('diversificationRating').innerText = diversificationRating;
+    document.getElementById('diversificationRating').style.color = divColor;
+
     // คำนวณ FIRE Progress Card
     const fireTarget = 5000000;
     const fireProgress = (totalWealth / fireTarget) * 100;
@@ -1032,7 +1183,7 @@ async function loadDashboard() {
     document.getElementById('firePct').innerText =
         fireProgress.toFixed(2) + '%';
 
-    // 1. คำนวณ FIRE Level 6 ระดับใหม่
+    // คำนวณ FIRE Level 6 ระดับใหม่
     let fireLevelText = '';
     if (fireProgress < 20) {
         fireLevelText = '🌱 Level 1 • Beginner';
@@ -1049,7 +1200,7 @@ async function loadDashboard() {
     }
     document.getElementById('fireLevel').innerText = fireLevelText;
 
-    // 2. FIRE Progress Bar สีแบ่งช่วง (0-25% แดง, 25-50% ส้ม, 50-75% เหลือง, 75-100% เขียว)
+    // FIRE Progress Bar สีแบ่งช่วง (0-25% แดง, 25-50% ส้ม, 50-75% เหลือง, 75-100% เขียว)
     const fireBar = document.getElementById('fireBar');
     fireBar.style.width = Math.min(fireProgress, 100) + '%';
     if (fireProgress < 25) {
@@ -1071,7 +1222,7 @@ async function loadDashboard() {
     document.getElementById('fireNeedPct').innerText =
         'Need ' + fireNeedPct.toFixed(2) + '% More';
 
-    // 3. คำนวณ FIRE ETA
+    // คำนวณ FIRE ETA
     const gainAmount = dailyChange > 0 ? dailyChange : 0;
     const annualGrowth = gainAmount * 365;
 
@@ -1084,7 +1235,7 @@ async function loadDashboard() {
         document.getElementById('fireEta').innerText = 'Calculating growth...';
     }
 
-    // 4. คำนวณ FIRE Milestone Ladder (⏳, 🔒, 🏆)
+    // คำนวณ FIRE Milestone Ladder (⏳, 🔒, 🏆)
     const milestones = [40, 50, 60, 70, 80, 100];
     let ladderHtml = '';
     let foundNext = false;
@@ -1347,7 +1498,7 @@ async function loadDashboard() {
     const gpfPct = (gpfTotal / totalWealth) * 100;
 
     const largestAsset = gpfTotal > mfcTotal ? 'GPF' : 'MFC';
-    const largestAssetPct = gpfTotal > mfcTotal ? gpfPct : mfcPct;
+    const largestAssetPctVal = gpfTotal > mfcTotal ? gpfPct : mfcPct;
     const largestAssetValue = gpfTotal > mfcTotal ? gpfTotal : mfcTotal;
 
     document.getElementById('totalWealth').innerText =
@@ -1403,7 +1554,7 @@ async function loadDashboard() {
         '<span style="color:#16a34a;">' + largestAsset + '</span>';
 
     document.getElementById('largestAssetPct').innerText =
-        largestAssetPct.toFixed(2) + '%';
+        largestAssetPctVal.toFixed(2) + '%';
 
     document.getElementById('largestAssetValue').innerText =
         '฿' + largestAssetValue.toLocaleString('en-US', {
