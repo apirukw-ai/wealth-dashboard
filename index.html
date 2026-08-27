@@ -41,7 +41,7 @@
         <div style="margin-top:8px;color:#666;font-size:12px;">2 Active Portfolios</div>
     </div>
 
-    <!-- Summary Strip แทรกใต้ Total Wealth Card -->
+    <!-- Summary Strip (กดเลื่อนหาการ์ดได้) -->
     <div style="
         display:flex;
         gap:12px;
@@ -49,36 +49,45 @@
         margin-bottom:20px;
         max-width:500px;
     ">
-        <div id="summaryFire" style="
-            background:#fef3c7;
-            color:#b45309;
-            padding:8px 12px;
-            border-radius:999px;
-            font-size:13px;
-            font-weight:bold;
-        ">
+        <div id="summaryFire" 
+             onclick="document.getElementById('fireProgressCard').scrollIntoView({behavior:'smooth'})"
+             style="
+                background:#fef3c7;
+                color:#b45309;
+                padding:8px 12px;
+                border-radius:999px;
+                font-size:13px;
+                font-weight:bold;
+                cursor:pointer;
+             ">
             -
         </div>
 
-        <div id="summaryEta" style="
-            background:#dbeafe;
-            color:#1e40af;
-            padding:8px 12px;
-            border-radius:999px;
-            font-size:13px;
-            font-weight:bold;
-        ">
+        <div id="summaryEta" 
+             onclick="document.getElementById('goalEtaCard').scrollIntoView({behavior:'smooth'})"
+             style="
+                background:#dbeafe;
+                color:#1e40af;
+                padding:8px 12px;
+                border-radius:999px;
+                font-size:13px;
+                font-weight:bold;
+                cursor:pointer;
+             ">
             -
         </div>
 
-        <div id="summaryGain" style="
-            background:#dcfce7;
-            color:#166534;
-            padding:8px 12px;
-            border-radius:999px;
-            font-size:13px;
-            font-weight:bold;
-        ">
+        <div id="summaryGain" 
+             onclick="document.getElementById('dailyChangeCard').scrollIntoView({behavior:'smooth'})"
+             style="
+                background:#dcfce7;
+                color:#166534;
+                padding:8px 12px;
+                border-radius:999px;
+                font-size:13px;
+                font-weight:bold;
+                cursor:pointer;
+             ">
             -
         </div>
     </div>
