@@ -161,7 +161,7 @@
         color:#666;
         font-size:13px;
     ">
-        Tracking Age
+        Days Tracking
     </div>
 
     <div id="trackingAge" style="
@@ -252,7 +252,7 @@
     </div>
 </div>
 
-<!-- 5. การ์ด Wealth Milestone (สลับตำแหน่ง Target ไว้ด้านบนแล้ว) -->
+<!-- 5. การ์ด Wealth Milestone -->
 <div style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -275,6 +275,20 @@
         margin-top:4px;
         font-weight:bold;
         color:#2563eb;
+    ">
+        -
+    </div>
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Remaining to Goal
+    </div>
+    <div id="remainingGoal" style="
+        margin-top:4px;
+        font-weight:bold;
+        color:#dc2626;
     ">
         -
     </div>
@@ -438,11 +452,12 @@ async function loadDashboard() {
 
         document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
 
+        // Days Tracking (แสดงผลเฉพาะตัวเลข)
         const startDate = new Date('2026-08-26');
         const endDate = new Date(latestSnapshot.date || today);
         const diffTime = Math.abs(endDate - startDate);
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        document.getElementById('trackingAge').innerText = diffDays + (diffDays > 1 ? ' Days' : ' Day');
+        document.getElementById('trackingAge').innerText = diffDays;
 
         let maxGainVal = 0;
         let maxGainPct = 0;
@@ -472,10 +487,17 @@ async function loadDashboard() {
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
-    // คำนวณ Wealth Milestone
-    const wealthTarget = 2000000;
-    const milestonePct = (totalWealth / wealthTarget) * 100;
+    // คำนวณ Wealth Milestone & Remaining to Goal
+    const targetWealth = 2000000;
+    const milestonePct = (totalWealth / targetWealth) * 100;
+    const remainingToGoal = targetWealth - totalWealth;
+
     document.getElementById('milestonePct').innerText = milestonePct.toFixed(2) + '%';
+    document.getElementById('remainingGoal').innerText =
+        '฿' + remainingToGoal.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
 
     localStorage.setItem('wealth_current', totalWealth);
 
