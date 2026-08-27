@@ -325,7 +325,7 @@
         </div>
     </div>
 
-    <!-- ข้อความแจ้งเตือนสถานะ Milestone ใต้ Progress Bar -->
+    <!-- ข้อความแจ้งเตือนสถานะ Milestone -->
     <div id="milestoneMessage" style="
         margin-top:8px;
         font-size:13px;
@@ -351,6 +351,16 @@
 
     <!-- แสดง Need % -->
     <div id="goalGapPct" style="
+        margin-top:4px;
+        font-size:13px;
+        font-weight:bold;
+        color:#dc2626;
+    ">
+        -
+    </div>
+
+    <!-- แสดง Need Per Month -->
+    <div id="monthlyNeed" style="
         margin-top:4px;
         font-size:13px;
         font-weight:bold;
@@ -577,16 +587,16 @@ async function loadDashboard() {
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
-    // คำนวณ Wealth Milestone, Progress Bar และ Milestone Message
+    // คำนวณ Wealth Milestone, Progress Bar, Goal Gap และ Monthly Need
     const wealthTarget = 2000000;
     const milestonePct = (totalWealth / wealthTarget) * 100;
     const remainingToGoal = wealthTarget - totalWealth;
     const goalGapPct = ((wealthTarget - totalWealth) / wealthTarget) * 100;
+    const monthlyNeed = remainingToGoal / 12;
 
     document.getElementById('milestonePct').innerText = milestonePct.toFixed(2) + '%';
     document.getElementById('milestoneBar').style.width = Math.min(milestonePct, 100) + '%';
 
-    // กำหนดข้อความ Milestone Message
     let milestoneMessage = '';
     if (milestonePct >= 90) {
         milestoneMessage = '🎯 Almost there!';
@@ -603,6 +613,8 @@ async function loadDashboard() {
             maximumFractionDigits: 2
         });
     document.getElementById('goalGapPct').innerText = 'Need +' + goalGapPct.toFixed(2) + '%';
+    document.getElementById('monthlyNeed').innerText =
+        'Need ฿' + Math.round(monthlyNeed).toLocaleString('en-US') + ' / Month for 12 Months';
 
     localStorage.setItem('wealth_current', totalWealth);
 
