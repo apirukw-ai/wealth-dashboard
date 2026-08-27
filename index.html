@@ -489,7 +489,7 @@
         Portfolio Health
     </div>
 
-    <div style="
+    <div id="portfolioHealthStatus" style="
         margin-top:4px;
         color:#16a34a;
         font-weight:bold;
@@ -614,7 +614,7 @@
     </div>
 </div>
 
-<!-- 6. Goal ETA Card -->
+<!-- 6. Goal ETA Card (อัปเดตระบบอัจฉริยะ) -->
 <div id="goalEtaCard" style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -626,13 +626,32 @@
     <div style="color:#666; font-size:13px;">
         Goal ETA
     </div>
-    <div id="etaDuration" style="
+
+    <!-- สถานะอัจฉริยะ Ahead of Schedule / On Track / Behind Schedule -->
+    <div id="etaStatus" style="
         font-size:24px;
         font-weight:bold;
         margin-top:8px;
     ">
+        -
+    </div>
+
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Estimated Time
+    </div>
+
+    <div id="etaDuration" style="
+        font-size:18px;
+        font-weight:bold;
+        margin-top:4px;
+    ">
         12 Months
     </div>
+
     <div style="
         margin-top:12px;
         color:#666;
@@ -640,6 +659,7 @@
     ">
         Target Date
     </div>
+
     <div id="etaTargetDate" style="
         margin-top:4px;
         font-weight:bold;
@@ -934,7 +954,7 @@ async function loadDashboard() {
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
-    // คำนวณ Wealth Trend Card (ซิงค์ตาม dailyChangePct)
+    // คำนวณ Wealth Trend Card
     let trend = '';
     let trendColor = '';
 
@@ -954,18 +974,17 @@ async function loadDashboard() {
     document.getElementById('trendPct').innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%';
     document.getElementById('trendPct').style.color = trendColor;
 
-    // คำนวณ History Progress Card (เป้าหมาย 7 วัน)
+    // คำนวณ History Progress Card (7 วัน)
     const progress = Math.min((history.length / 7) * 100, 100);
     document.getElementById('progressPctLabel').innerText = Math.round(progress) + '%';
     document.getElementById('progressDaysLabel').innerText = history.length + ' / 7 Days';
 
-    // คำนวณ Weekly Change Card (Smart Message)
+    // คำนวณ Weekly Change Card
     if (history.length < 7) {
         const daysNeeded = 7 - history.length;
         const dayUnit = daysNeeded === 1 ? 'day' : 'days';
         document.getElementById('weeklyChangeValue').innerText = `${daysNeeded} more ${dayUnit} required`;
     } else {
-        // หากสะสมข้อมูลครบ 7 วันขึ้นไป ให้คำนวณการเปลี่ยนแปลงในรอบ 7 วัน
         const past7Wealth = history[history.length - 7].wealth;
         const weekChange = totalWealth - past7Wealth;
         const weekChangePct = (weekChange / past7Wealth) * 100;
@@ -1016,7 +1035,28 @@ async function loadDashboard() {
     document.getElementById('monthlyNeed').innerText =
         'Need ฿' + Math.round(monthlyNeed).toLocaleString('en-US') + ' / Month for 12 Months';
 
-    // คำนวณ Goal ETA
+    // คำนวณ Portfolio Health
+    const portfolioHealth = 'Strong';
+    document.getElementById('portfolioHealthStatus').innerText = portfolioHealth;
+
+    // คำนวณ Goal ETA (ระบบประเมินอัจฉริยะ)
+    let etaStatusText = '';
+    let etaStatusColor = '';
+
+    if (monthlyNeed <= 10000 || portfolioHealth === 'Strong') {
+        etaStatusText = '🎯 Ahead of Schedule';
+        etaStatusColor = '#16a34a'; // เขียว
+    } else if (monthlyNeed <= 15000) {
+        etaStatusText = '✅ On Track';
+        etaStatusColor = '#2563eb'; // น้ำเงิน
+    } else {
+        etaStatusText = '⚠ Behind Schedule';
+        etaStatusColor = '#dc2626'; // แดง
+    }
+
+    document.getElementById('etaStatus').innerText = etaStatusText;
+    document.getElementById('etaStatus').style.color = etaStatusColor;
+
     const etaMonths = 12;
     const targetDate = new Date();
     targetDate.setMonth(targetDate.getMonth() + etaMonths);
