@@ -299,10 +299,41 @@
         ">
             Building history...
         </div>
+
+        <!-- Progress Bar เล็ก ๆ -->
+        <div style="
+            margin-top:8px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        ">
+            <div style="
+                flex:1;
+                height:8px;
+                background:#fef3c7;
+                border-radius:999px;
+                overflow:hidden;
+                border:1px solid #fde68a;
+            ">
+                <div id="historyProgressBar" style="
+                    height:100%;
+                    background:#d97706;
+                    width:0%;
+                "></div>
+            </div>
+            <div id="historyProgressPct" style="
+                font-size:12px;
+                font-weight:bold;
+                color:#d97706;
+            ">
+                0%
+            </div>
+        </div>
+
         <div id="notEnoughSubtext" style="
             font-size:12px;
             color:#666;
-            margin-top:2px;
+            margin-top:6px;
         ">
             1 of 2 snapshots collected
         </div>
@@ -983,6 +1014,12 @@ async function loadDashboard() {
     if (history.length < 2) {
         document.getElementById('historyCalcSection').style.display = 'none';
         document.getElementById('notEnoughHistory').style.display = 'block';
+
+        // คำนวณ Progress Bar
+        const progressPct = Math.min((history.length / 2) * 100, 100);
+        document.getElementById('historyProgressBar').style.width = progressPct + '%';
+        document.getElementById('historyProgressPct').innerText = progressPct.toFixed(0) + '%';
+
         document.getElementById('notEnoughSubtext').innerText =
             history.length + ' of 2 snapshots collected';
     } else {
@@ -1031,7 +1068,7 @@ async function loadDashboard() {
             scales: {
                 y: {
                     grid: {
-                        display: false // ซ่อนเส้น Grid บนแกน Y
+                        display: false
                     },
                     ticks: {
                         callback: function(value) {
@@ -1043,10 +1080,14 @@ async function loadDashboard() {
         }
     });
 
-    // Summary ใต้กราฟ
-    const snapshotLabel = history.length === 1 ? 'Snapshot' : 'Snapshots';
-    document.getElementById('chartSummary').innerText =
-        'Tracking ' + history.length + ' ' + snapshotLabel;
+    // Summary ใต้กราฟ (1 Snapshot = Collecting data for trend analysis)
+    if (history.length < 2) {
+        document.getElementById('chartSummary').innerText =
+            'Collecting data for trend analysis';
+    } else {
+        document.getElementById('chartSummary').innerText =
+            'Tracking ' + history.length + ' Snapshots';
+    }
 }
 
 loadDashboard();
