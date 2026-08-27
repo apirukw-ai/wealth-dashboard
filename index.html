@@ -1,1199 +1,310 @@
 <h1>🏠 Wealth Dashboard</h1>
-<div style="
-    border:1px solid #ddd;
-    border-radius:16px;
-    padding:24px;
-    margin-bottom:20px;
-    width:500px;
-    max-width:100%;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
 
-    <div style="color:#666;font-size:14px;">
-        Total Wealth
-    </div>
-
-    <div id="totalWealth" style="
-        font-size:48px;
-        font-weight:bold;
-        margin-top:10px;
-    ">
-        Loading...
-    </div>
-    <div style="
-        margin-top:10px;
-        display:inline-block;
-        background:#dcfce7;
-        color:#166534;
-        padding:4px 10px;
-        border-radius:999px;
-        font-size:12px;
-        font-weight:bold;
-    ">
-        ● LIVE DATA
-    </div>
-    <div id="lastUpdated" style="
-        margin-top:8px;
-        color:#666;
-        font-size:12px;
-    ">
-    </div>
-    <div style="
-        margin-top:8px;
-        color:#666;
-        font-size:12px;
-    ">
-        2 Active Portfolios
-    </div>
-</div> <!-- ปิด Hero Card Total Wealth -->
-
-<div style="
-    margin-bottom:20px;
-    max-width:500px;
-">
-
-    <div style="
-        font-size:14px;
-        color:#666;
-        margin-bottom:8px;
-    ">
-        Asset Allocation
-    </div>
-
-    <div style="
-        display:flex;
-        height:16px;
-        border-radius:8px;
-        overflow:hidden;
-        background:#eee;
-    ">
-        <div id="mfcBar"
-             style="background:#2563eb;width:0%">
-        </div>
-
-        <div id="gpfBar"
-             style="background:#16a34a;width:0%">
-        </div>
-    </div>
-    <div id="allocationLegend" style="
-        margin-top:16px;
-        font-size:13px;
-        color:#666;
-    ">
-    </div>
+<!-- ปุ่มสลับหน้า (Toggle Navigation) -->
+<div style="margin-bottom:20px; max-width:500px; display:flex; gap:10px;">
+    <button id="btnDaily" onclick="switchTab('daily')" style="
+        flex:1; padding:10px; border-radius:8px; border:none; font-weight:bold; cursor:pointer;
+        background:#2563eb; color:#ffffff;
+    ">Daily Dashboard</button>
+    <button id="btnAnalytics" onclick="switchTab('analytics')" style="
+        flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; font-weight:bold; cursor:pointer;
+        background:#f3f4f6; color:#374151;
+    ">Show Advanced Analytics</button>
 </div>
 
-<!-- 1. Portfolio Gain Card -->
-<div id="dailyChangeCard" style="
-    border:1px solid #bbf7d0;
-    border-radius:12px;
-    padding:16px;
-    background:#f0fdf4;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px;">
-        Portfolio Gain
-    </div>
-    <div id="dailyChangeValue" style="
-        font-size:28px;
-        font-weight:bold;
-        margin-top:8px;
-    "></div>
-    <div id="dailyChangePct" style="
-        margin-top:4px;
-        font-weight:bold;
-    "></div>
-</div>
+<!-- ================= TAB 1: DAILY DASHBOARD ================= -->
+<div id="tabDaily" style="display:block;">
 
-<!-- 1.1 FIRE Progress Card -->
-<div id="fireProgressCard" style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px; font-weight:bold;">
-        FIRE Progress
-    </div>
-
-    <div style="margin-top:12px; color:#666; font-size:13px;">
-        Current Wealth
-    </div>
-    <div id="fireCurrentWealth" style="
-        font-size:18px;
-        font-weight:bold;
-        margin-top:4px;
-    ">
-        -
-    </div>
-
-    <div style="margin-top:12px; color:#666; font-size:13px;">
-        FIRE Target
-    </div>
-    <div id="fireTarget" style="
-        font-size:18px;
-        font-weight:bold;
-        margin-top:4px;
-    ">
-        -
-    </div>
-
-    <div id="firePct" style="
-        font-size:36px;
-        font-weight:bold;
-        margin-top:12px;
-        color:#16a34a;
-    ">
-        -
-    </div>
-
-    <!-- FIRE Level Section -->
-    <div id="fireLevel" style="
-        font-size:14px;
-        font-weight:bold;
-        color:#2563eb;
-        margin-top:4px;
-    ">
-        -
-    </div>
-
-    <!-- FIRE Dynamic Progress Bar -->
+    <!-- Total Wealth Card -->
     <div style="
-        height:14px;
-        background:#e5e7eb;
-        border-radius:999px;
-        overflow:hidden;
-        margin-top:10px;
+        border:1px solid #ddd;
+        border-radius:16px;
+        padding:24px;
+        margin-bottom:20px;
+        width:500px;
+        max-width:100%;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
-        <div id="fireBar" style="
-            height:100%;
-            width:0%;
-            background:#16a34a;
-            transition: width 0.3s, background-color 0.3s;
-        ">
-        </div>
-    </div>
-
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Remaining
-    </div>
-
-    <div id="fireRemaining" style="
-        margin-top:4px;
-        font-size:18px;
-        font-weight:bold;
-        color:#dc2626;
-    ">
-        -
-    </div>
-
-    <!-- FIRE Need % More -->
-    <div id="fireNeedPct" style="
-        margin-top:4px;
-        font-size:13px;
-        font-weight:bold;
-        color:#dc2626;
-    ">
-        -
-    </div>
-
-    <!-- FIRE ETA Section -->
-    <div style="
-        margin-top:16px;
-        padding-top:12px;
-        border-top:1px dashed #eee;
-    ">
-        <div style="color:#666; font-size:13px;">
-            FIRE ETA
-        </div>
-        <div id="fireEta" style="
-            font-size:20px;
-            font-weight:bold;
-            color:#2563eb;
-            margin-top:4px;
-        ">
-            -
-        </div>
-    </div>
-
-    <!-- FIRE Milestone Ladder Section -->
-    <div style="
-        margin-top:16px;
-        padding-top:12px;
-        border-top:1px dashed #eee;
-    ">
-        <div style="color:#666; font-size:13px; font-weight:bold; margin-bottom:8px;">
-            Next FIRE Milestones
-        </div>
-        <div id="fireMilestoneLadder" style="
-            display:flex;
-            flex-direction:column;
-            gap:6px;
-            font-size:14px;
-        ">
-            -
-        </div>
-    </div>
-</div>
-
-<!-- 1.2 Net Worth Ranking Card -->
-<div id="netWorthRankingCard" style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px; font-weight:bold;">
-        Net Worth Ranking
-    </div>
-    <div style="color:#666; font-size:12px; margin-top:2px; margin-bottom:12px;">
-        Portfolio Ranking
-    </div>
-    <div id="rankingList" style="
-        display:flex;
-        flex-direction:column;
-        gap:10px;
-    ">
-        -
-    </div>
-</div>
-
-<!-- 1.3 Top Concentration Risk Card -->
-<div id="concentrationRiskCard" style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px; font-weight:bold;">
-        Top Concentration Risk
-    </div>
-    <div style="color:#666; font-size:12px; margin-top:2px;">
-        Concentration Risk
-    </div>
-    <div id="concentrationPct" style="
-        font-size:36px;
-        font-weight:bold;
-        margin-top:8px;
-    ">
-        -
-    </div>
-    <div id="concentrationLevel" style="
-        font-size:18px;
-        font-weight:bold;
-        margin-top:4px;
-    ">
-        -
-    </div>
-</div>
-
-<!-- 1.4 Portfolio Advisor (Rebalancing Advisor) Card -->
-<div style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px; font-weight:bold;">
-        Portfolio Advisor
-    </div>
-    <div id="advisorStatus" style="
-        font-size:18px;
-        font-weight:bold;
-        margin-top:8px;
-    ">
-        -
-    </div>
-    
-    <div style="margin-top:12px; color:#666; font-size:13px;">Current</div>
-    <div id="advisorCurrent" style="font-weight:bold; margin-top:2px;">-</div>
-
-    <div style="margin-top:12px; color:#666; font-size:13px;">Suggested Target</div>
-    <div id="advisorTarget" style="font-weight:bold; margin-top:2px;">-</div>
-
-    <div style="margin-top:16px; padding-top:12px; border-top:1px dashed #eee;">
-        <div style="color:#666; font-size:13px; font-weight:bold;">Action Required</div>
-        <div id="advisorAction" style="font-weight:bold; margin-top:4px; color:#dc2626;">-</div>
-    </div>
-</div>
-
-<!-- 2. History Records Card (Snapshots) -->
-<div id="historyCard" style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px;">
-        Snapshots
-    </div>
-    <div id="historyCount" style="
-        font-size:24px;
-        font-weight:bold;
-        margin-top:8px;
-    ">
-        -
-    </div>
-    <div style="
-        margin-top:10px;
-        color:#666;
-        font-size:13px;
-    ">
-        Tracking Started
-    </div>
-
-    <div id="trackingStart" style="
-        margin-top:4px;
-        font-weight:bold;
-    ">
-        26 Aug 2026
-    </div>
-
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Latest Snapshot
-    </div>
-
-    <div id="latestSnapshotDate" style="
-        margin-top:4px;
-        font-weight:bold;
-    ">
-        -
-    </div>    
-
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Days Tracking
-    </div>
-
-    <div id="trackingAge" style="
-        margin-top:4px;
-        font-weight:bold;
-    ">
-        -
-    </div>
-
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Latest Wealth
-    </div>
-
-    <div id="latestWealth" style="
-        margin-top:4px;
-        font-weight:bold;
-    ">
-        -
-    </div>    
-
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Best Day
-    </div>
-
-    <div id="bestDayValue" style="
-        margin-top:4px;
-        font-weight:bold;
-        color:#16a34a;
-    ">
-        -
-    </div>
-</div>
-
-<!-- 2.1 History Summary & Recent Snapshot Card -->
-<div id="historySummaryCard" style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px; font-weight:bold;">
-        History Summary & Recent Snapshot
-    </div>
-
-    <div style="margin-top:12px; color:#666; font-size:13px;">
-        Latest Change
-    </div>
-    <div id="latestChangeValue" style="
-        font-size:24px;
-        font-weight:bold;
-        margin-top:4px;
-    ">
-        -
-    </div>
-    <div id="latestChangePct" style="
-        margin-top:2px;
-        font-weight:bold;
-    ">
-        -
-    </div>
-
-    <hr style="border:none; border-top:1px solid #eee; margin:16px 0;">
-
-    <div style="color:#666; font-size:13px;">
-        Highest Wealth
-    </div>
-    <div id="highestWealth" style="
-        font-size:18px;
-        font-weight:bold;
-        color:#16a34a;
-        margin-top:4px;
-    ">
-        -
-    </div>
-
-    <div style="margin-top:12px; color:#666; font-size:13px;">
-        Lowest Wealth
-    </div>
-    <div id="lowestWealth" style="
-        font-size:18px;
-        font-weight:bold;
-        color:#dc2626;
-        margin-top:4px;
-    ">
-        -
-    </div>
-
-    <!-- ส่วนที่จะถูกสลับซ่อน/แสดง เมื่อมี snapshot >= 2 -->
-    <div id="historyCalcSection">
-        <div style="margin-top:12px; color:#666; font-size:13px;">
-            Range
-        </div>
-        <div id="wealthRange" style="
-            font-size:18px;
-            font-weight:bold;
-            color:#16a34a;
-            margin-top:4px;
-        ">
-            -
-        </div>
-
-        <div style="margin-top:12px; color:#666; font-size:13px;">
-            Average Gain
-        </div>
-        <div id="avgGain" style="
-            font-size:18px;
-            font-weight:bold;
-            color:#2563eb;
-            margin-top:4px;
-        ">
-            -
-        </div>
-    </div>
-
-    <!-- แสดงเมื่อ Snapshot < 2 -->
-    <div id="notEnoughHistory" style="display:none; margin-top:12px;">
-        <div style="color:#666; font-size:13px;">
-            History Status
-        </div>
-        <div id="historyStatus" style="
-            font-size:16px;
-            font-weight:bold;
-            color:#d97706;
-            margin-top:4px;
-        ">
-            Building history... 1 of 7 snapshots collected
-        </div>
-
-        <!-- Progress Bar เล็ก ๆ -->
+        <div style="color:#666;font-size:14px;">Total Wealth</div>
+        <div id="totalWealth" style="font-size:48px;font-weight:bold;margin-top:10px;">Loading...</div>
         <div style="
-            margin-top:8px;
-            display:flex;
-            align-items:center;
-            gap:10px;
-        ">
-            <div style="
-                flex:1;
-                height:8px;
-                background:#fef3c7;
-                border-radius:999px;
-                overflow:hidden;
-                border:1px solid #fde68a;
-            ">
-                <div id="historyProgressBar" style="
-                    height:100%;
-                    background:#d97706;
-                    width:0%;
-                "></div>
-            </div>
-            <div id="historyProgressPct" style="
-                font-size:12px;
-                font-weight:bold;
-                color:#d97706;
-            ">
-                0%
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 2.2 Wealth History Chart Card -->
-<div style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-
-    <div style="
-        color:#666;
-        font-size:13px;
-        margin-bottom:12px;
-    ">
-        Wealth History
-    </div>
-
-    <canvas id="wealthChart" height="220"></canvas>
-
-    <div id="chartSummary" style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-    </div>
-
-</div>
-
-<!-- 2.3 Wealth Trend Card -->
-<div id="wealthTrendCard" style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px;">
-        Wealth Trend
-    </div>
-    <div id="trendDirection" style="
-        font-size:24px;
-        font-weight:bold;
-        margin-top:8px;
-    ">
-        -
-    </div>
-    <div id="trendPct" style="
-        font-size:16px;
-        font-weight:bold;
-        margin-top:4px;
-    ">
-        -
-    </div>
-</div>
-
-<!-- 2.4 History Progress & Weekly Change (การ์ดเล็ก 2 ใบ) -->
-<div style="
-    display:flex;
-    gap:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    flex-wrap:wrap;
-">
-    <!-- History Progress Card -->
-    <div style="
-        flex:1;
-        min-width:200px;
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px;">
-            History Progress
-        </div>
-        <div id="progressPctLabel" style="
-            font-size:24px;
-            font-weight:bold;
-            color:#2563eb;
-            margin-top:8px;
-        ">
-            -
-        </div>
-        <div id="progressDaysLabel" style="
-            font-size:13px;
-            color:#666;
-            margin-top:4px;
-        ">
-            -
-        </div>
-    </div>
-
-    <!-- Weekly Change Card -->
-    <div style="
-        flex:1;
-        min-width:200px;
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px;">
-            Weekly Change
-        </div>
-        <div id="weeklyChangeValue" style="
-            font-size:16px;
-            font-weight:bold;
-            color:#666;
-            margin-top:8px;
-        ">
-            -
-        </div>
-    </div>
-</div>
-
-<!-- 4. การ์ดสรุปสถานะพอร์ต -->
-<div style="
-    border:1px solid #bbf7d0;
-    border-radius:12px;
-    padding:16px;
-    margin-bottom:20px;
-    background:#f0fdf4;
-    max-width:500px;
-">
-
-    <div style="
-        color:#666;
-        font-size:13px;
-    ">
-        Portfolio Status
-    </div>
-
-    <div style="
-        margin-top:8px;
-        color:#16a34a;
-        font-size:24px;
-        font-weight:bold;
-    ">
-        ▲ Positive Trend
-    </div>
-
-    <div style="
-        margin-top:6px;
-        color:#16a34a;
-    ">
-        1 Day Gain: +0.46%
-    </div>
-    <div style="
-        margin-top:8px;
-        color:#666;
-        font-size:13px;
-    ">
-        Portfolio Health
-    </div>
-
-    <div id="portfolioHealthStatus" style="
-        margin-top:4px;
-        color:#16a34a;
-        font-weight:bold;
-    ">
-        Strong
-    </div>
-</div>
-
-<!-- 5. การ์ด Wealth Milestone -->
-<div style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px;">
-        Wealth Milestone
-    </div>
-    <div style="
-        font-size:24px;
-        font-weight:bold;
-        margin-top:8px;
-    ">
-        Target: ฿2,000,000.00
-    </div>
-    <div id="milestonePct" style="
-        margin-top:4px;
-        font-weight:bold;
-        color:#2563eb;
-    ">
-        -
-    </div>
-
-    <!-- Progress Bar -->
-    <div style="
-        margin-top:10px;
-        height:14px;
-        background:#dbeafe;
-        border-radius:999px;
-        overflow:hidden;
-    ">
-        <div id="milestoneBar" style="
-            height:100%;
-            background:#2563eb;
-            width:0%;
-        ">
-        </div>
-    </div>
-
-    <!-- ข้อความแจ้งเตือนสถานะ Milestone -->
-    <div id="milestoneMessage" style="
-        margin-top:8px;
-        font-size:13px;
-        font-weight:bold;
-        color:#2563eb;
-    ">
-    </div>
-
-    <div style="
-        margin-top:16px;
-        padding-top:12px;
-        border-top:1px dashed #eee;
-    ">
-        <div style="color:#666; font-size:13px;">
-            Next Milestone
-        </div>
-        <div id="nextMilestoneVal" style="
-            font-size:18px;
-            font-weight:bold;
-            margin-top:2px;
-        ">
-            ฿1,900,000.00
-        </div>
-        <div style="margin-top:6px; color:#666; font-size:13px;">
-            Remaining
-        </div>
-        <div id="nextMilestoneRemaining" style="
-            font-size:16px;
-            font-weight:bold;
-            color:#dc2626;
-            margin-top:2px;
-        ">
-            -
-        </div>
-    </div>
-
-    <div style="
-        margin-top:16px;
-        color:#666;
-        font-size:13px;
-    ">
-        Remaining to Goal (Full Target)
-    </div>
-    <div id="remainingGoal" style="
-        margin-top:4px;
-        font-weight:bold;
-        color:#dc2626;
-    ">
-        -
-    </div>
-
-    <!-- แสดง Need % -->
-    <div id="goalGapPct" style="
-        margin-top:4px;
-        font-size:13px;
-        font-weight:bold;
-        color:#dc2626;
-    ">
-        -
-    </div>
-
-    <!-- แสดง Need Per Month -->
-    <div id="monthlyNeed" style="
-        margin-top:4px;
-        font-size:13px;
-        font-weight:bold;
-        color:#dc2626;
-    ">
-        -
-    </div>
-</div>
-
-<!-- 6. Goal ETA Card -->
-<div id="goalEtaCard" style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px;">
-        Goal ETA
-    </div>
-
-    <!-- สถานะ Ahead of Schedule / On Track / Needs Improvement / Behind Schedule -->
-    <div id="etaStatus" style="
-        font-size:24px;
-        font-weight:bold;
-        margin-top:8px;
-    ">
-        -
-    </div>
-
-    <!-- เพิ่ม Monthly Need -->
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Monthly Need
-    </div>
-
-    <div id="etaMonthlyNeed" style="
-        font-size:18px;
-        font-weight:bold;
-        margin-top:4px;
-    ">
-        -
-    </div>
-
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Estimated Time
-    </div>
-
-    <div id="etaDuration" style="
-        font-size:18px;
-        font-weight:bold;
-        margin-top:4px;
-    ">
-        12 Months
-    </div>
-
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Target Date
-    </div>
-
-    <div id="etaTargetDate" style="
-        margin-top:4px;
-        font-weight:bold;
-        color:#2563eb;
-    ">
-        Aug 2027
-    </div>
-</div>
-
-<!-- 7. Financial Health Score Card -->
-<div id="financialHealthCard" style="
-    border:1px solid #bbf7d0;
-    border-radius:12px;
-    padding:16px;
-    background:#f0fdf4;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-">
-    <div>
-        <div style="color:#666; font-size:13px;">
-            Financial Health Score
-        </div>
-        <div id="healthScoreLabel" style="
-            font-size:20px;
-            font-weight:bold;
+            margin-top:10px;
+            display:inline-block;
+            background:#dcfce7;
             color:#166534;
-            margin-top:4px;
-        ">
-            Excellent
-        </div>
-        <div style="
-            font-size:11px;
-            color:#15803d;
-            margin-top:4px;
-        ">
-            High Progress • Positive Trend • Stable Assets
-        </div>
-    </div>
-    <div id="healthScoreGrade" style="
-        font-size:36px;
-        font-weight:bold;
-        color:#ffffff;
-        background:#16a34a;
-        width:64px;
-        height:64px;
-        border-radius:16px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        box-shadow:0 4px 10px rgba(22,163,74,0.3);
-    ">
-        A+
-    </div>
-</div>
-
-<!-- 7.1 Diversification Score Card -->
-<div style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="
-        color:#666;
-        font-size:13px;
-    ">
-        Diversification Score
-    </div>
-
-    <div id="diversificationScore" style="
-        margin-top:8px;
-        font-size:36px;
-        font-weight:bold;
-    ">
-        -
-    </div>
-
-    <div id="diversificationRating" style="
-        margin-top:4px;
-        font-weight:bold;
-    ">
-        -
-    </div>
-
-    <div id="diversificationDesc" style="
-        margin-top:6px;
-        font-size:12px;
-        color:#666;
-    ">
-        -
-    </div>
-</div>
-
-<!-- 7.2 Portfolio Intelligence Card -->
-<div style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-">
-    <div>
-        <div style="color:#666; font-size:13px;">
-            Portfolio Intelligence
-        </div>
-        <div id="portfolioIntelligenceScore" style="
-            font-size:32px;
+            padding:4px 10px;
+            border-radius:999px;
+            font-size:12px;
             font-weight:bold;
-            margin-top:4px;
-            color:#2563eb;
-        ">
-            -
-        </div>
+        ">● LIVE DATA</div>
+        <div id="lastUpdated" style="margin-top:8px;color:#666;font-size:12px;"></div>
+        <div style="margin-top:8px;color:#666;font-size:12px;">2 Active Portfolios</div>
     </div>
-    <div id="portfolioIntelligenceGrade" style="
-        font-size:36px;
-        font-weight:bold;
-        color:#ffffff;
-        background:#2563eb;
-        width:64px;
-        height:64px;
-        border-radius:16px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        box-shadow:0 4px 10px rgba(37,99,235,0.3);
+
+    <!-- Portfolio Gain Card -->
+    <div id="dailyChangeCard" style="
+        border:1px solid #bbf7d0;
+        border-radius:12px;
+        padding:16px;
+        background:#f0fdf4;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
-        -
-    </div>
-</div>
-
-<!-- 7.3 Achievement System Card -->
-<div style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="
-        color:#666;
-        font-size:13px;
-        font-weight:bold;
-        margin-bottom:12px;
-    ">
-        Achievement System
-    </div>
-    
-    <div style="color:#666; font-size:12px; margin-bottom:4px;">Next Achievement</div>
-    <div id="nextAchievementTitle" style="font-size:16px; font-weight:bold; color:#2563eb;">-</div>
-    
-    <div style="color:#666; font-size:12px; margin-top:8px; margin-bottom:4px;">Progress</div>
-    <div id="nextAchievementProgress" style="font-size:16px; font-weight:bold; margin-bottom:4px;">-</div>
-
-    <!-- Achievement Progress Bar -->
-    <div style="
-        height:10px;
-        background:#e5e7eb;
-        border-radius:999px;
-        overflow:hidden;
-        margin-top:8px;
-    ">
-        <div id="achievementBar" style="
-            height:100%;
-            background:#2563eb;
-            width:0%;
-        ">
-        </div>
+        <div style="color:#666; font-size:13px;">Portfolio Gain</div>
+        <div id="dailyChangeValue" style="font-size:28px; font-weight:bold; margin-top:8px;"></div>
+        <div id="dailyChangePct" style="margin-top:4px; font-weight:bold;"></div>
     </div>
 
-    <!-- ETA หรือข้อความปลุกใจ (🔥 Almost Unlocked) -->
-    <div id="achievementEta" style="
-        margin-top:6px;
-        font-size:12px;
-        font-weight:bold;
-        color:#16a34a;
-    ">
-        -
-    </div>
-
-    <hr style="border:none; border-top:1px solid #eee; margin:12px 0;">
-
-    <div style="
-        color:#666;
-        font-size:12px;
-        margin-bottom:8px;
-    ">
-        Achievements
-    </div>
-
-    <div id="achievementsList" style="
-        font-size:14px;
-        display:flex;
-        flex-direction:column;
-        gap:6px;
-    "></div>
-</div>
-
-<!-- 3. Largest Asset Card -->
-<div id="largestAssetCard" style="
-    border:1px solid #ddd;
-    border-radius:12px;
-    padding:16px;
-    max-width:500px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-    <div style="color:#666; font-size:13px;">
-        Largest Asset
-    </div>
-    <div id="largestAssetName" style="
-        font-size:24px;
-        font-weight:bold;
-        margin-top:8px;
-    ">
-        -
-    </div>
-    <div id="largestAssetPct" style="
-        margin-top:4px;
-        font-weight:bold;
-        color:#16a34a;
-    ">
-        -
-    </div>
-    <div id="largestAssetValue" style="
-        margin-top:4px;
-        color:#666;
-    ">
-    </div>
-</div>
-
-<div style="
-    display:flex;
-    gap:20px;
-    flex-wrap:wrap;
-">
-
+    <!-- Asset Allocation Card -->
     <div style="
         border:1px solid #ddd;
         border-radius:12px;
-        padding:20px;
-        min-width:220px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
-        <div style="color:#666;">MFC</div>
-
-        <div id="mfcVal" style="
-            font-size:28px;
-            font-weight:bold;
-            margin-top:10px;
-        ">-</div>
-
-        <div id="mfcPct" style="
-            margin-top:8px;
-            color:#2563eb;
-            font-size:14px;
-            font-weight:bold;
-        "></div>
+        <div style="font-size:13px; color:#666; margin-bottom:8px;">Asset Allocation</div>
+        <div style="display:flex; height:16px; border-radius:8px; overflow:hidden; background:#eee;">
+            <div id="mfcBar" style="background:#2563eb;width:0%"></div>
+            <div id="gpfBar" style="background:#16a34a;width:0%"></div>
+        </div>
+        <div id="allocationLegend" style="margin-top:12px; font-size:13px; color:#666;"></div>
     </div>
 
+    <!-- Wealth Trend Card -->
+    <div id="wealthTrendCard" style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px;">Wealth Trend</div>
+        <div id="trendDirection" style="font-size:24px; font-weight:bold; margin-top:8px;">-</div>
+        <div id="trendPct" style="font-size:16px; font-weight:bold; margin-top:4px;">-</div>
+    </div>
+
+    <!-- FIRE Progress Card -->
+    <div id="fireProgressCard" style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px; font-weight:bold;">FIRE Progress</div>
+        <div style="margin-top:12px; color:#666; font-size:13px;">Current Wealth</div>
+        <div id="fireCurrentWealth" style="font-size:18px; font-weight:bold; margin-top:4px;">-</div>
+        <div style="margin-top:12px; color:#666; font-size:13px;">FIRE Target</div>
+        <div id="fireTarget" style="font-size:18px; font-weight:bold; margin-top:4px;">-</div>
+        <div id="firePct" style="font-size:36px; font-weight:bold; margin-top:12px; color:#16a34a;">-</div>
+        <div id="fireLevel" style="font-size:14px; font-weight:bold; color:#2563eb; margin-top:4px;">-</div>
+        <div style="height:14px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:10px;">
+            <div id="fireBar" style="height:100%; width:0%; background:#16a34a; transition: width 0.3s;"></div>
+        </div>
+        <div style="margin-top:12px; color:#666; font-size:13px;">Remaining</div>
+        <div id="fireRemaining" style="margin-top:4px; font-size:18px; font-weight:bold; color:#dc2626;">-</div>
+        <div id="fireNeedPct" style="margin-top:4px; font-size:13px; font-weight:bold; color:#dc2626;">-</div>
+    </div>
+
+    <!-- Goal ETA Card -->
+    <div id="goalEtaCard" style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px;">Goal ETA</div>
+        <div id="etaStatus" style="font-size:24px; font-weight:bold; margin-top:8px;">-</div>
+        <div style="margin-top:12px; color:#666; font-size:13px;">Monthly Need</div>
+        <div id="etaMonthlyNeed" style="font-size:18px; font-weight:bold; margin-top:4px;">-</div>
+        <div style="margin-top:12px; color:#666; font-size:13px;">Estimated Time</div>
+        <div id="etaDuration" style="font-size:18px; font-weight:bold; margin-top:4px;">12 Months</div>
+        <div style="margin-top:12px; color:#666; font-size:13px;">Target Date</div>
+        <div id="etaTargetDate" style="font-size:18px; font-weight:bold; color:#2563eb; margin-top:4px;">Aug 2027</div>
+    </div>
+
+    <!-- Wealth History Chart Card -->
     <div style="
         border:1px solid #ddd;
         border-radius:12px;
-        padding:20px;
-        min-width:220px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
-        <div style="color:#666;">GPF</div>
-        <div id="gpfVal" style="
-            font-size:28px;
-            font-weight:bold;
-            margin-top:10px;
-        ">-</div>
-        <div id="gpfPct" style="
-            margin-top:8px;
-            color:#16a34a;
-            font-size:14px;
-            font-weight:bold;
-        "></div>
+        <div style="color:#666; font-size:13px; margin-bottom:12px;">Wealth History</div>
+        <canvas id="wealthChart" height="220"></canvas>
+        <div id="chartSummary" style="margin-top:12px; color:#666; font-size:13px;"></div>
     </div>
 
-</div>
+</div> <!-- ปิด Tab Daily Dashboard -->
+
+
+<!-- ================= TAB 2: ADVANCED ANALYTICS ================= -->
+<div id="tabAnalytics" style="display:none;">
+
+    <!-- Financial Health Score Card -->
+    <div id="financialHealthCard" style="
+        border:1px solid #bbf7d0;
+        border-radius:12px;
+        padding:16px;
+        background:#f0fdf4;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+    ">
+        <div>
+            <div style="color:#666; font-size:13px;">Financial Health Score</div>
+            <div id="healthScoreLabel" style="font-size:20px; font-weight:bold; color:#166534; margin-top:4px;">Excellent</div>
+            <div style="font-size:11px; color:#15803d; margin-top:4px;">High Progress • Positive Trend • Stable Assets</div>
+        </div>
+        <div id="healthScoreGrade" style="
+            font-size:36px; font-weight:bold; color:#ffffff; background:#16a34a;
+            width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+            box-shadow:0 4px 10px rgba(22,163,74,0.3);
+        ">A+</div>
+    </div>
+
+    <!-- Snapshots Card -->
+    <div id="historyCard" style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px;">Snapshots</div>
+        <div id="historyCount" style="font-size:24px; font-weight:bold; margin-top:8px;">-</div>
+        <div style="margin-top:10px; color:#666; font-size:13px;">Tracking Started</div>
+        <div style="margin-top:4px; font-weight:bold;">26 Aug 2026</div>
+        <div style="margin-top:12px; color:#666; font-size:13px;">Latest Snapshot</div>
+        <div id="latestSnapshotDate" style="margin-top:4px; font-weight:bold;">-</div>    
+        <div style="margin-top:12px; color:#666; font-size:13px;">Days Tracking</div>
+        <div id="trackingAge" style="margin-top:4px; font-weight:bold;">-</div>
+        <div style="margin-top:12px; color:#666; font-size:13px;">Latest Wealth</div>
+        <div id="latestWealth" style="margin-top:4px; font-weight:bold;">-</div>    
+        <div style="margin-top:12px; color:#666; font-size:13px;">Best Day</div>
+        <div id="bestDayValue" style="margin-top:4px; font-weight:bold; color:#16a34a;">-</div>
+    </div>
+
+    <!-- Diversification Score Card -->
+    <div style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px;">Diversification Score</div>
+        <div id="diversificationScore" style="margin-top:8px; font-size:36px; font-weight:bold;">-</div>
+        <div id="diversificationRating" style="margin-top:4px; font-weight:bold;">-</div>
+        <div id="diversificationDesc" style="margin-top:6px; font-size:12px; color:#666;">-</div>
+    </div>
+
+    <!-- Concentration Risk Card -->
+    <div id="concentrationRiskCard" style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px; font-weight:bold;">Top Concentration Risk</div>
+        <div style="color:#666; font-size:12px; margin-top:2px;">Concentration Risk</div>
+        <div id="concentrationPct" style="font-size:36px; font-weight:bold; margin-top:8px;">-</div>
+        <div id="concentrationLevel" style="font-size:18px; font-weight:bold; margin-top:4px;">-</div>
+    </div>
+
+    <!-- Portfolio Intelligence Card -->
+    <div style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+    ">
+        <div>
+            <div style="color:#666; font-size:13px;">Portfolio Intelligence</div>
+            <div id="portfolioIntelligenceScore" style="font-size:32px; font-weight:bold; margin-top:4px; color:#2563eb;">-</div>
+        </div>
+        <div id="portfolioIntelligenceGrade" style="
+            font-size:36px; font-weight:bold; color:#ffffff; background:#2563eb;
+            width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+            box-shadow:0 4px 10px rgba(37,99,235,0.3);
+        ">-</div>
+    </div>
+
+    <!-- Net Worth Ranking Card -->
+    <div id="netWorthRankingCard" style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px; font-weight:bold;">Net Worth Ranking</div>
+        <div style="color:#666; font-size:12px; margin-top:2px; margin-bottom:12px;">Portfolio Ranking</div>
+        <div id="rankingList" style="display:flex; flex-direction:column; gap:10px;">-</div>
+    </div>
+
+    <!-- Achievement System Card -->
+    <div style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px; font-weight:bold; margin-bottom:12px;">Achievement System</div>
+        <div style="color:#666; font-size:12px; margin-bottom:4px;">Next Achievement</div>
+        <div id="nextAchievementTitle" style="font-size:16px; font-weight:bold; color:#2563eb;">-</div>
+        <div style="color:#666; font-size:12px; margin-top:8px; margin-bottom:4px;">Progress</div>
+        <div id="nextAchievementProgress" style="font-size:16px; font-weight:bold; margin-bottom:4px;">-</div>
+        <div style="height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:8px;">
+            <div id="achievementBar" style="height:100%; background:#2563eb; width:0%;"></div>
+        </div>
+        <div id="achievementEta" style="margin-top:6px; font-size:12px; font-weight:bold; color:#16a34a;">-</div>
+        <hr style="border:none; border-top:1px solid #eee; margin:12px 0;">
+        <div style="color:#666; font-size:12px; margin-bottom:8px;">Achievements</div>
+        <div id="achievementsList" style="font-size:14px; display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+
+    <!-- Largest Asset Card -->
+    <div id="largestAssetCard" style="
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        max-width:500px;
+        margin-bottom:20px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px;">Largest Asset</div>
+        <div id="largestAssetName" style="font-size:24px; font-weight:bold; margin-top:8px;">-</div>
+        <div id="largestAssetPct" style="margin-top:4px; font-weight:bold; color:#16a34a;">-</div>
+        <div id="largestAssetValue" style="margin-top:4px; color:#666;"></div>
+    </div>
+
+</div> <!-- ปิด Tab Analytics -->
+
 
 <!-- โหลด Supabase SDK และ Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1203,21 +314,41 @@
 const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw';
 
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabaseClient = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+function switchTab(tab) {
+    const btnDaily = document.getElementById('btnDaily');
+    const btnAnalytics = document.getElementById('btnAnalytics');
+    const tabDaily = document.getElementById('tabDaily');
+    const tabAnalytics = document.getElementById('tabAnalytics');
+
+    if (tab === 'daily') {
+        tabDaily.style.display = 'block';
+        tabAnalytics.style.display = 'none';
+        btnDaily.style.background = '#2563eb';
+        btnDaily.style.color = '#ffffff';
+        btnDaily.style.border = 'none';
+        btnAnalytics.style.background = '#f3f4f6';
+        btnAnalytics.style.color = '#374151';
+        btnAnalytics.style.border = '1px solid #ddd';
+    } else {
+        tabDaily.style.display = 'none';
+        tabAnalytics.style.display = 'block';
+        btnAnalytics.style.background = '#2563eb';
+        btnAnalytics.style.color = '#ffffff';
+        btnAnalytics.style.border = 'none';
+        btnDaily.style.background = '#f3f4f6';
+        btnDaily.style.color = '#374151';
+        btnDaily.style.border = '1px solid #ddd';
+    }
+}
 
 function formatDate(dateStr) {
     if (!dateStr) return '-';
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return dateStr;
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = date.getDate();
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 async function loadDashboard() {
@@ -1248,7 +379,6 @@ async function loadDashboard() {
     const dailyChange = totalWealth - yesterdayWealth;
     const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
     
-    // คำนวณเปอร์เซ็นต์แต่ละพอร์ตสำหรับ Share of Wealth
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
 
@@ -1258,7 +388,7 @@ async function loadDashboard() {
     ];
     ports.sort((a, b) => b.value - a.value);
 
-    // 1. อัปเดต Net Worth Ranking List พร้อม Share of Wealth
+    // Net Worth Ranking
     let rankingHtml = '';
     ports.forEach((p, index) => {
         rankingHtml += `
@@ -1270,17 +400,17 @@ async function loadDashboard() {
     });
     document.getElementById('rankingList').innerHTML = rankingHtml;
 
-    // 2. อัปเดต Top Concentration Risk Card
+    // Concentration Risk
     const largestAssetPct = (ports[0].value / totalWealth) * 100;
     let riskLevel = 'Low';
-    let riskColor = '#16a34a'; // เขียว
+    let riskColor = '#16a34a';
 
     if (largestAssetPct >= 80) {
         riskLevel = 'High';
-        riskColor = '#dc2626'; // แดง
+        riskColor = '#dc2626';
     } else if (largestAssetPct >= 50) {
         riskLevel = 'Medium';
-        riskColor = '#d97706'; // ส้ม
+        riskColor = '#d97706';
     }
 
     document.getElementById('concentrationPct').innerText = largestAssetPct.toFixed(2) + '%';
@@ -1288,29 +418,7 @@ async function loadDashboard() {
     document.getElementById('concentrationLevel').innerText = riskLevel;
     document.getElementById('concentrationLevel').style.color = riskColor;
 
-    // 2.1 Portfolio Advisor (Rebalancing Advisor) Logic
-    let advisorStatusText = '';
-    if (largestAssetPct > 80) {
-        advisorStatusText = '⚠ Highly Concentrated';
-    } else if (largestAssetPct > 60) {
-        advisorStatusText = '⚠ Moderately Concentrated';
-    } else {
-        advisorStatusText = '✔ Well Diversified';
-    }
-
-    document.getElementById('advisorStatus').innerText = advisorStatusText;
-    document.getElementById('advisorCurrent').innerText = `GPF ${gpfPctVal.toFixed(2)}%\nMFC ${mfcPctVal.toFixed(2)}%`.replace(/\n/g, '<br>');
-    document.getElementById('advisorTarget').innerHTML = 'GPF 70%<br>MFC 30%';
-    
-    const targetGpfAmount = totalWealth * 0.70;
-    const diffGpf = gpfTotal - targetGpfAmount;
-    if (diffGpf > 0) {
-        document.getElementById('advisorAction').innerText = `Move ฿${Math.round(diffGpf).toLocaleString('en-US')} from GPF to Growth Assets`;
-    } else {
-        document.getElementById('advisorAction').innerText = `Portfolio is balanced according to target.`;
-    }
-
-    // 3. คำนวณ Diversification Score พร้อมคำอธิบาย
+    // Diversification Score
     const diversificationScore = 100 - largestAssetPct;
     let diversificationRating = '';
     let divColor = '';
@@ -1338,34 +446,48 @@ async function loadDashboard() {
     document.getElementById('diversificationRating').style.color = divColor;
     document.getElementById('diversificationDesc').innerText = `Portfolio heavily dependent on ${ports[0].name}`;
 
-    // คำนวณ FIRE Progress Card
+    // FIRE Progress
     const fireTarget = 5000000;
     const fireProgress = (totalWealth / fireTarget) * 100;
     const fireRemaining = fireTarget - totalWealth;
     const fireNeedPct = 100 - fireProgress;
 
-    document.getElementById('fireCurrentWealth').innerText =
-        '฿' + totalWealth.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+    document.getElementById('fireCurrentWealth').innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('fireTarget').innerText = '฿' + fireTarget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('firePct').innerText = fireProgress.toFixed(2) + '%';
 
-    document.getElementById('fireTarget').innerText =
-        '฿' + fireTarget.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+    let fireLevelText = '';
+    if (fireProgress < 20) fireLevelText = '🌱 Level 1 • Beginner';
+    else if (fireProgress < 40) fireLevelText = '🛠️ Level 2 • Builder';
+    else if (fireProgress < 60) fireLevelText = '💼 Level 3 • Investor';
+    else if (fireProgress < 80) fireLevelText = '📈 Level 4 • Advanced';
+    else if (fireProgress < 100) fireLevelText = '🔥 Level 5 • FIRE Ready';
+    else fireLevelText = '🏆 Level 6 • Financial Freedom';
 
-    document.getElementById('firePct').innerText =
-        fireProgress.toFixed(2) + '%';
+    document.getElementById('fireLevel').innerText = fireLevelText;
 
-    // 4. คำนวณ Portfolio Intelligence Score & Grade
-    const portfolioIntelligenceScore = (
-        fireProgress * 0.5 +
-        diversificationScore * 0.3 +
-        (100 - largestAssetPct) * 0.2
-    );
+    const fireBar = document.getElementById('fireBar');
+    fireBar.style.width = Math.min(fireProgress, 100) + '%';
+    if (fireProgress < 25) fireBar.style.backgroundColor = '#dc2626';
+    else if (fireProgress < 50) fireBar.style.backgroundColor = '#f97316';
+    else if (fireProgress < 75) fireBar.style.backgroundColor = '#eab308';
+    else fireBar.style.backgroundColor = '#16a34a';
 
+    document.getElementById('fireRemaining').innerText = '฿' + fireRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('fireNeedPct').innerText = 'Need ' + fireNeedPct.toFixed(2) + '% More';
+
+    const gainAmount = dailyChange > 0 ? dailyChange : 0;
+    const annualGrowth = gainAmount * 365;
+    if (annualGrowth > 0) {
+        const yearsToFire = fireRemaining / annualGrowth;
+        const currentYear = new Date().getFullYear();
+        document.getElementById('fireEta').innerText = `${yearsToFire.toFixed(1)} Years (${Math.round(currentYear + yearsToFire)})`;
+    } else {
+        document.getElementById('fireEta').innerText = 'Calculating growth...';
+    }
+
+    // Portfolio Intelligence
+    const portfolioIntelligenceScore = (fireProgress * 0.5 + diversificationScore * 0.3 + (100 - largestAssetPct) * 0.2);
     let piGrade = 'C';
     if (portfolioIntelligenceScore >= 80) piGrade = 'A+';
     else if (portfolioIntelligenceScore >= 70) piGrade = 'A';
@@ -1375,21 +497,11 @@ async function loadDashboard() {
     document.getElementById('portfolioIntelligenceScore').innerText = portfolioIntelligenceScore.toFixed(0) + '/100';
     document.getElementById('portfolioIntelligenceGrade').innerText = piGrade;
 
-    // 5. Achievement System Logic & Next Achievement
+    // Achievement System
     let achievements = [];
-
-    if (history.length >= 1)
-        achievements.push('✅ First Snapshot');
-
-    if (totalWealth >= 1000000)
-        achievements.push('✅ Wealth > ฿1M');
-    else
-        achievements.push('⏳ Wealth > ฿1M');
-
-    if (totalWealth >= 1500000)
-        achievements.push('✅ Wealth > ฿1.5M');
-    else
-        achievements.push('⏳ Wealth > ฿1.5M');
+    if (history.length >= 1) achievements.push('✅ First Snapshot');
+    if (totalWealth >= 1000000) achievements.push('✅ Wealth > ฿1M'); else achievements.push('⏳ Wealth > ฿1M');
+    if (totalWealth >= 1500000) achievements.push('✅ Wealth > ฿1.5M'); else achievements.push('⏳ Wealth > ฿1.5M');
 
     const doubleMillionTarget = 2000000;
     const achievementPct = Math.min((totalWealth / doubleMillionTarget) * 100, 100);
@@ -1404,8 +516,6 @@ async function loadDashboard() {
         achievements.push(`⏳ Wealth > ฿2M (${achievementPct.toFixed(2)}% หรือ Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`);
         document.getElementById('nextAchievementTitle').innerText = '💎 Double Million';
         document.getElementById('nextAchievementProgress').innerText = `${achievementPct.toFixed(2)}% (Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`;
-        
-        // กำหนด ETA หรือ 🔥 Almost Unlocked
         if (achievementPct >= 90) {
             document.getElementById('achievementEta').innerText = '🔥 Almost Unlocked';
         } else {
@@ -1414,449 +524,101 @@ async function loadDashboard() {
     }
 
     document.getElementById('achievementBar').style.width = achievementPct + '%';
-
-    if (fireProgress >= 50)
-        achievements.push('✅ FIRE Progress > 50%');
-    else
-        achievements.push('⏳ FIRE Progress > 50%');
-
-    if (diversificationScore >= 50)
-        achievements.push('✅ Diversification > 50');
-    else
-        achievements.push('⏳ Diversification > 50');
+    if (fireProgress >= 50) achievements.push('✅ FIRE Progress > 50%'); else achievements.push('⏳ FIRE Progress > 50%');
+    if (diversificationScore >= 50) achievements.push('✅ Diversification > 50'); else achievements.push('⏳ Diversification > 50');
 
     document.getElementById('achievementsList').innerHTML = achievements.join('<br>');
 
-    // คำนวณ FIRE Level 6 ระดับใหม่
-    let fireLevelText = '';
-    if (fireProgress < 20) {
-        fireLevelText = '🌱 Level 1 • Beginner';
-    } else if (fireProgress < 40) {
-        fireLevelText = '🛠️ Level 2 • Builder';
-    } else if (fireProgress < 60) {
-        fireLevelText = '💼 Level 3 • Investor';
-    } else if (fireProgress < 80) {
-        fireLevelText = '📈 Level 4 • Advanced';
-    } else if (fireProgress < 100) {
-        fireLevelText = '🔥 Level 5 • FIRE Ready';
-    } else {
-        fireLevelText = '🏆 Level 6 • Financial Freedom';
-    }
-    document.getElementById('fireLevel').innerText = fireLevelText;
-
-    // FIRE Progress Bar สีแบ่งช่วง
-    const fireBar = document.getElementById('fireBar');
-    fireBar.style.width = Math.min(fireProgress, 100) + '%';
-    if (fireProgress < 25) {
-        fireBar.style.backgroundColor = '#dc2626';
-    } else if (fireProgress < 50) {
-        fireBar.style.backgroundColor = '#f97316';
-    } else if (fireProgress < 75) {
-        fireBar.style.backgroundColor = '#eab308';
-    } else {
-        fireBar.style.backgroundColor = '#16a34a';
-    }
-
-    document.getElementById('fireRemaining').innerText =
-        '฿' + fireRemaining.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-    document.getElementById('fireNeedPct').innerText =
-        'Need ' + fireNeedPct.toFixed(2) + '% More';
-
-    // คำนวณ FIRE ETA
-    const gainAmount = dailyChange > 0 ? dailyChange : 0;
-    const annualGrowth = gainAmount * 365;
-
-    if (annualGrowth > 0) {
-        const yearsToFire = fireRemaining / annualGrowth;
-        const currentYear = new Date().getFullYear();
-        const targetYear = Math.round(currentYear + yearsToFire);
-        document.getElementById('fireEta').innerText = `${yearsToFire.toFixed(1)} Years (${targetYear})`;
-    } else {
-        document.getElementById('fireEta').innerText = 'Calculating growth...';
-    }
-
-    // คำนวณ FIRE Milestone Ladder
-    const milestones = [40, 50, 60, 70, 80, 100];
-    let ladderHtml = '';
-    let foundNext = false;
-
-    milestones.forEach(m => {
-        if (fireProgress >= m) {
-            if (m === 100) {
-                ladderHtml += `<div><strong>🏆 100%</strong></div>`;
-            } else {
-                ladderHtml += `<div><strong>✅ ${m}%</strong></div>`;
-            }
-        } else if (!foundNext) {
-            const awayPct = (m - fireProgress).toFixed(2);
-            ladderHtml += `<div style="color:#2563eb;"><strong>⏳ ${m}%</strong> &nbsp;(${awayPct}% Away)</div>`;
-            foundNext = true;
-        } else {
-            if (m === 100) {
-                ladderHtml += `<div style="color:#9ca3af;"><strong>🏆 100%</strong></div>`;
-            } else {
-                ladderHtml += `<div style="color:#9ca3af;"><strong>🔒 ${m}%</strong></div>`;
-            }
-        }
-    });
-
-    document.getElementById('fireMilestoneLadder').innerHTML = ladderHtml;
-
-    // เตรียมข้อมูลกราฟ
-    const chartLabels = history.map(h => h.date);
-    const chartValues = history.map(h => h.wealth);
-
+    // Snapshots & History
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
-
     const exists = history.find(h => h.date === today);
     if (!exists) {
-        history.push({
-            date: today,
-            wealth: totalWealth
-        });
+        history.push({ date: today, wealth: totalWealth });
         localStorage.setItem('wealthHistory', JSON.stringify(history));
     }
 
     document.getElementById('historyCount').innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
 
-    let highestWealth = 0;
-    let lowestWealth = 0;
-    let wealthRange = 0;
-
     if (history.length > 0) {
         const latestSnapshot = history[history.length - 1];
-        
         const wealthValues = history.map(h => h.wealth);
-        highestWealth = Math.max(...wealthValues);
-        lowestWealth = Math.min(...wealthValues);
-        wealthRange = highestWealth - lowestWealth;
+        const highestWealth = Math.max(...wealthValues);
+        const lowestWealth = Math.min(...wealthValues);
 
-        document.getElementById('latestWealth').innerText =
-            '฿' + latestSnapshot.wealth.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-
+        document.getElementById('latestWealth').innerText = '฿' + latestSnapshot.wealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
 
         const startDate = new Date('2026-08-26');
-        const endDate = new Date(latestSnapshot.date || today);
-        const diffTime = Math.abs(endDate - startDate);
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        const diffDays = Math.floor(Math.abs(new Date(latestSnapshot.date || today) - startDate) / (1000 * 60 * 60 * 24)) + 1;
         document.getElementById('trackingAge').innerText = diffDays;
 
-        let recentValChange = dailyChange;
-        let recentPctChange = dailyChangePct;
-
-        if (history.length >= 2) {
-            const current = history[history.length - 1].wealth;
-            const previous = history[history.length - 2].wealth;
-            recentValChange = current - previous;
-            recentPctChange = (recentValChange / previous) * 100;
-        }
-
-        const signVal = recentValChange >= 0 ? '▲ ฿' : '▼ ฿';
-        const signPct = recentValChange >= 0 ? '▲ ' : '▼ ';
-        const colorChange = recentValChange >= 0 ? '#16a34a' : '#dc2626';
-
-        document.getElementById('latestChangeValue').innerText =
-            signVal + Math.abs(recentValChange).toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        document.getElementById('latestChangeValue').style.color = colorChange;
-
-        document.getElementById('latestChangePct').innerText =
-            signPct + Math.abs(recentPctChange).toFixed(2) + '%';
-        document.getElementById('latestChangePct').style.color = colorChange;
-
-        let maxGainVal = 0;
-        let maxGainPct = 0;
-
-        for (let i = 1; i < history.length; i++) {
-            const prevWealth = history[i - 1].wealth;
-            const currWealth = history[i].wealth;
-            const diffVal = currWealth - prevWealth;
-            const diffPct = (diffVal / prevWealth) * 100;
-
-            if (diffVal > maxGainVal) {
-                maxGainVal = diffVal;
-                maxGainPct = diffPct;
-            }
-        }
-
-        if (maxGainVal === 0 && history.length <= 1) {
-            maxGainVal = dailyChange > 0 ? dailyChange : 0;
-            maxGainPct = dailyChangePct > 0 ? dailyChangePct : 0;
-        }
-
+        let maxGainVal = dailyChange > 0 ? dailyChange : 0;
+        let maxGainPct = dailyChangePct > 0 ? dailyChangePct : 0;
         document.getElementById('bestDayValue').innerHTML =
-            '<div style="color:#16a34a;">▲ ฿' + maxGainVal.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }) + '</div>' +
+            '<div style="color:#16a34a;">▲ ฿' + maxGainVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>' +
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
-    // คำนวณ Wealth Trend Card
+    // Wealth Trend
     let trend = '';
     let trendColor = '';
-
-    if (dailyChangePct > 0) {
-        trend = '↗ Increasing';
-        trendColor = '#16a34a';
-    } else if (dailyChangePct < 0) {
-        trend = '↘ Decreasing';
-        trendColor = '#dc2626';
-    } else {
-        trend = '→ Flat';
-        trendColor = '#666666';
-    }
+    if (dailyChangePct > 0) { trend = '↗ Increasing'; trendColor = '#16a34a'; }
+    else if (dailyChangePct < 0) { trend = '↘ Decreasing'; trendColor = '#dc2626'; }
+    else { trend = '→ Flat'; trendColor = '#666666'; }
 
     document.getElementById('trendDirection').innerText = trend;
     document.getElementById('trendDirection').style.color = trendColor;
     document.getElementById('trendPct').innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%';
     document.getElementById('trendPct').style.color = trendColor;
 
-    // คำนวณ History Progress Card (7 วัน)
-    const progress = Math.min((history.length / 7) * 100, 100);
-    document.getElementById('progressPctLabel').innerText = Math.round(progress) + '%';
-    document.getElementById('progressDaysLabel').innerText = history.length + ' / 7 Days';
-
-    // คำนวณ Weekly Change Card
-    if (history.length < 7) {
-        const daysNeeded = 7 - history.length;
-        const dayUnit = daysNeeded === 1 ? 'day' : 'days';
-        document.getElementById('weeklyChangeValue').innerText = `${daysNeeded} more ${dayUnit} required`;
-    } else {
-        const past7Wealth = history[history.length - 7].wealth;
-        const weekChange = totalWealth - past7Wealth;
-        const weekChangePct = (weekChange / past7Wealth) * 100;
-        const sign = weekChange >= 0 ? '+' : '';
-        document.getElementById('weeklyChangeValue').innerText = `${sign}${weekChangePct.toFixed(2)}% (7D)`;
-        document.getElementById('weeklyChangeValue').style.color = weekChange >= 0 ? '#16a34a' : '#dc2626';
-    }
-
-    // คำนวณ Wealth Milestone
-    const wealthTarget = 2000000;
-    const milestonePct = (totalWealth / wealthTarget) * 100;
-    const remainingToGoal = wealthTarget - totalWealth;
-    const goalGapPct = ((wealthTarget - totalWealth) / wealthTarget) * 100;
+    // Goal ETA
+    const remainingToGoal = fireTarget - totalWealth;
     const monthlyNeed = remainingToGoal / 12;
+    document.getElementById('etaMonthlyNeed').innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
 
-    document.getElementById('milestonePct').innerText = milestonePct.toFixed(2) + '%';
-    document.getElementById('milestoneBar').style.width = Math.min(milestonePct, 100) + '%';
-
-    let milestoneMessage = '';
-    if (milestonePct >= 90) {
-        milestoneMessage = '🎯 Almost there!';
-    } else if (milestonePct >= 75) {
-        milestoneMessage = '🚀 Great progress!';
-    } else {
-        milestoneMessage = '💪 Keep building!';
-    }
-    document.getElementById('milestoneMessage').innerText = milestoneMessage;
-
-    const nextMilestone = 1900000;
-    const nextMilestoneRemaining = Math.max(nextMilestone - totalWealth, 0);
-    document.getElementById('nextMilestoneVal').innerText =
-        '฿' + nextMilestone.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    document.getElementById('nextMilestoneRemaining').innerText =
-        '฿' + nextMilestoneRemaining.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-    document.getElementById('remainingGoal').innerText =
-        '฿' + remainingToGoal.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    document.getElementById('goalGapPct').innerText = 'Need +' + goalGapPct.toFixed(2) + '%';
-    document.getElementById('monthlyNeed').innerText =
-        'Need ฿' + Math.round(monthlyNeed).toLocaleString('en-US') + ' / Month for 12 Months';
-
-    // คำนวณ Goal ETA
-    let etaStatusText = '';
-    let etaStatusColor = '';
-
-    if (monthlyNeed <= 5000) {
-        etaStatusText = '🚀 Ahead of Schedule';
-        etaStatusColor = '#16a34a';
-    } else if (monthlyNeed <= 15000) {
-        etaStatusText = '✅ On Track';
-        etaStatusColor = '#2563eb';
-    } else if (monthlyNeed <= 25000) {
-        etaStatusText = '⚠ Needs Improvement';
-        etaStatusColor = '#d97706';
-    } else {
-        etaStatusText = '🔴 Behind Schedule';
-        etaStatusColor = '#dc2626';
-    }
-
-    document.getElementById('etaStatus').innerText = etaStatusText;
-    document.getElementById('etaStatus').style.color = etaStatusColor;
-
-    document.getElementById('etaMonthlyNeed').innerText =
-        '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
-
-    const etaMonths = 12;
-    const targetDate = new Date();
-    targetDate.setMonth(targetDate.getMonth() + etaMonths);
-    const etaMonthName = targetDate.toLocaleString('en-US', { month: 'short' });
-    const etaYear = targetDate.getFullYear();
-
-    document.getElementById('etaDuration').innerText = etaMonths + ' Months';
-    document.getElementById('etaTargetDate').innerText = `${etaMonthName} ${etaYear}`;
-
-    // คำนวณ Financial Health Score
+    // Financial Health
+    const milestonePct = (totalWealth / fireTarget) * 100;
     let grade = 'A+';
     let label = 'Excellent';
-
-    if (milestonePct >= 90 && dailyChange >= 0) {
-        grade = 'A+';
-        label = 'Excellent';
-    } else if (milestonePct >= 75) {
-        grade = 'A';
-        label = 'Very Good';
-    } else {
-        grade = 'B+';
-        label = 'Good';
-    }
+    if (milestonePct >= 90 && dailyChange >= 0) { grade = 'A+'; label = 'Excellent'; }
+    else if (milestonePct >= 75) { grade = 'A'; label = 'Very Good'; }
+    else { grade = 'B+'; label = 'Good'; }
 
     document.getElementById('healthScoreGrade').innerText = grade;
     document.getElementById('healthScoreLabel').innerText = label;
 
-    localStorage.setItem('wealth_current', totalWealth);
-
-    const mfcPct = (mfcTotal / totalWealth) * 100;
-    const gpfPct = (gpfTotal / totalWealth) * 100;
-
+    // Largest Asset
     const largestAsset = gpfTotal > mfcTotal ? 'GPF' : 'MFC';
-    const largestAssetPctVal = gpfTotal > mfcTotal ? gpfPct : mfcPct;
+    const largestAssetPctVal = gpfTotal > mfcTotal ? gpfPctVal : mfcPctVal;
     const largestAssetValue = gpfTotal > mfcTotal ? gpfTotal : mfcTotal;
 
-    document.getElementById('totalWealth').innerText =
-        '฿' + totalWealth.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+    document.getElementById('largestAssetName').innerHTML = '<span style="color:#16a34a;">' + largestAsset + '</span>';
+    document.getElementById('largestAssetPct').innerText = largestAssetPctVal.toFixed(2) + '%';
+    document.getElementById('largestAssetValue').innerText = '฿' + largestAssetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    document.getElementById('mfcVal').innerText =
-        '฿' + mfcTotal.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+    // Allocation & General Info
+    document.getElementById('totalWealth').innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('mfcBar').style.width = mfcPctVal + '%';
+    document.getElementById('gpfBar').style.width = gpfPctVal + '%';
+    document.getElementById('allocationLegend').innerHTML = `<span style="color:#2563eb;">■</span> MFC ${mfcPctVal.toFixed(2)}% &nbsp;&nbsp;&nbsp; <span style="color:#16a34a;">■</span> GPF ${gpfPctVal.toFixed(2)}%`;
 
-    document.getElementById('mfcPct').innerText = mfcPct.toFixed(2) + '%';
+    document.getElementById('dailyChangeValue').innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('dailyChangePct').innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
+    document.getElementById('dailyChangeValue').style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
+    document.getElementById('dailyChangePct').style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
 
-    document.getElementById('gpfVal').innerText =
-        '฿' + gpfTotal.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+    document.getElementById('lastUpdated').innerText = 'Updated: ' + now.toLocaleString();
 
-    document.getElementById('gpfPct').innerText = gpfPct.toFixed(2) + '%';
-
-    document.getElementById('mfcBar').style.width = mfcPct + '%';
-    document.getElementById('gpfBar').style.width = gpfPct + '%';
-
-    document.getElementById('dailyChangeValue').innerText =
-        (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-    document.getElementById('dailyChangePct').innerText =
-        (dailyChangePct >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
-
-    if (dailyChange >= 0) {
-        document.getElementById('dailyChangeValue').style.color = '#16a34a';
-        document.getElementById('dailyChangePct').style.color = '#16a34a';
-    } else {
-        document.getElementById('dailyChangeValue').style.color = '#dc2626';
-        document.getElementById('dailyChangePct').style.color = '#dc2626';
-    }
-
-    document.getElementById('allocationLegend').innerHTML =
-        '<span style="color:#2563eb;">■</span> MFC ' +
-        mfcPct.toFixed(2) +
-        '% &nbsp;&nbsp;&nbsp; <span style="color:#16a34a;">■</span> GPF ' +
-        gpfPct.toFixed(2) +
-        '%';
-
-    document.getElementById('largestAssetName').innerHTML =
-        '<span style="color:#16a34a;">' + largestAsset + '</span>';
-
-    document.getElementById('largestAssetPct').innerText =
-        largestAssetPctVal.toFixed(2) + '%';
-
-    document.getElementById('largestAssetValue').innerText =
-        '฿' + largestAssetValue.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-    document.getElementById('lastUpdated').innerText =
-        'Updated: ' + now.toLocaleString();
-
-    document.getElementById('highestWealth').innerText =
-        '฿' + highestWealth.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-    document.getElementById('lowestWealth').innerText =
-        '฿' + lowestWealth.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-
-    if (history.length < 2) {
-        document.getElementById('historyCalcSection').style.display = 'none';
-        document.getElementById('notEnoughHistory').style.display = 'block';
-
-        const historyProgress = Math.min((history.length / 7) * 100, 100);
-        document.getElementById('historyProgressBar').style.width = historyProgress + '%';
-        document.getElementById('historyProgressPct').innerText = historyProgress.toFixed(0) + '%';
-
-        document.getElementById('historyStatus').innerText =
-            'Building history... ' + history.length + ' of 7 snapshots collected';
-    } else {
-        document.getElementById('historyCalcSection').style.display = 'block';
-        document.getElementById('notEnoughHistory').style.display = 'none';
-
-        document.getElementById('wealthRange').innerText =
-            '▲ ฿' + wealthRange.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-
-        const avgGain = wealthRange / Math.max(history.length, 1);
-        document.getElementById('avgGain').innerText =
-            '฿' + avgGain.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-    }
-
+    // Chart.js
     const ctx = document.getElementById('wealthChart');
-
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: chartLabels,
+            labels: history.map(h => h.date),
             datasets: [{
                 label: 'Total Wealth',
-                data: chartValues,
+                data: history.map(h => h.wealth),
                 borderColor: '#16a34a',
                 backgroundColor: 'rgba(22,163,74,0.15)',
                 borderWidth: 3,
@@ -1867,33 +629,12 @@ async function loadDashboard() {
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return '฿' + (value / 1000000).toFixed(1) + 'M';
-                        }
-                    }
-                }
-            }
+            plugins: { legend: { display: false } },
+            scales: { y: { grid: { display: false }, ticks: { callback: function(value) { return '฿' + (value / 1000000).toFixed(1) + 'M'; } } } }
         }
     });
 
-    if (history.length < 2) {
-        document.getElementById('chartSummary').innerText =
-            'Collecting data for trend analysis';
-    } else {
-        document.getElementById('chartSummary').innerText =
-            'Tracking ' + history.length + ' Snapshots';
-    }
+    document.getElementById('chartSummary').innerText = history.length < 2 ? 'Collecting data for trend analysis' : 'Tracking ' + history.length + ' Snapshots';
 }
 
 loadDashboard();
