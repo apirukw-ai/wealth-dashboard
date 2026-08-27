@@ -105,7 +105,7 @@
             </div>
         </div>
 
-        <!--แถวแรก: Portfolio Gain, FIRE Forecast, Asset Allocation -->
+        <!-- แถวแรก: Portfolio Gain, FIRE Forecast, Asset Allocation -->
         <!-- 1. Portfolio Gain Card -->
         <div id="dailyChangeCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:500;">Portfolio Gain</div>
@@ -212,7 +212,7 @@
             </div>
         </div>
 
-        <!-- Goal ETA Card (แก้ไขดึงค่า totalWealth คำนวณถูกต้อง) -->
+        <!-- Goal ETA Card -->
         <div id="goalEtaCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:500;">Goal ETA</div>
             <div id="etaStatus" class="financial-val" style="font-size:20px; margin-top:8px;">-</div>
@@ -222,6 +222,14 @@
             <div style="display:flex; justify-content:space-between; margin-top:2px;">
                 <span id="etaDuration" class="financial-val" style="font-size:15px;">12 Months</span>
                 <span id="etaTargetDate" class="financial-val" style="font-size:15px; color:#38bdf8;">2027</span>
+            </div>
+        </div>
+
+        <!-- ACHIEVEMENT SYSTEM CARD (ขนาดเต็มแถว วางไว้ใต้ FIRE Progress และ Goal ETA ตามสั่ง) -->
+        <div class="luxury-card card-full">
+            <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
+            <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 14px;">
+                <!-- จะถูกเติมด้วย Javascript ด้านล่าง -->
             </div>
         </div>
 
@@ -312,22 +320,6 @@
                 <div style="color:#94a3b8; font-size:13px; font-weight:600;">Net Worth Ranking</div>
                 <div style="color:#94a3b8; font-size:11px; margin-top:2px; margin-bottom:12px;">Portfolio Ranking</div>
                 <div id="rankingList" style="display:flex; flex-direction:column; gap:10px;">-</div>
-            </div>
-
-            <!-- Achievement System Card -->
-            <div class="luxury-card card-full">
-                <div style="color:#94a3b8; font-size:13px; font-weight:600; margin-bottom:10px;">Achievement System</div>
-                <div style="color:#94a3b8; font-size:11px; margin-bottom:2px;">Next Achievement</div>
-                <div id="nextAchievementTitle" class="financial-val" style="font-size:15px; color:#38bdf8;">-</div>
-                <div style="color:#94a3b8; font-size:11px; margin-top:6px; margin-bottom:2px;">Progress</div>
-                <div id="nextAchievementProgress" class="financial-val" style="font-size:14px; margin-bottom:4px; color:#fff;">-</div>
-                <div style="height:8px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; margin-top:6px;">
-                    <div id="achievementBar" style="height:100%; background:#38bdf8; width:0%;"></div>
-                </div>
-                <div id="achievementEta" style="margin-top:6px; font-size:11px; font-weight:600; color:#34d399;">-</div>
-                <hr style="border:none; border-top:1px solid #334155; margin:12px 0;">
-                <div style="color:#94a3b8; font-size:11px; margin-bottom:6px;">Achievements</div>
-                <div id="achievementsList" style="font-size:13px; display:flex; flex-direction:column; gap:6px; color:#e2e8f0;"></div>
             </div>
 
             <!-- Largest Asset Card -->
@@ -519,7 +511,6 @@ function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
 function renderGoalEta(totalWealth) {
     const FIRE_TARGET = 5000000;
     const remaining = Math.max(FIRE_TARGET - totalWealth, 0);
-    // สมมติเวลาเป้าหมายเหลือ 12 เดือน (หรือ 1 ปี ตามเดิมที่คุณตั้งไว้)
     const monthsLeft = 12;
     const monthlyNeed = remaining / monthsLeft;
 
@@ -551,46 +542,34 @@ function renderGoalEta(totalWealth) {
     return goalStatus;
 }
 
-function renderAchievements(totalWealth, history, fireProgress, diversificationScore) {
-    let achievements = [];
-    if (history.length >= 1) achievements.push('✅ First Snapshot');
-    if (totalWealth >= 1000000) achievements.push('✅ Wealth > ฿1M'); else achievements.push('⏳ Wealth > ฿1M');
-    if (totalWealth >= 1500000) achievements.push('✅ Wealth > ฿1.5M'); else achievements.push('⏳ Wealth > ฿1.5M');
+// --- ฟังก์ชันระบบ Achievements ใหม่ตามโจทย์ ---
+function renderAchievementsList(totalWealth, fireProgress) {
+    const achievementsEl = document.getElementById('achievementsGridList');
+    if (!achievementsEl) return;
 
-    const doubleMillionTarget = 2000000;
-    const achievementPct = Math.min((totalWealth / doubleMillionTarget) * 100, 100);
-    const doubleMillionRemaining = Math.max(doubleMillionTarget - totalWealth, 0);
+    const list = [
+        { name: 'Millionaire', unlocked: totalWealth >= 1000000 },
+        { name: 'Two Million Club', unlocked: totalWealth >= 2000000 },
+        { name: 'FIRE 50%', unlocked: fireProgress >= 50 },
+        { name: 'Three Million Club', unlocked: totalWealth >= 3000000 },
+        { name: 'FIRE 75%', unlocked: fireProgress >= 75 },
+        { name: 'FIRE Achieved', unlocked: fireProgress >= 100 }
+    ];
 
-    const titleEl = document.getElementById('nextAchievementTitle');
-    const progEl = document.getElementById('nextAchievementProgress');
-    const etaEl = document.getElementById('achievementEta');
+    let html = '';
+    list.forEach(item => {
+        const icon = item.unlocked ? '✅' : '🔒';
+        const color = item.unlocked ? '#34d399' : '#64748b';
+        const fontWeight = item.unlocked ? '600' : '400';
+        html += `
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: ${color}; font-weight: ${fontWeight};">
+                <span>${icon}</span>
+                <span>${item.name}</span>
+            </div>
+        `;
+    });
 
-    if (totalWealth >= doubleMillionTarget) {
-        achievements.push('✅ Wealth > ฿2M');
-        if (titleEl) titleEl.innerText = '💎 Ultimate Freedom';
-        if (progEl) progEl.innerText = 'Completed!';
-        if (etaEl) etaEl.innerText = '🏆 Goal Achieved!';
-    } else {
-        achievements.push(`⏳ Wealth > ฿2M (${achievementPct.toFixed(2)}% หรือ Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`);
-        if (titleEl) titleEl.innerText = '💎 Double Million';
-        if (progEl) progEl.innerText = `${achievementPct.toFixed(2)}% (Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`;
-        if (etaEl) {
-            if (achievementPct >= 90) {
-                etaEl.innerText = '🔥 Almost Unlocked';
-            } else {
-                etaEl.innerText = 'ETA: ~12 Months';
-            }
-        }
-    }
-
-    const barEl = document.getElementById('achievementBar');
-    if (barEl) barEl.style.width = achievementPct + '%';
-
-    if (fireProgress >= 50) achievements.push('✅ FIRE Progress > 50%'); else achievements.push('⏳ FIRE Progress > 50%');
-    if (diversificationScore >= 50) achievements.push('✅ Diversification > 50'); else achievements.push('⏳ Diversification > 50');
-
-    const listEl = document.getElementById('achievementsList');
-    if (listEl) listEl.innerHTML = achievements.join('<br>');
+    achievementsEl.innerHTML = html;
 }
 
 function renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPct) {
@@ -801,8 +780,10 @@ async function loadDashboard() {
     const fireProgress = (totalWealth / fireTarget) * 100;
     const diversificationScore = 100 - largestAssetPctVal;
 
+    // เรียกใช้งานฟังก์ชันเรนเดอร์ Achievements ตามโจทย์
+    renderAchievementsList(totalWealth, fireProgress);
+
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
-    renderAchievements(totalWealth, history, fireProgress, diversificationScore);
     renderHistory(history, dailyChange, dailyChangePct, yesterdayWealth, today);
 
     let rankingHtml = '';
