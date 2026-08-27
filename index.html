@@ -336,23 +336,15 @@ function switchTab(tab) {
     const tabAnalytics = document.getElementById('tabAnalytics');
 
     if (tab === 'daily') {
-        tabDaily.style.display = 'block';
-        tabAnalytics.style.display = 'none';
-        btnDaily.style.background = '#2563eb';
-        btnDaily.style.color = '#ffffff';
-        btnDaily.style.border = 'none';
-        btnAnalytics.style.background = '#f3f4f6';
-        btnAnalytics.style.color = '#374151';
-        btnAnalytics.style.border = '1px solid #ddd';
+        if (tabDaily) tabDaily.style.display = 'block';
+        if (tabAnalytics) tabAnalytics.style.display = 'none';
+        if (btnDaily) { btnDaily.style.background = '#2563eb'; btnDaily.style.color = '#ffffff'; btnDaily.style.border = 'none'; }
+        if (btnAnalytics) { btnAnalytics.style.background = '#f3f4f6'; btnAnalytics.style.color = '#374151'; btnAnalytics.style.border = '1px solid #ddd'; }
     } else {
-        tabDaily.style.display = 'none';
-        tabAnalytics.style.display = 'block';
-        btnAnalytics.style.background = '#2563eb';
-        btnAnalytics.style.color = '#ffffff';
-        btnAnalytics.style.border = 'none';
-        btnDaily.style.background = '#f3f4f6';
-        btnDaily.style.color = '#374151';
-        btnDaily.style.border = '1px solid #ddd';
+        if (tabDaily) tabDaily.style.display = 'none';
+        if (tabAnalytics) tabAnalytics.style.display = 'block';
+        if (btnAnalytics) { btnAnalytics.style.background = '#2563eb'; btnAnalytics.style.color = '#ffffff'; btnAnalytics.style.border = 'none'; }
+        if (btnDaily) { btnDaily.style.background = '#f3f4f6'; btnDaily.style.color = '#374151'; btnDaily.style.border = '1px solid #ddd'; }
     }
 }
 
@@ -364,34 +356,43 @@ function formatDate(dateStr) {
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-// --- ฟังก์ชันย่อยที่แยกออกมา ---
+// --- ฟังก์ชันย่อยแยกตามส่วน พร้อมห่อหุ้มด้วย null check (if (el)) ---
 
 function renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue) {
-    document.getElementById('largestAssetName').innerHTML =
-        '<span style="color:#16a34a;">' + largestAsset + '</span>';
+    const nameEl = document.getElementById('largestAssetName');
+    if (nameEl) nameEl.innerHTML = '<span style="color:#16a34a;">' + largestAsset + '</span>';
 
-    document.getElementById('largestAssetPct').innerText =
-        largestAssetPctVal.toFixed(2) + '%';
+    const pctEl = document.getElementById('largestAssetPct');
+    if (pctEl) pctEl.innerText = largestAssetPctVal.toFixed(2) + '%';
 
-    document.getElementById('largestAssetValue').innerText =
-        '฿' + largestAssetValue.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+    const valEl = document.getElementById('largestAssetValue');
+    if (valEl) valEl.innerText = '฿' + largestAssetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function renderAllocation(mfcTotal, gpfTotal, totalWealth) {
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
 
-    document.getElementById('mfcVal').innerText = '฿' + mfcTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('mfcPct').innerText = mfcPctVal.toFixed(2) + '%';
-    document.getElementById('gpfVal').innerText = '฿' + gpfTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('gpfPct').innerText = gpfPctVal.toFixed(2) + '%';
+    const mfcValEl = document.getElementById('mfcVal');
+    if (mfcValEl) mfcValEl.innerText = '฿' + mfcTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    document.getElementById('mfcBar').style.width = mfcPctVal + '%';
-    document.getElementById('gpfBar').style.width = gpfPctVal + '%';
-    document.getElementById('allocationLegend').innerHTML = `<span style="color:#2563eb;">■</span> MFC ${mfcPctVal.toFixed(2)}% &nbsp;&nbsp;&nbsp; <span style="color:#16a34a;">■</span> GPF ${gpfPctVal.toFixed(2)}%`;
+    const mfcPctEl = document.getElementById('mfcPct');
+    if (mfcPctEl) mfcPctEl.innerText = mfcPctVal.toFixed(2) + '%';
+
+    const gpfValEl = document.getElementById('gpfVal');
+    if (gpfValEl) gpfValEl.innerText = '฿' + gpfTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const gpfPctEl = document.getElementById('gpfPct');
+    if (gpfPctEl) gpfPctEl.innerText = gpfPctVal.toFixed(2) + '%';
+
+    const mfcBarEl = document.getElementById('mfcBar');
+    if (mfcBarEl) mfcBarEl.style.width = mfcPctVal + '%';
+
+    const gpfBarEl = document.getElementById('gpfBar');
+    if (gpfBarEl) gpfBarEl.style.width = gpfPctVal + '%';
+
+    const legendEl = document.getElementById('allocationLegend');
+    if (legendEl) legendEl.innerHTML = `<span style="color:#2563eb;">■</span> MFC ${mfcPctVal.toFixed(2)}% &nbsp;&nbsp;&nbsp; <span style="color:#16a34a;">■</span> GPF ${gpfPctVal.toFixed(2)}%`;
 }
 
 function renderFireProgress(totalWealth, dailyChange) {
@@ -400,9 +401,14 @@ function renderFireProgress(totalWealth, dailyChange) {
     const fireRemaining = fireTarget - totalWealth;
     const fireNeedPct = 100 - fireProgress;
 
-    document.getElementById('fireCurrentWealth').innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('fireTarget').innerText = '฿' + fireTarget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('firePct').innerText = fireProgress.toFixed(2) + '%';
+    const curEl = document.getElementById('fireCurrentWealth');
+    if (curEl) curEl.innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const targetEl = document.getElementById('fireTarget');
+    if (targetEl) targetEl.innerText = '฿' + fireTarget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const pctEl = document.getElementById('firePct');
+    if (pctEl) pctEl.innerText = fireProgress.toFixed(2) + '%';
 
     let fireLevelText = '';
     if (fireProgress < 20) fireLevelText = '🌱 Level 1 • Beginner';
@@ -412,26 +418,35 @@ function renderFireProgress(totalWealth, dailyChange) {
     else if (fireProgress < 100) fireLevelText = '🔥 Level 5 • FIRE Ready';
     else fireLevelText = '🏆 Level 6 • Financial Freedom';
 
-    document.getElementById('fireLevel').innerText = fireLevelText;
+    const levelEl = document.getElementById('fireLevel');
+    if (levelEl) levelEl.innerText = fireLevelText;
 
     const fireBar = document.getElementById('fireBar');
-    fireBar.style.width = Math.min(fireProgress, 100) + '%';
-    if (fireProgress < 25) fireBar.style.backgroundColor = '#dc2626';
-    else if (fireProgress < 50) fireBar.style.backgroundColor = '#f97316';
-    else if (fireProgress < 75) fireBar.style.backgroundColor = '#eab308';
-    else fireBar.style.backgroundColor = '#16a34a';
+    if (fireBar) {
+        fireBar.style.width = Math.min(fireProgress, 100) + '%';
+        if (fireProgress < 25) fireBar.style.backgroundColor = '#dc2626';
+        else if (fireProgress < 50) fireBar.style.backgroundColor = '#f97316';
+        else if (fireProgress < 75) fireBar.style.backgroundColor = '#eab308';
+        else fireBar.style.backgroundColor = '#16a34a';
+    }
 
-    document.getElementById('fireRemaining').innerText = '฿' + fireRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('fireNeedPct').innerText = 'Need ' + fireNeedPct.toFixed(2) + '% More';
+    const remEl = document.getElementById('fireRemaining');
+    if (remEl) remEl.innerText = '฿' + fireRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const needPctEl = document.getElementById('fireNeedPct');
+    if (needPctEl) needPctEl.innerText = 'Need ' + fireNeedPct.toFixed(2) + '% More';
 
     const gainAmount = dailyChange > 0 ? dailyChange : 0;
     const annualGrowth = gainAmount * 365;
-    if (annualGrowth > 0) {
-        const yearsToFire = fireRemaining / annualGrowth;
-        const currentYear = new Date().getFullYear();
-        document.getElementById('fireEta').innerText = `${yearsToFire.toFixed(1)} Years (${Math.round(currentYear + yearsToFire)})`;
-    } else {
-        document.getElementById('fireEta').innerText = 'Calculating growth...';
+    const fireEtaEl = document.getElementById('fireEta');
+    if (fireEtaEl) {
+        if (annualGrowth > 0) {
+            const yearsToFire = fireRemaining / annualGrowth;
+            const currentYear = new Date().getFullYear();
+            fireEtaEl.innerText = `${yearsToFire.toFixed(1)} Years (${Math.round(currentYear + yearsToFire)})`;
+        } else {
+            fireEtaEl.innerText = 'Calculating growth...';
+        }
     }
 }
 
@@ -445,27 +460,36 @@ function renderAchievements(totalWealth, history, fireProgress, diversificationS
     const achievementPct = Math.min((totalWealth / doubleMillionTarget) * 100, 100);
     const doubleMillionRemaining = Math.max(doubleMillionTarget - totalWealth, 0);
 
+    const titleEl = document.getElementById('nextAchievementTitle');
+    const progEl = document.getElementById('nextAchievementProgress');
+    const etaEl = document.getElementById('achievementEta');
+
     if (totalWealth >= doubleMillionTarget) {
         achievements.push('✅ Wealth > ฿2M');
-        document.getElementById('nextAchievementTitle').innerText = '💎 Ultimate Freedom';
-        document.getElementById('nextAchievementProgress').innerText = 'Completed!';
-        document.getElementById('achievementEta').innerText = '🏆 Goal Achieved!';
+        if (titleEl) titleEl.innerText = '💎 Ultimate Freedom';
+        if (progEl) progEl.innerText = 'Completed!';
+        if (etaEl) etaEl.innerText = '🏆 Goal Achieved!';
     } else {
         achievements.push(`⏳ Wealth > ฿2M (${achievementPct.toFixed(2)}% หรือ Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`);
-        document.getElementById('nextAchievementTitle').innerText = '💎 Double Million';
-        document.getElementById('nextAchievementProgress').innerText = `${achievementPct.toFixed(2)}% (Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`;
-        if (achievementPct >= 90) {
-            document.getElementById('achievementEta').innerText = '🔥 Almost Unlocked';
-        } else {
-            document.getElementById('achievementEta').innerText = 'ETA: ~12 Months';
+        if (titleEl) titleEl.innerText = '💎 Double Million';
+        if (progEl) progEl.innerText = `${achievementPct.toFixed(2)}% (Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`;
+        if (etaEl) {
+            if (achievementPct >= 90) {
+                etaEl.innerText = '🔥 Almost Unlocked';
+            } else {
+                etaEl.innerText = 'ETA: ~12 Months';
+            }
         }
     }
 
-    document.getElementById('achievementBar').style.width = achievementPct + '%';
+    const barEl = document.getElementById('achievementBar');
+    if (barEl) barEl.style.width = achievementPct + '%';
+
     if (fireProgress >= 50) achievements.push('✅ FIRE Progress > 50%'); else achievements.push('⏳ FIRE Progress > 50%');
     if (diversificationScore >= 50) achievements.push('✅ Diversification > 50'); else achievements.push('⏳ Diversification > 50');
 
-    document.getElementById('achievementsList').innerHTML = achievements.join('<br>');
+    const listEl = document.getElementById('achievementsList');
+    if (listEl) listEl.innerHTML = achievements.join('<br>');
 }
 
 function renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPct) {
@@ -476,32 +500,43 @@ function renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPc
     else if (portfolioIntelligenceScore >= 60) piGrade = 'B+';
     else if (portfolioIntelligenceScore >= 50) piGrade = 'B';
 
-    document.getElementById('portfolioIntelligenceScore').innerText = portfolioIntelligenceScore.toFixed(0) + '/100';
-    document.getElementById('portfolioIntelligenceGrade').innerText = piGrade;
+    const scoreEl = document.getElementById('portfolioIntelligenceScore');
+    if (scoreEl) scoreEl.innerText = portfolioIntelligenceScore.toFixed(0) + '/100';
+
+    const gradeEl = document.getElementById('portfolioIntelligenceGrade');
+    if (gradeEl) gradeEl.innerText = piGrade;
 }
 
 function renderHistory(history, dailyChange, dailyChangePct, today) {
-    document.getElementById('historyCount').innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
+    const countEl = document.getElementById('historyCount');
+    if (countEl) countEl.innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
 
     if (history.length > 0) {
         const latestSnapshot = history[history.length - 1];
-        document.getElementById('latestWealth').innerText = '฿' + Number(latestSnapshot.wealth).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
+        const lwEl = document.getElementById('latestWealth');
+        if (lwEl) lwEl.innerText = '฿' + Number(latestSnapshot.wealth).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        const dateEl = document.getElementById('latestSnapshotDate');
+        if (dateEl) dateEl.innerText = formatDate(latestSnapshot.date);
 
         const startDate = new Date('2026-08-26');
         const diffDays = Math.floor(Math.abs(new Date(latestSnapshot.date || today) - startDate) / (1000 * 60 * 60 * 24)) + 1;
-        document.getElementById('trackingAge').innerText = diffDays;
+        const ageEl = document.getElementById('trackingAge');
+        if (ageEl) ageEl.innerText = diffDays;
 
         let maxGainVal = dailyChange > 0 ? dailyChange : 0;
         let maxGainPct = dailyChangePct > 0 ? dailyChangePct : 0;
-        document.getElementById('bestDayValue').innerHTML =
-            '<div style="color:#16a34a;">▲ ฿' + maxGainVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>' +
-            '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
+        const bestEl = document.getElementById('bestDayValue');
+        if (bestEl) {
+            bestEl.innerHTML =
+                '<div style="color:#16a34a;">▲ ฿' + maxGainVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>' +
+                '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
+        }
     }
 }
 
 
-// --- ฟังก์ชันหลักที่ถูกย่อให้กระชับ ---
+// --- ฟังก์ชันหลัก ---
 
 async function loadDashboard() {
     console.log('START LOAD');
@@ -582,7 +617,7 @@ async function loadDashboard() {
         console.error('Error auto-saving snapshot:', err);
     }
 
-    // เรียกใช้งานฟังก์ชันย่อยต่างๆ
+    // เรียกฟังก์ชันย่อย
     renderAllocation(mfcTotal, gpfTotal, totalWealth);
 
     const largestAsset = ports[0].name;
@@ -610,7 +645,8 @@ async function loadDashboard() {
             </div>
         `;
     });
-    document.getElementById('rankingList').innerHTML = rankingHtml;
+    const rankEl = document.getElementById('rankingList');
+    if (rankEl) rankEl.innerHTML = rankingHtml;
 
     // Concentration Risk
     let riskLevel = 'Low';
@@ -618,10 +654,11 @@ async function loadDashboard() {
     if (largestAssetPctVal >= 80) { riskLevel = 'High'; riskColor = '#dc2626'; }
     else if (largestAssetPctVal >= 50) { riskLevel = 'Medium'; riskColor = '#d97706'; }
 
-    document.getElementById('concentrationPct').innerText = largestAssetPctVal.toFixed(2) + '%';
-    document.getElementById('concentrationPct').style.color = riskColor;
-    document.getElementById('concentrationLevel').innerText = riskLevel;
-    document.getElementById('concentrationLevel').style.color = riskColor;
+    const concPctEl = document.getElementById('concentrationPct');
+    if (concPctEl) { concPctEl.innerText = largestAssetPctVal.toFixed(2) + '%'; concPctEl.style.color = riskColor; }
+
+    const concLvlEl = document.getElementById('concentrationLevel');
+    if (concLvlEl) { concLvlEl.innerText = riskLevel; concLvlEl.style.color = riskColor; }
 
     // Diversification Score
     let diversificationRating = '';
@@ -632,11 +669,14 @@ async function loadDashboard() {
     else if (diversificationScore >= 20) { diversificationRating = 'Weak'; divColor = '#f97316'; }
     else { diversificationRating = 'Highly Concentrated'; divColor = '#dc2626'; }
 
-    document.getElementById('diversificationScore').innerText = diversificationScore.toFixed(0) + '/100';
-    document.getElementById('diversificationScore').style.color = divColor;
-    document.getElementById('diversificationRating').innerText = diversificationRating;
-    document.getElementById('diversificationRating').style.color = divColor;
-    document.getElementById('diversificationDesc').innerText = `Portfolio heavily dependent on ${ports[0].name}`;
+    const divScoreEl = document.getElementById('diversificationScore');
+    if (divScoreEl) { divScoreEl.innerText = diversificationScore.toFixed(0) + '/100'; divScoreEl.style.color = divColor; }
+
+    const divRatingEl = document.getElementById('diversificationRating');
+    if (divRatingEl) { divRatingEl.innerText = diversificationRating; divRatingEl.style.color = divColor; }
+
+    const divDescEl = document.getElementById('diversificationDesc');
+    if (divDescEl) divDescEl.innerText = `Portfolio heavily dependent on ${ports[0].name}`;
 
     // Wealth Trend
     let trend = '';
@@ -645,15 +685,17 @@ async function loadDashboard() {
     else if (dailyChangePct < 0) { trend = '↘ Decreasing'; trendColor = '#dc2626'; }
     else { trend = '→ Flat'; trendColor = '#666666'; }
 
-    document.getElementById('trendDirection').innerText = trend;
-    document.getElementById('trendDirection').style.color = trendColor;
-    document.getElementById('trendPct').innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%';
-    document.getElementById('trendPct').style.color = trendColor;
+    const trendDirEl = document.getElementById('trendDirection');
+    if (trendDirEl) { trendDirEl.innerText = trend; trendDirEl.style.color = trendColor; }
+
+    const trendPctEl = document.getElementById('trendPct');
+    if (trendPctEl) { trendPctEl.innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%'; trendPctEl.style.color = trendColor; }
 
     // Goal ETA
     const remainingToGoal = fireTarget - totalWealth;
     const monthlyNeed = remainingToGoal / 12;
-    document.getElementById('etaMonthlyNeed').innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
+    const etaMonthlyNeedEl = document.getElementById('etaMonthlyNeed');
+    if (etaMonthlyNeedEl) etaMonthlyNeedEl.innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
 
     // Financial Health
     const milestonePct = (totalWealth / fireTarget) * 100;
@@ -663,41 +705,58 @@ async function loadDashboard() {
     else if (milestonePct >= 75) { grade = 'A'; label = 'Very Good'; }
     else { grade = 'B+'; label = 'Good'; }
 
-    document.getElementById('healthScoreGrade').innerText = grade;
-    document.getElementById('healthScoreLabel').innerText = label;
+    const healthGradeEl = document.getElementById('healthScoreGrade');
+    if (healthGradeEl) healthGradeEl.innerText = grade;
 
-    document.getElementById('totalWealth').innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('dailyChangeValue').innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('dailyChangePct').innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
-    document.getElementById('dailyChangeValue').style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
-    document.getElementById('dailyChangePct').style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
-    document.getElementById('lastUpdated').innerText = 'Updated: ' + now.toLocaleString();
+    const healthLabelEl = document.getElementById('healthScoreLabel');
+    if (healthLabelEl) healthLabelEl.innerText = label;
+
+    const totalWealthEl = document.getElementById('totalWealth');
+    if (totalWealthEl) totalWealthEl.innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const dailyValEl = document.getElementById('dailyChangeValue');
+    if (dailyValEl) {
+        dailyValEl.innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        dailyValEl.style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
+    }
+
+    const dailyPctEl = document.getElementById('dailyChangePct');
+    if (dailyPctEl) {
+        dailyPctEl.innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
+        dailyPctEl.style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
+    }
+
+    const lastUpdEl = document.getElementById('lastUpdated');
+    if (lastUpdEl) lastUpdEl.innerText = 'Updated: ' + now.toLocaleString();
 
     // Chart.js
     const ctx = document.getElementById('wealthChart');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: history.map(h => h.date),
-            datasets: [{
-                label: 'Total Wealth',
-                data: history.map(h => h.wealth),
-                borderColor: '#16a34a',
-                backgroundColor: 'rgba(22,163,74,0.15)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { grid: { display: false }, ticks: { callback: function(value) { return '฿' + (value / 1000000).toFixed(1) + 'M'; } } } }
-        }
-    });
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: history.map(h => h.date),
+                datasets: [{
+                    label: 'Total Wealth',
+                    data: history.map(h => h.wealth),
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22,163,74,0.15)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { grid: { display: false }, ticks: { callback: function(value) { return '฿' + (value / 1000000).toFixed(1) + 'M'; } } } }
+            }
+        });
+    }
 
-    document.getElementById('chartSummary').innerText = history.length < 2 ? 'Collecting data for trend analysis' : 'Tracking ' + history.length + ' Snapshots';
+    const chartSumEl = document.getElementById('chartSummary');
+    if (chartSumEl) chartSumEl.innerText = history.length < 2 ? 'Collecting data for trend analysis' : 'Tracking ' + history.length + ' Snapshots';
 }
 
 loadDashboard();
