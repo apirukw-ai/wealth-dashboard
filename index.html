@@ -259,7 +259,7 @@
         -
     </div>
 
-    <!-- ส่วนที่จะถูกสลับซ่อน/แสดง เมื่อมี snapshot < 2 หรือ >= 2 -->
+    <!-- ส่วนที่จะถูกสลับซ่อน/แสดง เมื่อมี snapshot >= 2 -->
     <div id="historyCalcSection">
         <div style="margin-top:12px; color:#666; font-size:13px;">
             Range
@@ -297,14 +297,14 @@
             color:#d97706;
             margin-top:4px;
         ">
-            Not enough history yet
+            Building history...
         </div>
-        <div style="
+        <div id="notEnoughSubtext" style="
             font-size:12px;
             color:#666;
             margin-top:2px;
         ">
-            Need at least 2 snapshots
+            1 of 2 snapshots collected
         </div>
     </div>
 </div>
@@ -983,6 +983,8 @@ async function loadDashboard() {
     if (history.length < 2) {
         document.getElementById('historyCalcSection').style.display = 'none';
         document.getElementById('notEnoughHistory').style.display = 'block';
+        document.getElementById('notEnoughSubtext').innerText =
+            history.length + ' of 2 snapshots collected';
     } else {
         document.getElementById('historyCalcSection').style.display = 'block';
         document.getElementById('notEnoughHistory').style.display = 'none';
@@ -1001,7 +1003,7 @@ async function loadDashboard() {
             });
     }
 
-    // วาดกราฟ Chart.js
+    // วาดกราฟ Chart.js (ซ่อนเส้น Grid แกน Y)
     const ctx = document.getElementById('wealthChart');
 
     new Chart(ctx, {
@@ -1028,6 +1030,9 @@ async function loadDashboard() {
             },
             scales: {
                 y: {
+                    grid: {
+                        display: false // ซ่อนเส้น Grid บนแกน Y
+                    },
                     ticks: {
                         callback: function(value) {
                             return '฿' + (value / 1000000).toFixed(1) + 'M';
@@ -1038,7 +1043,7 @@ async function loadDashboard() {
         }
     });
 
-    // Summary ใต้กราฟ (ปรับการแสดงผล Snapshot / Snapshots)
+    // Summary ใต้กราฟ
     const snapshotLabel = history.length === 1 ? 'Snapshot' : 'Snapshots';
     document.getElementById('chartSummary').innerText =
         'Tracking ' + history.length + ' ' + snapshotLabel;
