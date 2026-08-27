@@ -589,7 +589,7 @@ async function loadDashboard() {
 
 const mfcData = await mfcRes.json();
 
-let mfcTotal = Number(mfcData.value);
+let mfcTotal = Number(mfcData?.value || 0);
 
     try {
         const gpfRes = await fetch(
