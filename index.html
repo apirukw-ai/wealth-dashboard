@@ -356,7 +356,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ฟังก์ชันสำหรับเปิด/ปิด (พับ/กาง) ส่วน Advanced Analytics
 function toggleAnalytics() {
     const container = document.getElementById('analyticsContainer');
     const arrow = document.getElementById('analyticsArrow');
@@ -603,19 +602,40 @@ async function loadDashboard() {
 
     const totalWealth = mfcTotal + gpfTotal;
 
+    // ดึงประวัติจาก Firebase Realtime Database
     let history = [];
+
     try {
-        const historyUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
-        const historyRes = await fetch(historyUrl);
-        const historyData = await historyRes.json() || {};
+        const historyUrl =
+            'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
+
+        const historyRes =
+            await fetch(historyUrl);
+
+        const historyData =
+            await historyRes.json() || {};
+
         history = Object.values(historyData);
+
     } catch (err) {
         console.error('Error fetching history:', err);
     }
 
-    const yesterdayWealth = 1850000;
+    // เรียงลำดับข้อมูล history ตามวันที่
+    history.sort(
+        (a, b) =>
+        new Date(a.date) - new Date(b.date)
+    );
+
+    let yesterdayWealth = totalWealth;
+
+    if (history.length >= 2) {
+        yesterdayWealth =
+            history[history.length - 2].wealth;
+    }
+
     const dailyChange = totalWealth - yesterdayWealth;
-    const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
+    const dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
     
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
@@ -654,6 +674,8 @@ async function loadDashboard() {
                 gpf: gpfTotal,
                 createdAt: new Date().toISOString()
             });
+            // เรียงลำดับใหม่อีกรอบหลังเพิ่มข้อมูลวันนี้
+            history.sort((a, b) => new Date(a.date) - new Date(b.date));
         }
     } catch (err) {
         console.error('Error auto-saving snapshot:', err);
@@ -792,7 +814,7 @@ async function loadDashboard() {
     const lastUpdEl = document.getElementById('lastUpdated');
     if (lastUpdEl) lastUpdEl.innerText = 'Updated: ' + now.toLocaleString();
 
-    // Chart.js
+    // Chart.js (ดึงข้อมูลจาก Firebase มาพล็อต)
     const ctx = document.getElementById('wealthChart');
     if (ctx) {
         new Chart(ctx, {
