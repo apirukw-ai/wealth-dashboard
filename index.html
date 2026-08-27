@@ -364,146 +364,37 @@ function formatDate(dateStr) {
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-async function loadDashboard() {
-    console.log('START LOAD');
+// --- ฟังก์ชันย่อยที่แยกออกมา ---
 
-    let gpfTotal = 0;
-    let mfcTotal = 157516.96;
+function renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue) {
+    document.getElementById('largestAssetName').innerHTML =
+        '<span style="color:#16a34a;">' + largestAsset + '</span>';
 
-    // ครอบ try...catch แยกเฉพาะส่วนดึงข้อมูลภายนอก เพื่อกัน Error หยุดการทำงานของหน้าเว็บ
-    try {
-        const gpfRes = await fetch(
-            'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
-        );
-        const gpfData = await gpfRes.json();
+    document.getElementById('largestAssetPct').innerText =
+        largestAssetPctVal.toFixed(2) + '%';
 
-        if (gpfData && gpfData.funds) {
-            gpfData.funds.forEach(f => {
-                gpfTotal += Number(f.units) * Number(f.currentNav);
-            });
-        }
-    } catch (err) {
-        console.error('Error fetching GPF data (Using fallback 0):', err);
-    }
+    document.getElementById('largestAssetValue').innerText =
+        '฿' + largestAssetValue.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+}
 
-    const totalWealth = mfcTotal + gpfTotal;
-
-    // โหลด History จริงจาก Firebase แบบปลอดภัย
-    let history = [];
-    try {
-        const historyUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
-        const historyRes = await fetch(historyUrl);
-        const historyData = await historyRes.json() || {};
-        history = Object.values(historyData);
-    } catch (err) {
-        console.error('Error fetching history:', err);
-    }
-
-    const yesterdayWealth = 1850000;
-    const dailyChange = totalWealth - yesterdayWealth;
-    const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
-    
+function renderAllocation(mfcTotal, gpfTotal, totalWealth) {
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
 
-    const ports = [
-        { name: 'GPF', value: gpfTotal, pct: gpfPctVal },
-        { name: 'MFC', value: mfcTotal, pct: mfcPctVal }
-    ];
-    ports.sort((a, b) => b.value - a.value);
+    document.getElementById('mfcVal').innerText = '฿' + mfcTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('mfcPct').innerText = mfcPctVal.toFixed(2) + '%';
+    document.getElementById('gpfVal').innerText = '฿' + gpfTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('gpfPct').innerText = gpfPctVal.toFixed(2) + '%';
 
-    // Auto Save Snapshot ไปที่ Firebase แบบปลอดภัย
-    try {
-        const today = new Date().toLocaleDateString('en-CA');
-        const snapshotKey = today.replaceAll('-', '');
-        const snapshotUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history/' + snapshotKey + '.json';
+    document.getElementById('mfcBar').style.width = mfcPctVal + '%';
+    document.getElementById('gpfBar').style.width = gpfPctVal + '%';
+    document.getElementById('allocationLegend').innerHTML = `<span style="color:#2563eb;">■</span> MFC ${mfcPctVal.toFixed(2)}% &nbsp;&nbsp;&nbsp; <span style="color:#16a34a;">■</span> GPF ${gpfPctVal.toFixed(2)}%`;
+}
 
-        const snapRes = await fetch(snapshotUrl);
-        const existing = await snapRes.json();
-
-        if (!existing) {
-            await fetch(snapshotUrl, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    date: today,
-                    wealth: totalWealth,
-                    mfc: mfcTotal,
-                    gpf: gpfTotal,
-                    createdAt: new Date().toISOString()
-                })
-            });
-            history.push({
-                date: today,
-                wealth: totalWealth,
-                mfc: mfcTotal,
-                gpf: gpfTotal,
-                createdAt: new Date().toISOString()
-            });
-        }
-    } catch (err) {
-        console.error('Error auto-saving snapshot:', err);
-    }
-
-    // Net Worth Ranking
-    let rankingHtml = '';
-    ports.forEach((p, index) => {
-        rankingHtml += `
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:16px;">
-                <span><strong>#${index + 1} ${p.name}</strong></span>
-                <span style="font-weight:bold;">฿${p.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${p.pct.toFixed(2)}%)</span>
-            </div>
-        `;
-    });
-    document.getElementById('rankingList').innerHTML = rankingHtml;
-
-    // Concentration Risk
-    const largestAssetPct = (ports[0].value / totalWealth) * 100;
-    let riskLevel = 'Low';
-    let riskColor = '#16a34a';
-
-    if (largestAssetPct >= 80) {
-        riskLevel = 'High';
-        riskColor = '#dc2626';
-    } else if (largestAssetPct >= 50) {
-        riskLevel = 'Medium';
-        riskColor = '#d97706';
-    }
-
-    document.getElementById('concentrationPct').innerText = largestAssetPct.toFixed(2) + '%';
-    document.getElementById('concentrationPct').style.color = riskColor;
-    document.getElementById('concentrationLevel').innerText = riskLevel;
-    document.getElementById('concentrationLevel').style.color = riskColor;
-
-    // Diversification Score
-    const diversificationScore = 100 - largestAssetPct;
-    let diversificationRating = '';
-    let divColor = '';
-
-    if (diversificationScore >= 80) {
-        diversificationRating = 'Excellent';
-        divColor = '#16a34a';
-    } else if (diversificationScore >= 60) {
-        diversificationRating = 'Good';
-        divColor = '#2563eb';
-    } else if (diversificationScore >= 40) {
-        diversificationRating = 'Moderate';
-        divColor = '#d97706';
-    } else if (diversificationScore >= 20) {
-        diversificationRating = 'Weak';
-        divColor = '#f97316';
-    } else {
-        diversificationRating = 'Highly Concentrated';
-        divColor = '#dc2626';
-    }
-
-    document.getElementById('diversificationScore').innerText = diversificationScore.toFixed(0) + '/100';
-    document.getElementById('diversificationScore').style.color = divColor;
-    document.getElementById('diversificationRating').innerText = diversificationRating;
-    document.getElementById('diversificationRating').style.color = divColor;
-    document.getElementById('diversificationDesc').innerText = `Portfolio heavily dependent on ${ports[0].name}`;
-
-    // FIRE Progress
+function renderFireProgress(totalWealth, dailyChange) {
     const fireTarget = 5000000;
     const fireProgress = (totalWealth / fireTarget) * 100;
     const fireRemaining = fireTarget - totalWealth;
@@ -542,19 +433,9 @@ async function loadDashboard() {
     } else {
         document.getElementById('fireEta').innerText = 'Calculating growth...';
     }
+}
 
-    // Portfolio Intelligence
-    const portfolioIntelligenceScore = (fireProgress * 0.5 + diversificationScore * 0.3 + (100 - largestAssetPct) * 0.2);
-    let piGrade = 'C';
-    if (portfolioIntelligenceScore >= 80) piGrade = 'A+';
-    else if (portfolioIntelligenceScore >= 70) piGrade = 'A';
-    else if (portfolioIntelligenceScore >= 60) piGrade = 'B+';
-    else if (portfolioIntelligenceScore >= 50) piGrade = 'B';
-
-    document.getElementById('portfolioIntelligenceScore').innerText = portfolioIntelligenceScore.toFixed(0) + '/100';
-    document.getElementById('portfolioIntelligenceGrade').innerText = piGrade;
-
-    // Achievement System
+function renderAchievements(totalWealth, history, fireProgress, diversificationScore) {
     let achievements = [];
     if (history.length >= 1) achievements.push('✅ First Snapshot');
     if (totalWealth >= 1000000) achievements.push('✅ Wealth > ฿1M'); else achievements.push('⏳ Wealth > ฿1M');
@@ -585,8 +466,21 @@ async function loadDashboard() {
     if (diversificationScore >= 50) achievements.push('✅ Diversification > 50'); else achievements.push('⏳ Diversification > 50');
 
     document.getElementById('achievementsList').innerHTML = achievements.join('<br>');
+}
 
-    // Snapshots & History
+function renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPct) {
+    const portfolioIntelligenceScore = (fireProgress * 0.5 + diversificationScore * 0.3 + (100 - largestAssetPct) * 0.2);
+    let piGrade = 'C';
+    if (portfolioIntelligenceScore >= 80) piGrade = 'A+';
+    else if (portfolioIntelligenceScore >= 70) piGrade = 'A';
+    else if (portfolioIntelligenceScore >= 60) piGrade = 'B+';
+    else if (portfolioIntelligenceScore >= 50) piGrade = 'B';
+
+    document.getElementById('portfolioIntelligenceScore').innerText = portfolioIntelligenceScore.toFixed(0) + '/100';
+    document.getElementById('portfolioIntelligenceGrade').innerText = piGrade;
+}
+
+function renderHistory(history, dailyChange, dailyChangePct, today) {
     document.getElementById('historyCount').innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
 
     if (history.length > 0) {
@@ -595,7 +489,7 @@ async function loadDashboard() {
         document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
 
         const startDate = new Date('2026-08-26');
-        const diffDays = Math.floor(Math.abs(new Date(latestSnapshot.date || new Date()) - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const diffDays = Math.floor(Math.abs(new Date(latestSnapshot.date || today) - startDate) / (1000 * 60 * 60 * 24)) + 1;
         document.getElementById('trackingAge').innerText = diffDays;
 
         let maxGainVal = dailyChange > 0 ? dailyChange : 0;
@@ -604,6 +498,145 @@ async function loadDashboard() {
             '<div style="color:#16a34a;">▲ ฿' + maxGainVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>' +
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
+}
+
+
+// --- ฟังก์ชันหลักที่ถูกย่อให้กระชับ ---
+
+async function loadDashboard() {
+    console.log('START LOAD');
+
+    let gpfTotal = 0;
+    let mfcTotal = 157516.96;
+
+    try {
+        const gpfRes = await fetch(
+            'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
+        );
+        const gpfData = await gpfRes.json();
+
+        if (gpfData && gpfData.funds) {
+            gpfData.funds.forEach(f => {
+                gpfTotal += Number(f.units) * Number(f.currentNav);
+            });
+        }
+    } catch (err) {
+        console.error('Error fetching GPF data:', err);
+    }
+
+    const totalWealth = mfcTotal + gpfTotal;
+
+    let history = [];
+    try {
+        const historyUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
+        const historyRes = await fetch(historyUrl);
+        const historyData = await historyRes.json() || {};
+        history = Object.values(historyData);
+    } catch (err) {
+        console.error('Error fetching history:', err);
+    }
+
+    const yesterdayWealth = 1850000;
+    const dailyChange = totalWealth - yesterdayWealth;
+    const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
+    
+    const mfcPctVal = (mfcTotal / totalWealth) * 100;
+    const gpfPctVal = (gpfTotal / totalWealth) * 100;
+
+    const ports = [
+        { name: 'GPF', value: gpfTotal, pct: gpfPctVal },
+        { name: 'MFC', value: mfcTotal, pct: mfcPctVal }
+    ];
+    ports.sort((a, b) => b.value - a.value);
+
+    const today = new Date().toLocaleDateString('en-CA');
+    const now = new Date();
+    try {
+        const snapshotKey = today.replaceAll('-', '');
+        const snapshotUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history/' + snapshotKey + '.json';
+
+        const snapRes = await fetch(snapshotUrl);
+        const existing = await snapRes.json();
+
+        if (!existing) {
+            await fetch(snapshotUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: today,
+                    wealth: totalWealth,
+                    mfc: mfcTotal,
+                    gpf: gpfTotal,
+                    createdAt: new Date().toISOString()
+                })
+            });
+            history.push({
+                date: today,
+                wealth: totalWealth,
+                mfc: mfcTotal,
+                gpf: gpfTotal,
+                createdAt: new Date().toISOString()
+            });
+        }
+    } catch (err) {
+        console.error('Error auto-saving snapshot:', err);
+    }
+
+    // เรียกใช้งานฟังก์ชันย่อยต่างๆ
+    renderAllocation(mfcTotal, gpfTotal, totalWealth);
+
+    const largestAsset = ports[0].name;
+    const largestAssetPctVal = (ports[0].value / totalWealth) * 100;
+    const largestAssetValue = ports[0].value;
+    renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue);
+
+    renderFireProgress(totalWealth, dailyChange);
+
+    const fireTarget = 5000000;
+    const fireProgress = (totalWealth / fireTarget) * 100;
+    const diversificationScore = 100 - largestAssetPctVal;
+
+    renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
+    renderAchievements(totalWealth, history, fireProgress, diversificationScore);
+    renderHistory(history, dailyChange, dailyChangePct, today);
+
+    // Net Worth Ranking
+    let rankingHtml = '';
+    ports.forEach((p, index) => {
+        rankingHtml += `
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:16px;">
+                <span><strong>#${index + 1} ${p.name}</strong></span>
+                <span style="font-weight:bold;">฿${p.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${p.pct.toFixed(2)}%)</span>
+            </div>
+        `;
+    });
+    document.getElementById('rankingList').innerHTML = rankingHtml;
+
+    // Concentration Risk
+    let riskLevel = 'Low';
+    let riskColor = '#16a34a';
+    if (largestAssetPctVal >= 80) { riskLevel = 'High'; riskColor = '#dc2626'; }
+    else if (largestAssetPctVal >= 50) { riskLevel = 'Medium'; riskColor = '#d97706'; }
+
+    document.getElementById('concentrationPct').innerText = largestAssetPctVal.toFixed(2) + '%';
+    document.getElementById('concentrationPct').style.color = riskColor;
+    document.getElementById('concentrationLevel').innerText = riskLevel;
+    document.getElementById('concentrationLevel').style.color = riskColor;
+
+    // Diversification Score
+    let diversificationRating = '';
+    let divColor = '';
+    if (diversificationScore >= 80) { diversificationRating = 'Excellent'; divColor = '#16a34a'; }
+    else if (diversificationScore >= 60) { diversificationRating = 'Good'; divColor = '#2563eb'; }
+    else if (diversificationScore >= 40) { diversificationRating = 'Moderate'; divColor = '#d97706'; }
+    else if (diversificationScore >= 20) { diversificationRating = 'Weak'; divColor = '#f97316'; }
+    else { diversificationRating = 'Highly Concentrated'; divColor = '#dc2626'; }
+
+    document.getElementById('diversificationScore').innerText = diversificationScore.toFixed(0) + '/100';
+    document.getElementById('diversificationScore').style.color = divColor;
+    document.getElementById('diversificationRating').innerText = diversificationRating;
+    document.getElementById('diversificationRating').style.color = divColor;
+    document.getElementById('diversificationDesc').innerText = `Portfolio heavily dependent on ${ports[0].name}`;
 
     // Wealth Trend
     let trend = '';
@@ -623,6 +656,7 @@ async function loadDashboard() {
     document.getElementById('etaMonthlyNeed').innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
 
     // Financial Health
+    const milestonePct = (totalWealth / fireTarget) * 100;
     let grade = 'A+';
     let label = 'Excellent';
     if (milestonePct >= 90 && dailyChange >= 0) { grade = 'A+'; label = 'Excellent'; }
@@ -632,32 +666,12 @@ async function loadDashboard() {
     document.getElementById('healthScoreGrade').innerText = grade;
     document.getElementById('healthScoreLabel').innerText = label;
 
-    // Largest Asset
-    const largestAsset = gpfTotal > mfcTotal ? 'GPF' : 'MFC';
-    const largestAssetPctVal = gpfTotal > mfcTotal ? gpfPctVal : mfcPctVal;
-    const largestAssetValue = gpfTotal > mfcTotal ? gpfTotal : mfcTotal;
-
-    document.getElementById('largestAssetName').innerHTML = '<span style="color:#16a34a;">' + largestAsset + '</span>';
-    document.getElementById('largestAssetPct').innerText = largestAssetPctVal.toFixed(2) + '%';
-    document.getElementById('largestAssetValue').innerText = '฿' + largestAssetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    // Allocation & General Info
     document.getElementById('totalWealth').innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('mfcVal').innerText = '฿' + mfcTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('mfcPct').innerText = mfcPctVal.toFixed(2) + '%';
-    document.getElementById('gpfVal').innerText = '฿' + gpfTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('gpfPct').innerText = gpfPctVal.toFixed(2) + '%';
-
-    document.getElementById('mfcBar').style.width = mfcPctVal + '%';
-    document.getElementById('gpfBar').style.width = gpfPctVal + '%';
-    document.getElementById('allocationLegend').innerHTML = `<span style="color:#2563eb;">■</span> MFC ${mfcPctVal.toFixed(2)}% &nbsp;&nbsp;&nbsp; <span style="color:#16a34a;">■</span> GPF ${gpfPctVal.toFixed(2)}%`;
-
     document.getElementById('dailyChangeValue').innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     document.getElementById('dailyChangePct').innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
     document.getElementById('dailyChangeValue').style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
     document.getElementById('dailyChangePct').style.color = dailyChange >= 0 ? '#16a34a' : '#dc2626';
-
-    document.getElementById('lastUpdated').innerText = 'Updated: ' + new Date().toLocaleString();
+    document.getElementById('lastUpdated').innerText = 'Updated: ' + now.toLocaleString();
 
     // Chart.js
     const ctx = document.getElementById('wealthChart');
