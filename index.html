@@ -291,13 +291,13 @@
         <div style="color:#666; font-size:13px;">
             History Status
         </div>
-        <div style="
+        <div id="historyStatus" style="
             font-size:16px;
             font-weight:bold;
             color:#d97706;
             margin-top:4px;
         ">
-            Building history...
+            Building history... 1 of 7 snapshots collected
         </div>
 
         <!-- Progress Bar เล็ก ๆ -->
@@ -329,14 +329,6 @@
                 0%
             </div>
         </div>
-
-        <div id="notEnoughSubtext" style="
-            font-size:12px;
-            color:#666;
-            margin-top:6px;
-        ">
-            1 of 2 snapshots collected
-        </div>
     </div>
 </div>
 
@@ -367,6 +359,96 @@
     ">
     </div>
 
+</div>
+
+<!-- 2.3 Wealth Trend Card (เพิ่มใหม่ใต้กราฟ) -->
+<div id="wealthTrendCard" style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666; font-size:13px;">
+        Wealth Trend
+    </div>
+    <div id="trendDirection" style="
+        font-size:24px;
+        font-weight:bold;
+        margin-top:8px;
+        color:#16a34a;
+    ">
+        ↗ Increasing
+    </div>
+    <div id="trendPct" style="
+        font-size:16px;
+        font-weight:bold;
+        color:#16a34a;
+        margin-top:4px;
+    ">
+        +0.46%
+    </div>
+</div>
+
+<!-- 2.4 History Progress & Weekly Change (การ์ดเล็ก 2 ใบ) -->
+<div style="
+    display:flex;
+    gap:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+">
+    <!-- History Progress Card -->
+    <div style="
+        flex:1;
+        min-width:200px;
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px;">
+            History Progress
+        </div>
+        <div id="progressPctLabel" style="
+            font-size:24px;
+            font-weight:bold;
+            color:#2563eb;
+            margin-top:8px;
+        ">
+            -
+        </div>
+        <div id="progressDaysLabel" style="
+            font-size:13px;
+            color:#666;
+            margin-top:4px;
+        ">
+            -
+        </div>
+    </div>
+
+    <!-- Weekly Change Card -->
+    <div style="
+        flex:1;
+        min-width:200px;
+        border:1px solid #ddd;
+        border-radius:12px;
+        padding:16px;
+        box-shadow:0 2px 8px rgba(0,0,0,.08);
+    ">
+        <div style="color:#666; font-size:13px;">
+            Weekly Change
+        </div>
+        <div id="weeklyChangeValue" style="
+            font-size:18px;
+            font-weight:bold;
+            color:#666;
+            margin-top:8px;
+        ">
+            Collecting data...
+        </div>
+    </div>
 </div>
 
 <!-- 4. การ์ดสรุปสถานะพอร์ต -->
@@ -854,6 +936,22 @@ async function loadDashboard() {
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
+    // คำนวณ Wealth Trend Card
+    const trend = history.length >= 2 && history[history.length - 1].wealth > history[history.length - 2].wealth
+        ? '↗ Increasing'
+        : '↘ Decreasing';
+    const trendColor = trend.includes('Increasing') ? '#16a34a' : '#dc2626';
+    
+    document.getElementById('trendDirection').innerText = trend;
+    document.getElementById('trendDirection').style.color = trendColor;
+    document.getElementById('trendPct').innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%';
+    document.getElementById('trendPct').style.color = trendColor;
+
+    // คำนวณ History Progress Card (7 วัน)
+    const progress = Math.min((history.length / 7) * 100, 100);
+    document.getElementById('progressPctLabel').innerText = Math.round(progress) + '%';
+    document.getElementById('progressDaysLabel').innerText = history.length + ' / 7 Days';
+
     // คำนวณ Wealth Milestone
     const wealthTarget = 2000000;
     const milestonePct = (totalWealth / wealthTarget) * 100;
@@ -1010,18 +1108,17 @@ async function loadDashboard() {
             maximumFractionDigits: 2
         });
 
-    // ตรวจสอบจำนวน Snapshot
+    // ตรวจสอบจำนวน Snapshot (สะสมครบ 7 วัน)
     if (history.length < 2) {
         document.getElementById('historyCalcSection').style.display = 'none';
         document.getElementById('notEnoughHistory').style.display = 'block';
 
-        // คำนวณ Progress Bar
-        const progressPct = Math.min((history.length / 2) * 100, 100);
-        document.getElementById('historyProgressBar').style.width = progressPct + '%';
-        document.getElementById('historyProgressPct').innerText = progressPct.toFixed(0) + '%';
+        const historyProgress = Math.min((history.length / 7) * 100, 100);
+        document.getElementById('historyProgressBar').style.width = historyProgress + '%';
+        document.getElementById('historyProgressPct').innerText = historyProgress.toFixed(0) + '%';
 
-        document.getElementById('notEnoughSubtext').innerText =
-            history.length + ' of 2 snapshots collected';
+        document.getElementById('historyStatus').innerText =
+            'Building history... ' + history.length + ' of 7 snapshots collected';
     } else {
         document.getElementById('historyCalcSection').style.display = 'block';
         document.getElementById('notEnoughHistory').style.display = 'none';
@@ -1040,7 +1137,7 @@ async function loadDashboard() {
             });
     }
 
-    // วาดกราฟ Chart.js (ซ่อนเส้น Grid แกน Y)
+    // วาดกราฟ Chart.js
     const ctx = document.getElementById('wealthChart');
 
     new Chart(ctx, {
@@ -1080,7 +1177,7 @@ async function loadDashboard() {
         }
     });
 
-    // Summary ใต้กราฟ (1 Snapshot = Collecting data for trend analysis)
+    // Summary ใต้กราฟ
     if (history.length < 2) {
         document.getElementById('chartSummary').innerText =
             'Collecting data for trend analysis';
