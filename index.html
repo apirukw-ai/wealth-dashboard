@@ -960,6 +960,81 @@
     </div>
 </div>
 
+<!-- 7.2 Portfolio Intelligence Card -->
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+">
+    <div>
+        <div style="color:#666; font-size:13px;">
+            Portfolio Intelligence
+        </div>
+        <div id="portfolioIntelligenceScore" style="
+            font-size:32px;
+            font-weight:bold;
+            margin-top:4px;
+            color:#2563eb;
+        ">
+            -
+        </div>
+    </div>
+    <div id="portfolioIntelligenceGrade" style="
+        font-size:36px;
+        font-weight:bold;
+        color:#ffffff;
+        background:#2563eb;
+        width:64px;
+        height:64px;
+        border-radius:16px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:0 4px 10px rgba(37,99,235,0.3);
+    ">
+        -
+    </div>
+</div>
+
+<!-- 7.3 Achievement System Card -->
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="
+        color:#666;
+        font-size:13px;
+        font-weight:bold;
+        margin-bottom:12px;
+    ">
+        Achievement System
+    </div>
+    <div style="
+        color:#666;
+        font-size:12px;
+        margin-bottom:8px;
+    ">
+        Achievements
+    </div>
+
+    <div id="achievementsList" style="
+        font-size:14px;
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+    "></div>
+</div>
+
 <!-- 3. Largest Asset Card -->
 <div id="largestAssetCard" style="
     border:1px solid #ddd;
@@ -1098,20 +1173,23 @@ async function loadDashboard() {
     const dailyChange = totalWealth - yesterdayWealth;
     const dailyChangePct = (dailyChange / yesterdayWealth) * 100;
     
-    // คำนวณ Net Worth Ranking & Concentration Risk
+    // คำนวณเปอร์เซ็นต์แต่ละพอร์ตสำหรับ Share of Wealth
+    const mfcPctVal = (mfcTotal / totalWealth) * 100;
+    const gpfPctVal = (gpfTotal / totalWealth) * 100;
+
     const ports = [
-        { name: 'GPF', value: gpfTotal },
-        { name: 'MFC', value: mfcTotal }
+        { name: 'GPF', value: gpfTotal, pct: gpfPctVal },
+        { name: 'MFC', value: mfcTotal, pct: mfcPctVal }
     ];
     ports.sort((a, b) => b.value - a.value);
 
-    // 1. อัปเดต Net Worth Ranking List
+    // 1. อัปเดต Net Worth Ranking List พร้อม Share of Wealth
     let rankingHtml = '';
     ports.forEach((p, index) => {
         rankingHtml += `
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:16px;">
                 <span><strong>#${index + 1} ${p.name}</strong></span>
-                <span style="font-weight:bold;">฿${p.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span style="font-weight:bold;">฿${p.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${p.pct.toFixed(2)}%)</span>
             </div>
         `;
     });
@@ -1182,6 +1260,55 @@ async function loadDashboard() {
 
     document.getElementById('firePct').innerText =
         fireProgress.toFixed(2) + '%';
+
+    // 4. คำนวณ Portfolio Intelligence Score & Grade
+    const portfolioIntelligenceScore = (
+        fireProgress * 0.5 +
+        diversificationScore * 0.3 +
+        (100 - largestAssetPct) * 0.2
+    );
+
+    let piGrade = 'C';
+    if (portfolioIntelligenceScore >= 80) piGrade = 'A+';
+    else if (portfolioIntelligenceScore >= 70) piGrade = 'A';
+    else if (portfolioIntelligenceScore >= 60) piGrade = 'B+';
+    else if (portfolioIntelligenceScore >= 50) piGrade = 'B';
+
+    document.getElementById('portfolioIntelligenceScore').innerText = portfolioIntelligenceScore.toFixed(0) + '/100';
+    document.getElementById('portfolioIntelligenceGrade').innerText = piGrade;
+
+    // 5. Achievement System Logic
+    let achievements = [];
+
+    if (history.length >= 1)
+        achievements.push('✅ First Snapshot');
+
+    if (totalWealth >= 1000000)
+        achievements.push('✅ Wealth > ฿1M');
+    else
+        achievements.push('⏳ Wealth > ฿1M');
+
+    if (totalWealth >= 1500000)
+        achievements.push('✅ Wealth > ฿1.5M');
+    else
+        achievements.push('⏳ Wealth > ฿1.5M');
+
+    if (totalWealth >= 2000000)
+        achievements.push('✅ Wealth > ฿2M');
+    else
+        achievements.push('⏳ Wealth > ฿2M');
+
+    if (fireProgress >= 50)
+        achievements.push('✅ FIRE Progress > 50%');
+    else
+        achievements.push('⏳ FIRE Progress > 50%');
+
+    if (diversificationScore >= 50)
+        achievements.push('✅ Diversification > 50');
+    else
+        achievements.push('⏳ Diversification > 50');
+
+    document.getElementById('achievementsList').innerHTML = achievements.join('<br>');
 
     // คำนวณ FIRE Level 6 ระดับใหม่
     let fireLevelText = '';
