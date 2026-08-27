@@ -614,7 +614,7 @@
     </div>
 </div>
 
-<!-- 6. Goal ETA Card (อัปเดตระบบอัจฉริยะ) -->
+<!-- 6. Goal ETA Card -->
 <div id="goalEtaCard" style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -627,11 +627,28 @@
         Goal ETA
     </div>
 
-    <!-- สถานะอัจฉริยะ Ahead of Schedule / On Track / Behind Schedule -->
+    <!-- สถานะ Ahead of Schedule / On Track / Behind Schedule -->
     <div id="etaStatus" style="
         font-size:24px;
         font-weight:bold;
         margin-top:8px;
+    ">
+        -
+    </div>
+
+    <!-- เพิ่ม Monthly Need -->
+    <div style="
+        margin-top:12px;
+        color:#666;
+        font-size:13px;
+    ">
+        Monthly Need
+    </div>
+
+    <div id="etaMonthlyNeed" style="
+        font-size:18px;
+        font-weight:bold;
+        margin-top:4px;
     ">
         -
     </div>
@@ -1035,15 +1052,11 @@ async function loadDashboard() {
     document.getElementById('monthlyNeed').innerText =
         'Need ฿' + Math.round(monthlyNeed).toLocaleString('en-US') + ' / Month for 12 Months';
 
-    // คำนวณ Portfolio Health
-    const portfolioHealth = 'Strong';
-    document.getElementById('portfolioHealthStatus').innerText = portfolioHealth;
-
-    // คำนวณ Goal ETA (ระบบประเมินอัจฉริยะ)
+    // คำนวณ Goal ETA (ประเมินสถานะจาก monthlyNeed)
     let etaStatusText = '';
     let etaStatusColor = '';
 
-    if (monthlyNeed <= 10000 || portfolioHealth === 'Strong') {
+    if (monthlyNeed <= 10000) {
         etaStatusText = '🎯 Ahead of Schedule';
         etaStatusColor = '#16a34a'; // เขียว
     } else if (monthlyNeed <= 15000) {
@@ -1056,6 +1069,10 @@ async function loadDashboard() {
 
     document.getElementById('etaStatus').innerText = etaStatusText;
     document.getElementById('etaStatus').style.color = etaStatusColor;
+
+    // แสดง Monthly Need ในการ์ด Goal ETA
+    document.getElementById('etaMonthlyNeed').innerText =
+        '฿' + Math.round(monthlyNeed).toLocaleString('en-US');
 
     const etaMonths = 12;
     const targetDate = new Date();
