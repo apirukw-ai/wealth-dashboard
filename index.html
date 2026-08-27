@@ -72,7 +72,6 @@
         </div>
         <div id="allocationLegend" style="margin-top:12px; font-size:13px; color:#666;"></div>
         
-        <!-- ย่อย MFC / GPF Values -->
         <div style="display:flex; gap:20px; margin-top:16px; flex-wrap:wrap;">
             <div style="flex:1; border:1px solid #eee; border-radius:8px; padding:12px;">
                 <div style="color:#666; font-size:12px;">MFC</div>
@@ -387,7 +386,12 @@ async function loadDashboard() {
     }
 
     const totalWealth = mfcTotal + gpfTotal;
-    const history = JSON.parse(localStorage.getItem('wealthHistory')) || [];
+
+    // โหลด History จริงจาก Firebase
+    const historyUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
+    const historyRes = await fetch(historyUrl);
+    const historyData = await historyRes.json() || {};
+    const history = Object.values(historyData);
 
     const yesterdayWealth = 1850000;
     const dailyChange = totalWealth - yesterdayWealth;
@@ -401,6 +405,39 @@ async function loadDashboard() {
         { name: 'MFC', value: mfcTotal, pct: mfcPctVal }
     ];
     ports.sort((a, b) => b.value - a.value);
+
+    // Auto Save Snapshot ไปที่ Firebase
+    const today = new Date().toLocaleDateString('en-CA');
+    const now = new Date();
+    const snapshotKey = today.replaceAll('-', '');
+    const snapshotUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history/' + snapshotKey + '.json';
+
+    const snapRes = await fetch(snapshotUrl);
+    const existing = await snapRes.json();
+
+    if (!existing) {
+        await fetch(snapshotUrl, {
+            method: 'PUT',
+            headers: {
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify({
+                date: today,
+                wealth: totalWealth,
+                mfc: mfcTotal,
+                gpf: gpfTotal,
+                createdAt: new Date().toISOString()
+            })
+        });
+        // เพิ่มเข้าไปใน history array ทันทีเพื่อให้กราฟและข้อมูลอัปเดตปัจจุบัน
+        history.push({
+            date: today,
+            wealth: totalWealth,
+            mfc: mfcTotal,
+            gpf: gpfTotal,
+            createdAt: new Date().toISOString()
+        });
+    }
 
     // Net Worth Ranking
     let rankingHtml = '';
@@ -544,23 +581,11 @@ async function loadDashboard() {
     document.getElementById('achievementsList').innerHTML = achievements.join('<br>');
 
     // Snapshots & History
-    const today = new Date().toLocaleDateString('en-CA');
-    const now = new Date();
-    const exists = history.find(h => h.date === today);
-    if (!exists) {
-        history.push({ date: today, wealth: totalWealth });
-        localStorage.setItem('wealthHistory', JSON.stringify(history));
-    }
-
     document.getElementById('historyCount').innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
 
     if (history.length > 0) {
         const latestSnapshot = history[history.length - 1];
-        const wealthValues = history.map(h => h.wealth);
-        const highestWealth = Math.max(...wealthValues);
-        const lowestWealth = Math.min(...wealthValues);
-
-        document.getElementById('latestWealth').innerText = '฿' + latestSnapshot.wealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('latestWealth').innerText = '฿' + Number(latestSnapshot.wealth).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('latestSnapshotDate').innerText = formatDate(latestSnapshot.date);
 
         const startDate = new Date('2026-08-26');
