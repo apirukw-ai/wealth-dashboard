@@ -1,26 +1,13 @@
 <h1>🏠 Wealth Dashboard</h1>
 
-<!-- ปุ่มสลับหน้า (Toggle Navigation) -->
-<div style="margin-bottom:20px; max-width:500px; display:flex; gap:10px;">
-    <button id="btnDaily" onclick="switchTab('daily')" style="
-        flex:1; padding:10px; border-radius:8px; border:none; font-weight:bold; cursor:pointer;
-        background:#2563eb; color:#ffffff;
-    ">Daily Dashboard</button>
-    <button id="btnAnalytics" onclick="switchTab('analytics')" style="
-        flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; font-weight:bold; cursor:pointer;
-        background:#f3f4f6; color:#374151;
-    ">Show Advanced Analytics</button>
-</div>
-
-<!-- ================= TAB 1: DAILY DASHBOARD ================= -->
-<div id="tabDaily" style="display:block;">
+<!-- ================= DASHBOARD MAIN CONTENT (แสดงต่อเนื่องทั้งหมด) ================= -->
+<div id="mainDashboard" style="display:flex; flex-direction:column; gap:20px;">
 
     <!-- Total Wealth Card -->
     <div style="
         border:1px solid #ddd;
         border-radius:16px;
         padding:24px;
-        margin-bottom:20px;
         width:500px;
         max-width:100%;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
@@ -46,7 +33,6 @@
         display:flex;
         gap:12px;
         flex-wrap:wrap;
-        margin-bottom:20px;
         max-width:500px;
     ">
         <div id="summaryFire" 
@@ -99,7 +85,6 @@
         padding:16px;
         background:#f0fdf4;
         max-width:500px;
-        margin-bottom:20px;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
         <div style="color:#666; font-size:13px;">Portfolio Gain</div>
@@ -113,7 +98,6 @@
         border-radius:12px;
         padding:16px;
         max-width:500px;
-        margin-bottom:20px;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
         <div style="font-size:13px; color:#666; margin-bottom:8px;">Asset Allocation</div>
@@ -143,7 +127,6 @@
         border-radius:12px;
         padding:16px;
         max-width:500px;
-        margin-bottom:20px;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
         <div style="color:#666; font-size:13px;">Wealth Trend</div>
@@ -157,7 +140,6 @@
         border-radius:12px;
         padding:16px;
         max-width:500px;
-        margin-bottom:20px;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
         <div style="color:#666; font-size:13px; font-weight:bold;">FIRE Progress</div>
@@ -181,7 +163,6 @@
         border-radius:12px;
         padding:16px;
         max-width:500px;
-        margin-bottom:20px;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
         <div style="color:#666; font-size:13px;">Goal ETA</div>
@@ -200,7 +181,6 @@
         border-radius:12px;
         padding:16px;
         max-width:500px;
-        margin-bottom:20px;
         box-shadow:0 2px 8px rgba(0,0,0,.08);
     ">
         <div style="color:#666; font-size:13px; margin-bottom:12px;">Wealth History</div>
@@ -208,180 +188,162 @@
         <div id="chartSummary" style="margin-top:12px; color:#666; font-size:13px;"></div>
     </div>
 
-</div> <!-- ปิด Tab Daily Dashboard -->
+</div> <!-- ปิด Main Dashboard -->
 
 
-<!-- ================= TAB 2: ADVANCED ANALYTICS ================= -->
-<div id="tabAnalytics" style="display:none;">
-
-    <!-- Financial Health Score Card -->
-    <div id="financialHealthCard" style="
-        border:1px solid #bbf7d0;
-        border-radius:12px;
-        padding:16px;
-        background:#f0fdf4;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
+<!-- ================= ADVANCED ANALYTICS (แบบพับ/กาง) ================= -->
+<div style="margin-top:30px; max-width:500px;">
+    <!-- ปุ่มกดเปิด/ปิด -->
+    <div onclick="toggleAnalytics()" style="
+        font-size:18px; font-weight:bold; cursor:pointer; padding:12px 16px;
+        background:#f3f4f6; border-radius:12px; border:1px solid #ddd; display:flex; align-items:center; gap:8px;
+        user-select:none;
     ">
-        <div>
-            <div style="color:#666; font-size:13px;">Financial Health Score</div>
-            <div id="healthScoreLabel" style="font-size:20px; font-weight:bold; color:#166534; margin-top:4px;">Excellent</div>
-            <div style="font-size:11px; color:#15803d; margin-top:4px;">High Progress • Positive Trend • Stable Assets</div>
+        <span id="analyticsArrow">▶</span> Advanced Analytics
+    </div>
+
+    <!-- ส่วนที่จะพับ/กาง -->
+    <div id="analyticsContainer" style="display:none; margin-top:15px; flex-direction:column; gap:20px;">
+
+        <!-- Financial Health Score Card -->
+        <div id="financialHealthCard" style="
+            border:1px solid #bbf7d0;
+            border-radius:12px;
+            padding:16px;
+            background:#f0fdf4;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
+            <div>
+                <div style="color:#666; font-size:13px;">Financial Health Score</div>
+                <div id="healthScoreLabel" style="font-size:20px; font-weight:bold; color:#166534; margin-top:4px;">Excellent</div>
+                <div style="font-size:11px; color:#15803d; margin-top:4px;">High Progress • Positive Trend • Stable Assets</div>
+            </div>
+            <div id="healthScoreGrade" style="
+                font-size:36px; font-weight:bold; color:#ffffff; background:#16a34a;
+                width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+                box-shadow:0 4px 10px rgba(22,163,74,0.3);
+            ">A+</div>
         </div>
-        <div id="healthScoreGrade" style="
-            font-size:36px; font-weight:bold; color:#ffffff; background:#16a34a;
-            width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center;
-            box-shadow:0 4px 10px rgba(22,163,74,0.3);
-        ">A+</div>
-    </div>
 
-    <!-- History Progress Card -->
-    <div style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px;">History Progress</div>
-        <div id="progressPctLabel" style="font-size:24px; font-weight:bold; color:#2563eb; margin-top:8px;">-</div>
-        <div id="progressDaysLabel" style="font-size:13px; color:#666; margin-top:4px;">-</div>
-    </div>
-
-    <!-- Snapshots Card -->
-    <div id="historyCard" style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px;">Snapshots</div>
-        <div id="historyCount" style="font-size:24px; font-weight:bold; margin-top:8px;">-</div>
-        <div style="margin-top:10px; color:#666; font-size:13px;">Tracking Started</div>
-        <div style="margin-top:4px; font-weight:bold;">26 Aug 2026</div>
-        <div style="margin-top:12px; color:#666; font-size:13px;">Latest Snapshot</div>
-        <div id="latestSnapshotDate" style="margin-top:4px; font-weight:bold;">-</div>    
-        <div style="margin-top:12px; color:#666; font-size:13px;">Days Tracking</div>
-        <div id="trackingAge" style="margin-top:4px; font-weight:bold;">-</div>
-        <div style="margin-top:12px; color:#666; font-size:13px;">Latest Wealth</div>
-        <div id="latestWealth" style="margin-top:4px; font-weight:bold;">-</div>    
-        <div style="margin-top:12px; color:#666; font-size:13px;">Best Day</div>
-        <div id="bestDayValue" style="margin-top:4px; font-weight:bold; color:#16a34a;">-</div>
-    </div>
-
-    <!-- Diversification Score Card -->
-    <div style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px;">Diversification Score</div>
-        <div id="diversificationScore" style="margin-top:8px; font-size:36px; font-weight:bold;">-</div>
-        <div id="diversificationRating" style="margin-top:4px; font-weight:bold;">-</div>
-        <div id="diversificationDesc" style="margin-top:6px; font-size:12px; color:#666;">-</div>
-    </div>
-
-    <!-- Concentration Risk Card -->
-    <div style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px; font-weight:bold;">Top Concentration Risk</div>
-        <div style="color:#666; font-size:12px; margin-top:2px;">Concentration Risk</div>
-        <div id="concentrationPct" style="font-size:36px; font-weight:bold; margin-top:8px;">-</div>
-        <div id="concentrationLevel" style="font-size:18px; font-weight:bold; margin-top:4px;">-</div>
-    </div>
-
-    <!-- Portfolio Intelligence Card -->
-    <div style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-    ">
-        <div>
-            <div style="color:#666; font-size:13px;">Portfolio Intelligence</div>
-            <div id="portfolioIntelligenceScore" style="font-size:32px; font-weight:bold; margin-top:4px; color:#2563eb;">-</div>
+        <!-- Snapshots Card -->
+        <div id="historyCard" style="
+            border:1px solid #ddd;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+        ">
+            <div style="color:#666; font-size:13px;">Snapshots</div>
+            <div id="historyCount" style="font-size:24px; font-weight:bold; margin-top:8px;">-</div>
+            <div style="margin-top:10px; color:#666; font-size:13px;">Tracking Started</div>
+            <div style="margin-top:4px; font-weight:bold;">26 Aug 2026</div>
+            <div style="margin-top:12px; color:#666; font-size:13px;">Latest Snapshot</div>
+            <div id="latestSnapshotDate" style="margin-top:4px; font-weight:bold;">-</div>    
+            <div style="margin-top:12px; color:#666; font-size:13px;">Days Tracking</div>
+            <div id="trackingAge" style="margin-top:4px; font-weight:bold;">-</div>
+            <div style="margin-top:12px; color:#666; font-size:13px;">Latest Wealth</div>
+            <div id="latestWealth" style="margin-top:4px; font-weight:bold;">-</div>    
+            <div style="margin-top:12px; color:#666; font-size:13px;">Best Day</div>
+            <div id="bestDayValue" style="margin-top:4px; font-weight:bold; color:#16a34a;">-</div>
         </div>
-        <div id="portfolioIntelligenceGrade" style="
-            font-size:36px; font-weight:bold; color:#ffffff; background:#2563eb;
-            width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center;
-            box-shadow:0 4px 10px rgba(37,99,235,0.3);
-        ">-</div>
-    </div>
 
-    <!-- Net Worth Ranking Card -->
-    <div style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px; font-weight:bold;">Net Worth Ranking</div>
-        <div style="color:#666; font-size:12px; margin-top:2px; margin-bottom:12px;">Portfolio Ranking</div>
-        <div id="rankingList" style="display:flex; flex-direction:column; gap:10px;">-</div>
-    </div>
-
-    <!-- Achievement System Card -->
-    <div style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px; font-weight:bold; margin-bottom:12px;">Achievement System</div>
-        <div style="color:#666; font-size:12px; margin-bottom:4px;">Next Achievement</div>
-        <div id="nextAchievementTitle" style="font-size:16px; font-weight:bold; color:#2563eb;">-</div>
-        <div style="color:#666; font-size:12px; margin-top:8px; margin-bottom:4px;">Progress</div>
-        <div id="nextAchievementProgress" style="font-size:16px; font-weight:bold; margin-bottom:4px;">-</div>
-        <div style="height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:8px;">
-            <div id="achievementBar" style="height:100%; background:#2563eb; width:0%;"></div>
+        <!-- Diversification Score Card -->
+        <div style="
+            border:1px solid #ddd;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+        ">
+            <div style="color:#666; font-size:13px;">Diversification Score</div>
+            <div id="diversificationScore" style="margin-top:8px; font-size:36px; font-weight:bold;">-</div>
+            <div id="diversificationRating" style="margin-top:4px; font-weight:bold;">-</div>
+            <div id="diversificationDesc" style="margin-top:6px; font-size:12px; color:#666;">-</div>
         </div>
-        <div id="achievementEta" style="margin-top:6px; font-size:12px; font-weight:bold; color:#16a34a;">-</div>
-        <hr style="border:none; border-top:1px solid #eee; margin:12px 0;">
-        <div style="color:#666; font-size:12px; margin-bottom:8px;">Achievements</div>
-        <div id="achievementsList" style="font-size:14px; display:flex; flex-direction:column; gap:6px;"></div>
-    </div>
 
-    <!-- Largest Asset Card -->
-    <div style="
-        border:1px solid #ddd;
-        border-radius:12px;
-        padding:16px;
-        max-width:500px;
-        margin-bottom:20px;
-        box-shadow:0 2px 8px rgba(0,0,0,.08);
-    ">
-        <div style="color:#666; font-size:13px;">Largest Asset</div>
-        <div id="largestAssetName" style="font-size:24px; font-weight:bold; margin-top:8px;">-</div>
-        <div id="largestAssetPct" style="margin-top:4px; font-weight:bold; color:#16a34a;">-</div>
-        <div id="largestAssetValue" style="margin-top:4px; color:#666;"></div>
-    </div>
+        <!-- Concentration Risk Card -->
+        <div style="
+            border:1px solid #ddd;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+        ">
+            <div style="color:#666; font-size:13px; font-weight:bold;">Top Concentration Risk</div>
+            <div style="color:#666; font-size:12px; margin-top:2px;">Concentration Risk</div>
+            <div id="concentrationPct" style="font-size:36px; font-weight:bold; margin-top:8px;">-</div>
+            <div id="concentrationLevel" style="font-size:18px; font-weight:bold; margin-top:4px;">-</div>
+        </div>
 
-</div> <!-- ปิด Tab Analytics -->
+        <!-- Portfolio Intelligence Card -->
+        <div style="
+            border:1px solid #ddd;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        ">
+            <div>
+                <div style="color:#666; font-size:13px;">Portfolio Intelligence</div>
+                <div id="portfolioIntelligenceScore" style="font-size:32px; font-weight:bold; margin-top:4px; color:#2563eb;">-</div>
+            </div>
+            <div id="portfolioIntelligenceGrade" style="
+                font-size:36px; font-weight:bold; color:#ffffff; background:#2563eb;
+                width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+                box-shadow:0 4px 10px rgba(37,99,235,0.3);
+            ">-</div>
+        </div>
+
+        <!-- Net Worth Ranking Card -->
+        <div style="
+            border:1px solid #ddd;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+        ">
+            <div style="color:#666; font-size:13px; font-weight:bold;">Net Worth Ranking</div>
+            <div style="color:#666; font-size:12px; margin-top:2px; margin-bottom:12px;">Portfolio Ranking</div>
+            <div id="rankingList" style="display:flex; flex-direction:column; gap:10px;">-</div>
+        </div>
+
+        <!-- Achievement System Card -->
+        <div style="
+            border:1px solid #ddd;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+        ">
+            <div style="color:#666; font-size:13px; font-weight:bold; margin-bottom:12px;">Achievement System</div>
+            <div style="color:#666; font-size:12px; margin-bottom:4px;">Next Achievement</div>
+            <div id="nextAchievementTitle" style="font-size:16px; font-weight:bold; color:#2563eb;">-</div>
+            <div style="color:#666; font-size:12px; margin-top:8px; margin-bottom:4px;">Progress</div>
+            <div id="nextAchievementProgress" style="font-size:16px; font-weight:bold; margin-bottom:4px;">-</div>
+            <div style="height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin-top:8px;">
+                <div id="achievementBar" style="height:100%; background:#2563eb; width:0%;"></div>
+            </div>
+            <div id="achievementEta" style="margin-top:6px; font-size:12px; font-weight:bold; color:#16a34a;">-</div>
+            <hr style="border:none; border-top:1px solid #eee; margin:12px 0;">
+            <div style="color:#666; font-size:12px; margin-bottom:8px;">Achievements</div>
+            <div id="achievementsList" style="font-size:14px; display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+
+        <!-- Largest Asset Card -->
+        <div style="
+            border:1px solid #ddd;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 8px rgba(0,0,0,.08);
+        ">
+            <div style="color:#666; font-size:13px;">Largest Asset</div>
+            <div id="largestAssetName" style="font-size:24px; font-weight:bold; margin-top:8px;">-</div>
+            <div id="largestAssetPct" style="margin-top:4px; font-weight:bold; color:#16a34a;">-</div>
+            <div id="largestAssetValue" style="margin-top:4px; color:#666;"></div>
+        </div>
+
+    </div>
+</div>
 
 
 <!-- โหลด Supabase SDK และ Chart.js -->
@@ -394,22 +356,17 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function switchTab(tab) {
-    const btnDaily = document.getElementById('btnDaily');
-    const btnAnalytics = document.getElementById('btnAnalytics');
-    const tabDaily = document.getElementById('tabDaily');
-    const tabAnalytics = document.getElementById('tabAnalytics');
-
-    if (tab === 'daily') {
-        if (tabDaily) tabDaily.style.display = 'block';
-        if (tabAnalytics) tabAnalytics.style.display = 'none';
-        if (btnDaily) { btnDaily.style.background = '#2563eb'; btnDaily.style.color = '#ffffff'; btnDaily.style.border = 'none'; }
-        if (btnAnalytics) { btnAnalytics.style.background = '#f3f4f6'; btnAnalytics.style.color = '#374151'; btnAnalytics.style.border = '1px solid #ddd'; }
+// ฟังก์ชันสำหรับเปิด/ปิด (พับ/กาง) ส่วน Advanced Analytics
+function toggleAnalytics() {
+    const container = document.getElementById('analyticsContainer');
+    const arrow = document.getElementById('analyticsArrow');
+    
+    if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'flex';
+        arrow.innerText = '▼';
     } else {
-        if (tabDaily) tabDaily.style.display = 'none';
-        if (tabAnalytics) tabAnalytics.style.display = 'block';
-        if (btnAnalytics) { btnAnalytics.style.background = '#2563eb'; btnAnalytics.style.color = '#ffffff'; btnAnalytics.style.border = 'none'; }
-        if (btnDaily) { btnDaily.style.background = '#f3f4f6'; btnDaily.style.color = '#374151'; btnDaily.style.border = '1px solid #ddd'; }
+        container.style.display = 'none';
+        arrow.innerText = '▶';
     }
 }
 
@@ -595,13 +552,6 @@ function renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPc
 function renderHistory(history, dailyChange, dailyChangePct, today) {
     const countEl = document.getElementById('historyCount');
     if (countEl) countEl.innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
-
-    const historyProgress = Math.min((history.length / 7) * 100, 100);
-    const progressPctEl = document.getElementById('progressPctLabel');
-    if (progressPctEl) progressPctEl.innerText = Math.round(historyProgress) + '%';
-
-    const progressDaysEl = document.getElementById('progressDaysLabel');
-    if (progressDaysEl) progressDaysEl.innerText = `${history.length}/7 Days`;
 
     if (history.length > 0) {
         const latestSnapshot = history[history.length - 1];
