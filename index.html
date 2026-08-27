@@ -259,36 +259,57 @@
         -
     </div>
 
-    <div style="margin-top:12px; color:#666; font-size:13px;">
-        Range
-    </div>
-    <div id="wealthRange" style="
-        font-size:18px;
-        font-weight:bold;
-        color:#16a34a;
-        margin-top:4px;
-    ">
-        -
+    <!-- ส่วนที่จะถูกสลับซ่อน/แสดง เมื่อมี snapshot < 2 หรือ >= 2 -->
+    <div id="historyCalcSection">
+        <div style="margin-top:12px; color:#666; font-size:13px;">
+            Range
+        </div>
+        <div id="wealthRange" style="
+            font-size:18px;
+            font-weight:bold;
+            color:#16a34a;
+            margin-top:4px;
+        ">
+            -
+        </div>
+
+        <div style="margin-top:12px; color:#666; font-size:13px;">
+            Average Gain
+        </div>
+        <div id="avgGain" style="
+            font-size:18px;
+            font-weight:bold;
+            color:#2563eb;
+            margin-top:4px;
+        ">
+            -
+        </div>
     </div>
 
-    <div style="
-        margin-top:12px;
-        color:#666;
-        font-size:13px;
-    ">
-        Average Gain
-    </div>
-    <div id="avgGain" style="
-        font-size:18px;
-        font-weight:bold;
-        color:#2563eb;
-        margin-top:4px;
-    ">
-        -
+    <!-- แสดงเมื่อ Snapshot < 2 -->
+    <div id="notEnoughHistory" style="display:none; margin-top:12px;">
+        <div style="color:#666; font-size:13px;">
+            History Status
+        </div>
+        <div style="
+            font-size:16px;
+            font-weight:bold;
+            color:#d97706;
+            margin-top:4px;
+        ">
+            Not enough history yet
+        </div>
+        <div style="
+            font-size:12px;
+            color:#666;
+            margin-top:2px;
+        ">
+            Need at least 2 snapshots
+        </div>
     </div>
 </div>
 
-<!-- 2.2 Wealth History Chart Card (แทรกใต้ History Summary & Recent Snapshot) -->
+<!-- 2.2 Wealth History Chart Card -->
 <div style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -945,7 +966,7 @@ async function loadDashboard() {
     document.getElementById('lastUpdated').innerText =
         'Updated: ' + now.toLocaleString();
 
-    // แสดงค่า Highest, Lowest, Range และ Average Gain
+    // แสดงค่า Highest & Lowest Wealth
     document.getElementById('highestWealth').innerText =
         '฿' + highestWealth.toLocaleString('en-US', {
             minimumFractionDigits: 2,
@@ -958,18 +979,27 @@ async function loadDashboard() {
             maximumFractionDigits: 2
         });
 
-    document.getElementById('wealthRange').innerText =
-        '▲ ฿' + wealthRange.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+    // ตรวจสอบจำนวน Snapshot
+    if (history.length < 2) {
+        document.getElementById('historyCalcSection').style.display = 'none';
+        document.getElementById('notEnoughHistory').style.display = 'block';
+    } else {
+        document.getElementById('historyCalcSection').style.display = 'block';
+        document.getElementById('notEnoughHistory').style.display = 'none';
 
-    const avgGain = wealthRange / Math.max(history.length, 1);
-    document.getElementById('avgGain').innerText =
-        '฿' + avgGain.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        document.getElementById('wealthRange').innerText =
+            '▲ ฿' + wealthRange.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+        const avgGain = wealthRange / Math.max(history.length, 1);
+        document.getElementById('avgGain').innerText =
+            '฿' + avgGain.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+    }
 
     // วาดกราฟ Chart.js
     const ctx = document.getElementById('wealthChart');
@@ -1008,9 +1038,10 @@ async function loadDashboard() {
         }
     });
 
-    // Summary ใต้กราฟ
+    // Summary ใต้กราฟ (ปรับการแสดงผล Snapshot / Snapshots)
+    const snapshotLabel = history.length === 1 ? 'Snapshot' : 'Snapshots';
     document.getElementById('chartSummary').innerText =
-        'Tracking ' + history.length + ' snapshot(s)';
+        'Tracking ' + history.length + ' ' + snapshotLabel;
 }
 
 loadDashboard();
