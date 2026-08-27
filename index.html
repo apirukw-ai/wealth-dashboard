@@ -453,14 +453,14 @@ function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
 function renderGoalEta(monthlyNeed) {
     let goalStatus = '';
 
-    if (monthlyNeed <= 5000) {
-        goalStatus = '🚀 Ahead of Schedule';
+    if (monthlyNeed <= 25000) {
+        goalStatus = '🎯 Ahead of Schedule';
     }
-    else if (monthlyNeed <= 15000) {
+    else if (monthlyNeed <= 50000) {
         goalStatus = '✅ On Track';
     }
-    else if (monthlyNeed <= 25000) {
-        goalStatus = '⚠ Needs Improvement';
+    else if (monthlyNeed <= 100000) {
+        goalStatus = '⚠ Needs Acceleration';
     }
     else {
         goalStatus = '🔴 Behind Schedule';
@@ -481,7 +481,7 @@ function renderGoalEta(monthlyNeed) {
         etaTargetDateEl.innerText = '2027';
     }
 }
-
+    
 function renderAchievements(totalWealth, history, fireProgress, diversificationScore) {
     let achievements = [];
     if (history.length >= 1) achievements.push('✅ First Snapshot');
