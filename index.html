@@ -361,7 +361,7 @@
 
 </div>
 
-<!-- 2.3 Wealth Trend Card (เพิ่มใหม่ใต้กราฟ) -->
+<!-- 2.3 Wealth Trend Card -->
 <div id="wealthTrendCard" style="
     border:1px solid #ddd;
     border-radius:12px;
@@ -377,17 +377,15 @@
         font-size:24px;
         font-weight:bold;
         margin-top:8px;
-        color:#16a34a;
     ">
-        ↗ Increasing
+        -
     </div>
     <div id="trendPct" style="
         font-size:16px;
         font-weight:bold;
-        color:#16a34a;
         margin-top:4px;
     ">
-        +0.46%
+        -
     </div>
 </div>
 
@@ -441,12 +439,12 @@
             Weekly Change
         </div>
         <div id="weeklyChangeValue" style="
-            font-size:18px;
+            font-size:16px;
             font-weight:bold;
             color:#666;
             margin-top:8px;
         ">
-            Collecting data...
+            -
         </div>
     </div>
 </div>
@@ -936,21 +934,45 @@ async function loadDashboard() {
             '<div style="color:#16a34a; font-size:14px; margin-top:2px;">▲ +' + maxGainPct.toFixed(2) + '%</div>';
     }
 
-    // คำนวณ Wealth Trend Card
-    const trend = history.length >= 2 && history[history.length - 1].wealth > history[history.length - 2].wealth
-        ? '↗ Increasing'
-        : '↘ Decreasing';
-    const trendColor = trend.includes('Increasing') ? '#16a34a' : '#dc2626';
-    
+    // คำนวณ Wealth Trend Card (ซิงค์ตาม dailyChangePct)
+    let trend = '';
+    let trendColor = '';
+
+    if (dailyChangePct > 0) {
+        trend = '↗ Increasing';
+        trendColor = '#16a34a';
+    } else if (dailyChangePct < 0) {
+        trend = '↘ Decreasing';
+        trendColor = '#dc2626';
+    } else {
+        trend = '→ Flat';
+        trendColor = '#666666';
+    }
+
     document.getElementById('trendDirection').innerText = trend;
     document.getElementById('trendDirection').style.color = trendColor;
     document.getElementById('trendPct').innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%';
     document.getElementById('trendPct').style.color = trendColor;
 
-    // คำนวณ History Progress Card (7 วัน)
+    // คำนวณ History Progress Card (เป้าหมาย 7 วัน)
     const progress = Math.min((history.length / 7) * 100, 100);
     document.getElementById('progressPctLabel').innerText = Math.round(progress) + '%';
     document.getElementById('progressDaysLabel').innerText = history.length + ' / 7 Days';
+
+    // คำนวณ Weekly Change Card (Smart Message)
+    if (history.length < 7) {
+        const daysNeeded = 7 - history.length;
+        const dayUnit = daysNeeded === 1 ? 'day' : 'days';
+        document.getElementById('weeklyChangeValue').innerText = `${daysNeeded} more ${dayUnit} required`;
+    } else {
+        // หากสะสมข้อมูลครบ 7 วันขึ้นไป ให้คำนวณการเปลี่ยนแปลงในรอบ 7 วัน
+        const past7Wealth = history[history.length - 7].wealth;
+        const weekChange = totalWealth - past7Wealth;
+        const weekChangePct = (weekChange / past7Wealth) * 100;
+        const sign = weekChange >= 0 ? '+' : '';
+        document.getElementById('weeklyChangeValue').innerText = `${sign}${weekChangePct.toFixed(2)}% (7D)`;
+        document.getElementById('weeklyChangeValue').style.color = weekChange >= 0 ? '#16a34a' : '#dc2626';
+    }
 
     // คำนวณ Wealth Milestone
     const wealthTarget = 2000000;
@@ -1108,7 +1130,7 @@ async function loadDashboard() {
             maximumFractionDigits: 2
         });
 
-    // ตรวจสอบจำนวน Snapshot (สะสมครบ 7 วัน)
+    // ตรวจสอบจำนวน Snapshot
     if (history.length < 2) {
         document.getElementById('historyCalcSection').style.display = 'none';
         document.getElementById('notEnoughHistory').style.display = 'block';
