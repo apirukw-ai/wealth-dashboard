@@ -299,6 +299,38 @@
     </div>
 </div>
 
+<!-- 1.4 Portfolio Advisor (Rebalancing Advisor) Card -->
+<div style="
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    max-width:500px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
+    <div style="color:#666; font-size:13px; font-weight:bold;">
+        Portfolio Advisor
+    </div>
+    <div id="advisorStatus" style="
+        font-size:18px;
+        font-weight:bold;
+        margin-top:8px;
+    ">
+        -
+    </div>
+    
+    <div style="margin-top:12px; color:#666; font-size:13px;">Current</div>
+    <div id="advisorCurrent" style="font-weight:bold; margin-top:2px;">-</div>
+
+    <div style="margin-top:12px; color:#666; font-size:13px;">Suggested Target</div>
+    <div id="advisorTarget" style="font-weight:bold; margin-top:2px;">-</div>
+
+    <div style="margin-top:16px; padding-top:12px; border-top:1px dashed #eee;">
+        <div style="color:#666; font-size:13px; font-weight:bold;">Action Required</div>
+        <div id="advisorAction" style="font-weight:bold; margin-top:4px; color:#dc2626;">-</div>
+    </div>
+</div>
+
 <!-- 2. History Records Card (Snapshots) -->
 <div id="historyCard" style="
     border:1px solid #ddd;
@@ -958,6 +990,14 @@
     ">
         -
     </div>
+
+    <div id="diversificationDesc" style="
+        margin-top:6px;
+        font-size:12px;
+        color:#666;
+    ">
+        -
+    </div>
 </div>
 
 <!-- 7.2 Portfolio Intelligence Card -->
@@ -1019,6 +1059,14 @@
     ">
         Achievement System
     </div>
+    
+    <div style="color:#666; font-size:12px; margin-bottom:4px;">Next Achievement</div>
+    <div id="nextAchievementTitle" style="font-size:16px; font-weight:bold; color:#2563eb;">-</div>
+    <div style="color:#666; font-size:12px; margin-top:8px; margin-bottom:4px;">Progress</div>
+    <div id="nextAchievementProgress" style="font-size:16px; font-weight:bold; margin-bottom:12px;">-</div>
+
+    <hr style="border:none; border-top:1px solid #eee; margin:12px 0;">
+
     <div style="
         color:#666;
         font-size:12px;
@@ -1213,7 +1261,35 @@ async function loadDashboard() {
     document.getElementById('concentrationLevel').innerText = riskLevel;
     document.getElementById('concentrationLevel').style.color = riskColor;
 
-    // 3. คำนวณ Diversification Score
+    // 2.1 Portfolio Advisor (Rebalancing Advisor) Logic
+    let advisorStatusText = '';
+    let advisorStatusColor = '';
+    if (largestAssetPct > 80) {
+        advisorStatusText = '⚠ Highly Concentrated';
+        advisorStatusColor = '#dc2626';
+    } else if (largestAssetPct > 60) {
+        advisorStatusText = '⚠ Moderately Concentrated';
+        advisorStatusColor = '#d97706';
+    } else {
+        advisorStatusText = '✔ Well Diversified';
+        advisorStatusColor = '#16a34a';
+    }
+
+    document.getElementById('advisorStatus').innerText = advisorStatusText;
+    document.getElementById('advisorStatus').style.color = advisorStatusColor;
+    document.getElementById('advisorCurrent').innerText = `GPF ${gpfPctVal.toFixed(2)}%\nMFC ${mfcPctVal.toFixed(2)}%`.replace(/\n/g, '<br>');
+    document.getElementById('advisorTarget').innerHTML = 'GPF 70%<br>MFC 30%';
+    
+    // คำนวณ Action Required ย้ายเงิน (อิงเป้าหมาย Target GPF 70%)
+    const targetGpfAmount = totalWealth * 0.70;
+    const diffGpf = gpfTotal - targetGpfAmount;
+    if (diffGpf > 0) {
+        document.getElementById('advisorAction').innerText = `Move ฿${Math.round(diffGpf).toLocaleString('en-US')} from GPF to Growth Assets`;
+    } else {
+        document.getElementById('advisorAction').innerText = `Portfolio is balanced according to target.`;
+    }
+
+    // 3. คำนวณ Diversification Score พร้อมคำอธิบาย
     const diversificationScore = 100 - largestAssetPct;
     let diversificationRating = '';
     let divColor = '';
@@ -1239,6 +1315,7 @@ async function loadDashboard() {
     document.getElementById('diversificationScore').style.color = divColor;
     document.getElementById('diversificationRating').innerText = diversificationRating;
     document.getElementById('diversificationRating').style.color = divColor;
+    document.getElementById('diversificationDesc').innerText = `Portfolio heavily dependent on ${ports[0].name}`;
 
     // คำนวณ FIRE Progress Card
     const fireTarget = 5000000;
@@ -1277,7 +1354,7 @@ async function loadDashboard() {
     document.getElementById('portfolioIntelligenceScore').innerText = portfolioIntelligenceScore.toFixed(0) + '/100';
     document.getElementById('portfolioIntelligenceGrade').innerText = piGrade;
 
-    // 5. Achievement System Logic
+    // 5. Achievement System Logic & Next Achievement
     let achievements = [];
 
     if (history.length >= 1)
@@ -1293,10 +1370,19 @@ async function loadDashboard() {
     else
         achievements.push('⏳ Wealth > ฿1.5M');
 
-    if (totalWealth >= 2000000)
+    const doubleMillionTarget = 2000000;
+    const doubleMillionPct = Math.min((totalWealth / doubleMillionTarget) * 100, 100);
+    const doubleMillionRemaining = Math.max(doubleMillionTarget - totalWealth, 0);
+
+    if (totalWealth >= doubleMillionTarget) {
         achievements.push('✅ Wealth > ฿2M');
-    else
-        achievements.push('⏳ Wealth > ฿2M');
+        document.getElementById('nextAchievementTitle').innerText = '💎 Ultimate Freedom';
+        document.getElementById('nextAchievementProgress').innerText = 'Completed!';
+    } else {
+        achievements.push(`⏳ Wealth > ฿2M (${doubleMillionPct.toFixed(2)}% หรือ Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`);
+        document.getElementById('nextAchievementTitle').innerText = '💎 Double Million';
+        document.getElementById('nextAchievementProgress').innerText = `${doubleMillionPct.toFixed(2)}% (Need ฿${doubleMillionRemaining.toLocaleString('en-US')} More)`;
+    }
 
     if (fireProgress >= 50)
         achievements.push('✅ FIRE Progress > 50%');
