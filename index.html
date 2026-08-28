@@ -189,8 +189,7 @@
             </div>
         </div>
 
-        <!-- แถวที่ 2: เรียงตามลำดับ FIRE Progress / Goal ETA / Performance Badges -->
-        <!-- 1. FIRE Progress Card -->
+        <!-- แถวที่ 2: FIRE Progress, Goal ETA, Performance Badges -->
         <div id="fireProgressCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
             <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
@@ -202,7 +201,6 @@
             <div id="firePct" class="financial-val" style="font-size:32px; margin-top:10px; color:#34d399;">-</div>
             <div id="fireLevel" style="font-size:12px; font-weight:600; color:#38bdf8; margin-top:2px;">-</div>
             
-            <!-- Gradient Progress Bar -->
             <div style="height:10px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; margin-top:12px;">
                 <div id="fireBar" style="height:100%; width:0%; background: linear-gradient(to right, #10b981, #06b6d4); transition: width 0.4s;"></div>
             </div>
@@ -226,7 +224,6 @@
             </div>
         </div>
 
-        <!-- 2. Goal ETA Card -->
         <div id="goalEtaCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:500;">Goal ETA</div>
             <div id="etaStatus" class="financial-val" style="font-size:20px; margin-top:8px;">-</div>
@@ -239,7 +236,6 @@
             </div>
         </div>
 
-        <!-- 3. Performance Badges Card -->
         <div class="luxury-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(245, 158, 11, 0.3);">
             <div style="color:#fbbf24; font-size:15px; font-weight:700; margin-bottom:14px;">🏅 Performance Badges</div>
             <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
@@ -261,12 +257,10 @@
             </div>
         </div>
 
-        <!-- ACHIEVEMENT SYSTEM CARD (ขนาดเต็มแถว ด้านล่างสุด) -->
+        <!-- ACHIEVEMENT SYSTEM CARD -->
         <div class="luxury-card card-full">
             <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
-            <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 14px;">
-                <!-- เติมด้วย JS -->
-            </div>
+            <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 14px;"></div>
         </div>
 
     </div>
@@ -364,6 +358,29 @@
                 <div id="largestAssetName" class="financial-val" style="font-size:22px; margin-top:6px;">-</div>
                 <div id="largestAssetPct" class="financial-val" style="margin-top:2px; color:#34d399;">-</div>
                 <div id="largestAssetValue" class="financial-val" style="margin-top:2px; font-size:13px; color:#94a3b8;"></div>
+            </div>
+
+            <!-- WEEKLY ANALYTICS CARD (วางอยู่ใต้ Achievement Card และเหนือ Wealth History Chart ตามโจทย์) -->
+            <div id="weeklyAnalyticsCard" class="luxury-card card-full">
+                <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">📅 Weekly Analytics</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
+                        <div style="color:#94a3b8; font-size:12px;">7D Gain</div>
+                        <div id="weeklyGain" class="financial-val" style="font-size:20px; margin-top:6px;">-</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
+                        <div style="color:#94a3b8; font-size:12px;">7D Return</div>
+                        <div id="weeklyReturn" class="financial-val" style="font-size:20px; margin-top:6px;">-</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
+                        <div style="color:#94a3b8; font-size:12px;">Best Day</div>
+                        <div id="weeklyBestDay" class="financial-val" style="font-size:20px; margin-top:6px; color:#34d399;">-</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
+                        <div style="color:#94a3b8; font-size:12px;">Worst Day</div>
+                        <div id="weeklyWorstDay" class="financial-val" style="font-size:20px; margin-top:6px; color:#f87171;">-</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Wealth History Chart Card -->
@@ -653,6 +670,50 @@ function renderAchievementsList(totalWealth, fireProgress) {
     achievementsEl.innerHTML = html;
 }
 
+// --- ฟังก์ชันคำนวณ Weekly Analytics จาก wealth_history ---
+function renderWeeklyAnalytics(history) {
+    if (!history || history.length === 0) return;
+
+    // เลือกข้อมูล 7 วันล่าสุด (หรือทั้งหมดถ้ามีน้อยกว่า 7)
+    const recent = history.slice(-7);
+    const startWealth = Number(recent[0].wealth || 0);
+    const endWealth = Number(recent[recent.length - 1].wealth || 0);
+
+    const gain7D = endWealth - startWealth;
+    const return7D = startWealth > 0 ? (gain7D / startWealth) * 100 : 0;
+
+    let bestDay = 0;
+    let worstDay = 0;
+
+    for (let i = 1; i < recent.length; i++) {
+        const diff = Number(recent[i].wealth) - Number(recent[i - 1].wealth);
+        if (diff > bestDay) bestDay = diff;
+        if (diff < worstDay) worstDay = diff;
+    }
+
+    const gainEl = document.getElementById('weeklyGain');
+    if (gainEl) {
+        gainEl.innerText = (gain7D >= 0 ? '+฿' : '-฿') + Math.abs(gain7D).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        gainEl.style.color = gain7D >= 0 ? '#34d399' : '#f87171';
+    }
+
+    const returnEl = document.getElementById('weeklyReturn');
+    if (returnEl) {
+        returnEl.innerText = (return7D >= 0 ? '+' : '') + return7D.toFixed(2) + '%';
+        returnEl.style.color = return7D >= 0 ? '#34d399' : '#f87171';
+    }
+
+    const bestEl = document.getElementById('weeklyBestDay');
+    if (bestEl) {
+        bestEl.innerText = (bestDay >= 0 ? '+฿' : '-฿') + Math.abs(bestDay).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    const worstEl = document.getElementById('weeklyWorstDay');
+    if (worstEl) {
+        worstEl.innerText = (worstDay >= 0 ? '+฿' : '-฿') + Math.abs(worstDay).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+}
+
 function renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPct) {
     const portfolioIntelligenceScore = (fireProgress * 0.5 + diversificationScore * 0.3 + (100 - largestAssetPct) * 0.2);
     let piGrade = 'C';
@@ -862,6 +923,7 @@ async function loadDashboard() {
     const diversificationScore = 100 - largestAssetPctVal;
 
     renderAchievementsList(totalWealth, fireProgress);
+    renderWeeklyAnalytics(history); // เรนเดอร์ข้อมูล Weekly Analytics
 
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
     renderHistory(history, dailyChange, dailyChangePct, yesterdayWealth, today);
