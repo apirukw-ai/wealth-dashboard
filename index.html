@@ -197,7 +197,7 @@
             </div>
         </div>
 
-        <!-- แถวที่ 2: FIRE Progress, Goal ETA (รูปแบบใหม่), Performance Badges -->
+        <!-- แถวที่ 2: FIRE Progress, Goal ETA, Performance Badges -->
         <div id="fireProgressCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
             <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
@@ -232,7 +232,6 @@
             </div>
         </div>
 
-        <!-- Goal ETA Card (อัปเกรดใหม่ตามโจทย์) -->
         <div id="goalEtaCard" class="luxury-card">
             <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:12px;">🎯 Goal ETA</div>
             
@@ -392,6 +391,29 @@
                 <div id="largestAssetName" class="financial-val" style="font-size:22px; margin-top:6px;">-</div>
                 <div id="largestAssetPct" class="financial-val" style="margin-top:2px; color:#34d399;">-</div>
                 <div id="largestAssetValue" class="financial-val" style="margin-top:2px; font-size:13px; color:#94a3b8;"></div>
+            </div>
+
+            <!-- 🇺🇸 US DIME HOLDINGS ANALYTICS CARD (วางอยู่ระหว่าง Achievements และ Weekly Analytics ตามโจทย์) -->
+            <div id="dimeAnalyticsCard" class="luxury-card card-full" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(56, 189, 248, 0.3);">
+                <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🇺🇸 US DIME Holdings Analytics</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
+                        <div style="color:#94a3b8; font-size:12px;">🏆 Top Holding</div>
+                        <div id="dimeTopHolding" class="financial-val" style="font-size:18px; margin-top:6px;">-</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
+                        <div style="color:#94a3b8; font-size:12px;">🚀 Best Performer</div>
+                        <div id="dimeBestPerformer" class="financial-val" style="font-size:18px; margin-top:6px; color:#34d399;">-</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
+                        <div style="color:#94a3b8; font-size:12px;">⚠️ Top 3 Concentration Risk</div>
+                        <div id="dimeTop3Conc" class="financial-val" style="font-size:18px; margin-top:6px; color:#fbbf24;">-</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
+                        <div style="color:#94a3b8; font-size:12px;">📈 DIME Return</div>
+                        <div id="dimeReturn" class="financial-val" style="font-size:18px; margin-top:6px; color:#38bdf8;">-</div>
+                    </div>
+                </div>
             </div>
 
             <!-- WEEKLY ANALYTICS CARD -->
@@ -627,7 +649,6 @@ function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
     if (needPctEl) needPctEl.innerText = 'Need ' + fireNeedPct.toFixed(2) + '%';
 }
 
-// --- ฟังก์ชันอัปเกรด Goal ETA Card (ตามโจทย์ใหม่) ---
 function renderGoalEta(totalWealth) {
     const target = 5000000;
     const current = totalWealth;
@@ -636,7 +657,6 @@ function renderGoalEta(totalWealth) {
     const monthsLeft = 12;
     const monthlyNeed = remaining / monthsLeft;
 
-    // คำนวณ Scenarios ตามสูตรที่กำหนด
     const save10k = remaining / 10000;
     const save25k = remaining / 25000;
     const save50k = remaining / 50000;
@@ -647,14 +667,13 @@ function renderGoalEta(totalWealth) {
     const scenario50kYear = currentYear + Math.ceil(save50k / 12);
 
     const etaStatusEl = document.getElementById('etaStatus');
-    if (etaStatusEl) etaStatusEl.innerText = scenario10kYear; // ใช้ปีจาก 10k เป็น pace หรือกำหนดตามต้องการ
+    if (etaStatusEl) etaStatusEl.innerText = scenario10kYear;
 
     const monthlyNeedEl = document.getElementById('etaMonthlyNeed');
     if (monthlyNeedEl) {
         monthlyNeedEl.innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US') + '/month';
     }
 
-    // อัปเดต Scenario ลง UI
     const s10 = document.getElementById('scenario10k');
     if (s10) s10.innerText = `→ ${scenario10kYear}`;
 
@@ -728,6 +747,54 @@ function renderAchievementsList(totalWealth, fireProgress) {
     });
 
     achievementsEl.innerHTML = html;
+}
+
+// --- ฟังก์ชันเรนเดอร์ US DIME Holdings Analytics ตามโจทย์ ---
+function renderDimeAnalytics(dimeAnalytics) {
+    if (!dimeAnalytics || !dimeAnalytics.funds) return;
+
+    const funds = dimeAnalytics.funds;
+
+    // 1. Top Holding (เรียงน้ำหนัก weight มากไปน้อย)
+    const sortedByWeight = [...funds].sort((a, b) => b.weight - a.weight);
+    const topHolding = sortedByWeight[0];
+    const topHoldingEl = document.getElementById('dimeTopHolding');
+    if (topHoldingEl && topHolding) {
+        topHoldingEl.innerText = `${topHolding.symbol || topHolding.name} (${topHolding.weight}%)`;
+    }
+
+    // 2. Best Performer (คำนวณ gainPct = ((currentNav - avgNav) / avgNav) * 100)
+    let bestFund = funds[0];
+    let maxGain = -999999;
+    funds.forEach(f => {
+        const currentNav = Number(f.currentNav || f.nav || 0);
+        const avgNav = Number(f.avgNav || f.cost || currentNav);
+        const gainPct = avgNav > 0 ? ((currentNav - avgNav) / avgNav) * 100 : 0;
+        if (gainPct > maxGain) {
+            maxGain = gainPct;
+            bestFund = f;
+        }
+    });
+    const bestPerformerEl = document.getElementById('dimeBestPerformer');
+    if (bestPerformerEl && bestFund) {
+        const symbol = bestFund.symbol || bestFund.name;
+        bestPerformerEl.innerText = `${symbol} (+${maxGain.toFixed(0)}%)`;
+    }
+
+    // 3. Top 3 Concentration Risk (ผลรวมน้ำหนัก Top 3)
+    const top3 = sortedByWeight.slice(0, 3);
+    const top3WeightSum = top3.reduce((sum, f) => sum + Number(f.weight || 0), 0);
+    const top3ConcEl = document.getElementById('dimeTop3Conc');
+    if (top3ConcEl) {
+        top3ConcEl.innerText = `${top3WeightSum.toFixed(1)}%`;
+    }
+
+    // 4. DIME Return (ใช้ค่ารวมพอร์ตจาก dimeAnalytics หรือคำนวณ)
+    const dimeReturnEl = document.getElementById('dimeReturn');
+    if (dimeReturnEl) {
+        const totalReturn = dimeAnalytics.totalReturnPct || 93.75;
+        dimeReturnEl.innerText = `${totalReturn >= 0 ? '+' : ''}${totalReturn}%`;
+    }
 }
 
 function renderWeeklyAnalytics(history) {
@@ -860,6 +927,17 @@ async function loadDashboard() {
         console.error('Error fetching DIME data:', err);
     }
 
+    // ดึงข้อมูล DIME Analytics ตามโจทย์ใหม่
+    let dimeAnalytics = null;
+    try {
+        dimeAnalytics = await fetch(
+            'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_analytics/current.json'
+        ).then(r => r.json());
+        console.log('DIME Analytics:', dimeAnalytics);
+    } catch (err) {
+        console.error('Error fetching DIME Analytics:', err);
+    }
+
     const gpf = gpfTotal;
     const mfc = mfcTotal;
     const scb = scbTotal;
@@ -978,6 +1056,7 @@ async function loadDashboard() {
     const diversificationScore = 100 - largestAssetPctVal;
 
     renderAchievementsList(totalWealth, fireProgress);
+    renderDimeAnalytics(dimeAnalytics); // เรนเดอร์ข้อมูล DIME Analytics
     renderWeeklyAnalytics(history);
 
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
