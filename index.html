@@ -21,6 +21,7 @@
         .dashboard-wrapper {
             width: 100%;
             max-width: 1200px;
+            box-sizing: border-box;
         }
 
         h1 {
@@ -32,11 +33,13 @@
             text-align: left;
         }
 
-        /* ระบบ CSS Grid Responsive */
+        /* ระบบ CSS Grid Responsive ป้องกันล้นหน้าจอ */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         /* Apple + Bloomberg Hybrid Card Style */
@@ -50,6 +53,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             transition: transform 0.2s ease, border-color 0.2s ease;
             box-sizing: border-box;
+            overflow: hidden;
         }
         .luxury-card:hover {
             border-color: #475569;
@@ -67,6 +71,7 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.7);
             position: relative;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         .card-full {
@@ -78,6 +83,7 @@
             font-weight: 700;
             letter-spacing: -0.03em;
             color: #ffffff;
+            word-break: break-word;
         }
     </style>
 </head>
@@ -113,24 +119,28 @@
             <div id="dailyChangePct" class="financial-val" style="margin-top:4px; font-size:15px;"></div>
         </div>
 
-        <!-- 2. FIRE Forecast Card -->
+        <!-- 2. FIRE Forecast Card (อัปเกรดเพิ่ม Current Contribution ตามโจทย์) -->
         <div id="fireForecastCard" class="luxury-card">
             <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🔥 FIRE Forecast</div>
             
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <div>
                     <div style="color:#94a3b8; font-size:11px;">Current</div>
-                    <div id="forecastCurrent" class="financial-val" style="font-size:18px; margin-top:2px;">-</div>
+                    <div id="forecastCurrent" class="financial-val" style="font-size:16px; margin-top:2px;">-</div>
                 </div>
                 <div style="text-align: right;">
                     <div style="color:#94a3b8; font-size:11px;">Target</div>
-                    <div id="forecastTarget" class="financial-val" style="font-size:18px; margin-top:2px;">฿5.00M</div>
+                    <div id="forecastTarget" class="financial-val" style="font-size:16px; margin-top:2px;">฿5.00M</div>
                 </div>
             </div>
 
-            <hr style="border:none; border-top:1px solid #334155; margin: 12px 0;">
+            <!-- เพิ่มส่วน Current Contribution ตามโจทย์ -->
+            <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #94a3b8; font-size: 12px;">Current Contribution:</span>
+                <span class="financial-val" style="color: #38bdf8; font-size: 13px;">฿25,000/mo</span>
+            </div>
 
-            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: #94a3b8;">🐢 Conservative <strong style="color: #cbd5e1;">5%</strong></span>
                     <span id="etaConservative" class="financial-val" style="color: #facc15;">-</span>
@@ -145,12 +155,11 @@
                 </div>
             </div>
 
-            <hr style="border:none; border-top:1px solid #334155; margin: 12px 0;">
+            <hr style="border:none; border-top:1px solid #334155; margin: 10px 0;">
 
-            <div style="font-size: 12px; color: #94a3b8; display:flex; flex-direction:column; gap:4px;">
-                <div>Fastest Path: <span style="color: #34d399; font-weight: 600;">+฿25k/month</span></div>
-                <div style="color:#38bdf8; font-size:11px;">+฿5,000/month → FIRE เร็วขึ้น 6 เดือน</div>
-                <div style="color:#38bdf8; font-size:11px;">+฿10,000/month → FIRE เร็วขึ้น 14 เดือน</div>
+            <div style="font-size: 11px; color: #94a3b8; display:flex; flex-direction:column; gap:3px;">
+                <div style="color:#38bdf8;">+฿5,000/mo → FIRE เร็วขึ้น 6 เดือน</div>
+                <div style="color:#38bdf8;">+฿10,000/mo → FIRE เร็วขึ้น 14 เดือน</div>
             </div>
         </div>
 
@@ -257,9 +266,14 @@
             </div>
         </div>
 
-        <!-- ACHIEVEMENT SYSTEM CARD -->
+        <!-- ACHIEVEMENT SYSTEM CARD (อัปเกรดเพิ่ม DIME Connected / Multi-Broker Portfolio ตามโจทย์) -->
         <div class="luxury-card card-full">
             <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
+            <div style="margin-bottom: 12px;">
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600; font-size: 14px; width: fit-content;">
+                    <span>✅</span><span>DIME Connected / Multi-Broker Portfolio</span>
+                </div>
+            </div>
             <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 14px;"></div>
         </div>
 
@@ -360,7 +374,7 @@
                 <div id="largestAssetValue" class="financial-val" style="margin-top:2px; font-size:13px; color:#94a3b8;"></div>
             </div>
 
-            <!-- WEEKLY ANALYTICS CARD (วางอยู่ใต้ Achievement Card และเหนือ Wealth History Chart ตามโจทย์) -->
+            <!-- WEEKLY ANALYTICS CARD -->
             <div id="weeklyAnalyticsCard" class="luxury-card card-full">
                 <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">📅 Weekly Analytics</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
@@ -383,9 +397,18 @@
                 </div>
             </div>
 
-            <!-- Wealth History Chart Card -->
+            <!-- Wealth History Chart Card (พร้อม Wealth Trend Filter UI เหนือ Chart ตามโจทย์) -->
             <div class="luxury-card card-full">
-                <div style="color:#94a3b8; font-size:13px; font-weight:500; margin-bottom:12px;">Wealth History Terminal</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <div style="color:#94a3b8; font-size:13px; font-weight:500;">Wealth History Terminal</div>
+                    <!-- Wealth Trend Filter UI Buttons -->
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="setTrendFilter('7D')" id="btn-7D" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">7D</button>
+                        <button onclick="setTrendFilter('30D')" id="btn-30D" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #334155; color: #94a3b8; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">30D</button>
+                        <button onclick="setTrendFilter('90D')" id="btn-90D" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #334155; color: #94a3b8; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">90D</button>
+                        <button onclick="setTrendFilter('ALL')" id="btn-ALL" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #334155; color: #94a3b8; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">ALL</button>
+                    </div>
+                </div>
                 <canvas id="wealthChart" height="90"></canvas>
                 <div id="chartSummary" style="margin-top:12px; color:#94a3b8; font-size:12px;"></div>
             </div>
@@ -415,6 +438,25 @@ function toggleAnalytics() {
         container.style.display = 'none';
         arrow.innerText = '▶';
     }
+}
+
+// ฟังก์ชันจำลองสำหรับกดปุ่ม Filter (UI ไว้ก่อน)
+function setTrendFilter(period) {
+    ['7D', '30D', '90D', 'ALL'].forEach(p => {
+        const btn = document.getElementById('btn-' + p);
+        if (btn) {
+            if (p === period) {
+                btn.style.background = 'rgba(56, 189, 248, 0.2)';
+                btn.style.borderColor = '#38bdf8';
+                btn.style.color = '#38bdf8';
+            } else {
+                btn.style.background = 'rgba(255, 255, 255, 0.05)';
+                btn.style.borderColor = '#334155';
+                btn.style.color = '#94a3b8';
+            }
+        }
+    });
+    console.log('Wealth Trend Filter selected:', period);
 }
 
 function formatDate(dateStr) {
@@ -462,8 +504,6 @@ function renderFireForecast(currentWealth) {
     document.getElementById('etaBase').innerText = etaBase;
     document.getElementById('etaOptimistic').innerText = etaOpt;
 }
-
-// --- ฟังก์ชันย่อยพร้อมระบบป้องกัน Null Element ---
 
 function renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue) {
     const nameEl = document.getElementById('largestAssetName');
@@ -670,11 +710,9 @@ function renderAchievementsList(totalWealth, fireProgress) {
     achievementsEl.innerHTML = html;
 }
 
-// --- ฟังก์ชันคำนวณ Weekly Analytics จาก wealth_history ---
 function renderWeeklyAnalytics(history) {
     if (!history || history.length === 0) return;
 
-    // เลือกข้อมูล 7 วันล่าสุด (หรือทั้งหมดถ้ามีน้อยกว่า 7)
     const recent = history.slice(-7);
     const startWealth = Number(recent[0].wealth || 0);
     const endWealth = Number(recent[recent.length - 1].wealth || 0);
@@ -808,14 +846,7 @@ async function loadDashboard() {
 
     const totalWealth = mfc + gpf + scb + dime;
 
-    console.log({
-        mfc,
-        gpf,
-        scb,
-        dime,
-        totalWealth
-    });
-
+    let historyDataRaw = {};
     let history = [];
 
     try {
@@ -825,14 +856,18 @@ async function loadDashboard() {
         const historyRes =
             await fetch(historyUrl);
 
-        const historyData =
+        historyDataRaw =
             await historyRes.json() || {};
 
-        history = Object.values(historyData);
+        history = Object.values(historyDataRaw);
 
     } catch (err) {
         console.error('Error fetching history:', err);
     }
+
+    // --- Wealth History Health Check (ตามโจทย์) ---
+    console.log("=== WEALTH HISTORY HEALTH CHECK ===");
+    console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
 
     history.sort(
         (a, b) =>
@@ -923,7 +958,7 @@ async function loadDashboard() {
     const diversificationScore = 100 - largestAssetPctVal;
 
     renderAchievementsList(totalWealth, fireProgress);
-    renderWeeklyAnalytics(history); // เรนเดอร์ข้อมูล Weekly Analytics
+    renderWeeklyAnalytics(history);
 
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
     renderHistory(history, dailyChange, dailyChangePct, yesterdayWealth, today);
