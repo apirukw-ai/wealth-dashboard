@@ -105,7 +105,7 @@
             </div>
         </div>
 
-        <!-- แถวแรก: Portfolio Gain, FIRE Forecast, Asset Allocation -->
+        <!-- แถวที่ 1: Portfolio Gain, FIRE Forecast, Asset Allocation -->
         <!-- 1. Portfolio Gain Card -->
         <div id="dailyChangeCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:500;">Portfolio Gain</div>
@@ -189,29 +189,8 @@
             </div>
         </div>
 
-        <!-- 4. PERFORMANCE BADGES CARD (ย้ายมาวางต่อจาก Asset Allocation Card ทันที ตามโจทย์) -->
-        <div class="luxury-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(245, 158, 11, 0.3);">
-            <div style="color:#fbbf24; font-size:15px; font-weight:700; margin-bottom:14px;">🏅 Performance Badges</div>
-            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
-                    <span>✅</span><span>First Million Gain</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
-                    <span>✅</span><span>25% Portfolio Return</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-                    <span>🔒</span><span>100 Tracking Days</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-                    <span>🔒</span><span>1 Year Tracking Streak</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-                    <span>🔒</span><span>5M Wealth Reached</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- FIRE Progress Card -->
+        <!-- แถวที่ 2: เรียงตามลำดับ FIRE Progress / Goal ETA / Performance Badges -->
+        <!-- 1. FIRE Progress Card -->
         <div id="fireProgressCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
             <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
@@ -247,7 +226,7 @@
             </div>
         </div>
 
-        <!-- Goal ETA Card -->
+        <!-- 2. Goal ETA Card -->
         <div id="goalEtaCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:500;">Goal ETA</div>
             <div id="etaStatus" class="financial-val" style="font-size:20px; margin-top:8px;">-</div>
@@ -260,7 +239,29 @@
             </div>
         </div>
 
-        <!-- ACHIEVEMENT SYSTEM CARD (ขนาดเต็มแถว) -->
+        <!-- 3. Performance Badges Card -->
+        <div class="luxury-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(245, 158, 11, 0.3);">
+            <div style="color:#fbbf24; font-size:15px; font-weight:700; margin-bottom:14px;">🏅 Performance Badges</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
+                    <span>✅</span><span>First Million Gain</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
+                    <span>✅</span><span>25% Portfolio Return</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+                    <span>🔒</span><span>100 Tracking Days</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+                    <span>🔒</span><span>1 Year Tracking Streak</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+                    <span>🔒</span><span>5M Wealth Reached</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACHIEVEMENT SYSTEM CARD (ขนาดเต็มแถว ด้านล่างสุด) -->
         <div class="luxury-card card-full">
             <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
             <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 14px;">
