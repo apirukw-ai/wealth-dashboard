@@ -589,6 +589,8 @@ function renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue)
 }
 
 function renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotal, totalWealth) {
+    if (!totalWealth || totalWealth === 0) return;
+
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
     const scbPctVal = (scbTotal / totalWealth) * 100;
@@ -623,11 +625,20 @@ function renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotal, totalWealth) 
     const dimeBarEl = document.getElementById('dimeBar');
     if (dimeBarEl) dimeBarEl.style.width = dimePctVal + '%';
 
-const legendEl = document.getElementById('allocationLegend');
-if (legendEl) {
-    legendEl.innerHTML = `<span style="color:#3b82f6;">■</span> MFC ${mfcPctVal.toFixed(2)}% &nbsp; <span style="color:#10b981;">■</span> GPF ${gpfPctVal.toFixed(2)}% &nbsp; <span style="color:#a855f7;">■</span> SCB ${scbPctVal.toFixed(2)}% &nbsp; <span style="color:#f59e0b;">■</span> DIME ${dimePctVal.toFixed(2)}%`;
+    const legendEl = document.getElementById('allocationLegend');
+    if (legendEl) {
+        legendEl.innerHTML = `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span><span style="color:#3b82f6;">■</span> MFC ${mfcPctVal.toFixed(2)}%</span>
+                <span><span style="color:#10b981;">■</span> GPF ${gpfPctVal.toFixed(2)}%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span><span style="color:#a855f7;">■</span> SCB ${scbPctVal.toFixed(2)}%</span>
+                <span><span style="color:#f59e0b;">■</span> DIME ${dimePctVal.toFixed(2)}%</span>
+            </div>
+        `;
+    }
 }
-
 function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
     const fireTarget = 5000000;
     const fireProgress = (totalWealth / fireTarget) * 100;
