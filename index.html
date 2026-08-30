@@ -112,7 +112,7 @@
                     ● LIVE DATA
                 </div>
                 <div id="heroFireBadge" style="color: #38bdf8; font-size: 14px; font-weight: 600;">
-                    🎯 --% to ฿2M
+                    🎯 --% to ฿3M
                 </div>
                 <div id="lastUpdated" style="color: #64748b; font-size: 12px; margin-left: auto;"></div>
             </div>
@@ -657,7 +657,7 @@ function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
     const doubleMillionTarget = 2000000;
     const fireToTwoMilPct = (totalWealth / doubleMillionTarget) * 100;
     if (heroFireBadge) {
-        heroFireBadge.innerText = `🎯 ${fireToTwoMilPct.toFixed(2)}% to ฿2M`;
+        heroFireBadge.innerText = `🎯 ${fireToTwoMilPct.toFixed(2)}% to ฿3M`;
     }
 
     let fireLevelText = '';
