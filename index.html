@@ -955,7 +955,10 @@ function renderMonthlyAnalytics(history) {
 }
 
 // --- ฟังก์ชันหลัก ---
-// --- 2. Fetch MFC (รองรับทั้ง String "160,235.65" และ Object { value }) ---
+async function loadDashboard() {
+    console.log('START LOAD');
+
+    // 2. Fetch MFC (รองรับทั้ง String "160,235.65" และ Object { value })
     let mfcTotal = 0;
     try {
         const mfcData = await fetch(
@@ -963,7 +966,6 @@ function renderMonthlyAnalytics(history) {
         ).then(r => r.json());
 
         if (typeof mfcData === 'string') {
-            // แปลงข้อความ "160,235.65" เป็นตัวเลข
             mfcTotal = Number(mfcData.replace(/,/g, '')) || 0;
         } else if (typeof mfcData === 'object' && mfcData !== null) {
             mfcTotal = Number(mfcData.value || 0);
@@ -972,6 +974,7 @@ function renderMonthlyAnalytics(history) {
         }
     } catch (err) {
         console.error('Error fetching MFC data:', err);
+    }
     }
 
     try {
