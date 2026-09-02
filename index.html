@@ -972,7 +972,6 @@ async function loadDashboard() {
     let gpfTotal = 0;
     let mfcTotal = 0;
 
-// --- โค้ดใหม่ที่อัปเดต URL เป็น Firebase mfc-port ---
 try {
     // ดึงรายการกองทุน MFC ทั้งหมดจาก Supabase Table 'policies'
     const { data: mfcPolicies, error: mfcErr } = await supabaseClient
