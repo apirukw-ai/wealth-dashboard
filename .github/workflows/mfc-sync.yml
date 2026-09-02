@@ -1,0 +1,26 @@
+name: Auto Sync MFC to Firebase
+
+on:
+  schedule:
+    # รันอัตโนมัติทุกวัน เวลา 20:00 น. เวลาไทย (13:00 UTC)
+    - cron: '0 13 * * *'
+  workflow_dispatch: # ปุ่มกดรันด้วยตนเองบน GitHub
+
+jobs:
+  sync-mfc:
+    runs-runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Run MFC Sync Script
+        run: python sync_mfc.py
