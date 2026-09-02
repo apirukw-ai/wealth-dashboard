@@ -32,8 +32,24 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Event - ดึงจาก Network ก่อน ถ้าไม่มีเน็ตค่อยดึงจาก Cache
 self.addEventListener('fetch', (event) => {
+  // กรองข้าม Request ที่มาจาก Extension ให้ทำงานเฉพาะ HTTP/HTTPS
+  if (!event.request.url.startsWith('http')) return;
+
   event.respondWith(
-    fetch(event.request)
-      .catch(() => caches.match(event.request))
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).then((networkResponse) => {
+        // บันทึกลง Cache เฉพาะ Request ที่สำเร็จ
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      });
+    })
   );
 });
