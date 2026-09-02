@@ -955,23 +955,24 @@ function renderMonthlyAnalytics(history) {
 }
 
 // --- ฟังก์ชันหลัก ---
-
-async function loadDashboard() {
-    console.log('START LOAD');
-
-    let gpfTotal = 0;
+// --- 2. Fetch MFC (รองรับทั้ง String "160,235.65" และ Object { value }) ---
     let mfcTotal = 0;
+    try {
+        const mfcData = await fetch(
+            'https://mfc-port-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json'
+        ).then(r => r.json());
 
-try {
-    const mfcData = await fetch(
-            'https://mfc-port-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json'   
-    ).then(r => r.json());
-
-    mfcTotal = mfcData?.value || 0;
-
-} catch (err) {
-    console.error('MFC load failed', err);
-}
+        if (typeof mfcData === 'string') {
+            // แปลงข้อความ "160,235.65" เป็นตัวเลข
+            mfcTotal = Number(mfcData.replace(/,/g, '')) || 0;
+        } else if (typeof mfcData === 'object' && mfcData !== null) {
+            mfcTotal = Number(mfcData.value || 0);
+        } else if (typeof mfcData === 'number') {
+            mfcTotal = mfcData;
+        }
+    } catch (err) {
+        console.error('Error fetching MFC data:', err);
+    }
 
     try {
         const gpfData = await fetch(
