@@ -2,6 +2,7 @@ import requests
 from datetime import datetime, timedelta
 
 FIREBASE_BASE_URL = "https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app"
+FIREBASE_SECRET = "4H6vJBEPXMflq0kKYbxOy2DtNtmP7HAxo9v3mkjj"  # ⚠️ นำ Secret Key จาก Firebase มาใส่ตรงนี้
 SUPABASE_URL = "https://iproktvvetsbxxmpptuj.supabase.co" # ⚠️ ใส่ URL Supabase จริงของคุณ
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw"                          # ⚠️ ใส่ Anon Key Supabase จริงของคุณ
 
@@ -45,8 +46,9 @@ def create_daily_snapshot():
             "createdAt": datetime.now().isoformat()
         }
 
-        # ส่งบันทึกเข้า Firebase
-        save_res = requests.put(f"{FIREBASE_BASE_URL}/wealth_history/{snapshot_key}.json", json=payload)
+        # 7. ส่งบันทึกเข้า Firebase โดยแนบ Auth Secret เพื่อข้าม Security Rules
+        save_url = f"{FIREBASE_BASE_URL}/wealth_history/{snapshot_key}.json?auth={FIREBASE_SECRET}"
+        save_res = requests.put(save_url, json=payload)
         
         if save_res.status_code in [200, 201]:
             print(f"✅ บันทึก Snapshot ของวันที่ {date_str} สำเร็จ: ยอดรวม ฿{total_wealth:,.2f}")
