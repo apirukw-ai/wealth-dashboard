@@ -950,7 +950,7 @@ function renderMonthlyAnalytics(history) {
     const projEl = document.getElementById('monthlyProjectedEnd');
     if (projEl) {
         projEl.innerText = '฿' + (projectedEnd / 1000000).toFixed(2) + 'M';
-        projEl.style.color = '#38bdf8'; // สี Cyan
+        projEl.style.color = '#38bdf8';
     }
 }
 
@@ -958,7 +958,7 @@ function renderMonthlyAnalytics(history) {
 async function loadDashboard() {
     console.log('START LOAD');
 
-    // 2. Fetch MFC (รองรับทั้ง String "160,235.65" และ Object { value })
+    // 1. Fetch MFC (ดึงจากโปรเจกต์ mfc-port)
     let mfcTotal = 0;
     try {
         const mfcData = await fetch(
@@ -975,8 +975,9 @@ async function loadDashboard() {
     } catch (err) {
         console.error('Error fetching MFC data:', err);
     }
-    }
 
+    // 2. Fetch GPF
+    let gpfTotal = 0;
     try {
         const gpfData = await fetch(
             'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json'
@@ -991,6 +992,7 @@ async function loadDashboard() {
         console.error('Error fetching GPF data:', err);
     }
 
+    // 3. Fetch SCB
     let scbTotal = 0;
     try {
         const scbData = await fetch(
@@ -1001,6 +1003,7 @@ async function loadDashboard() {
         console.error('Error fetching SCB data:', err);
     }
 
+    // 4. Fetch DIME
     let dime = 0;
     try {
         const dimeData = await fetch(
@@ -1011,13 +1014,12 @@ async function loadDashboard() {
         console.error('Error fetching DIME data:', err);
     }
 
-    // ดึงข้อมูล DIME Analytics ตามที่คุณระบุ
+    // 5. Fetch DIME Analytics
     let dimeAnalytics = null;
     try {
         dimeAnalytics = await fetch(
             'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_analytics/current.json'
         ).then(r => r.json());
-        console.log('DIME Analytics:', dimeAnalytics);
     } catch (err) {
         console.error('Error fetching DIME Analytics:', err);
     }
@@ -1032,45 +1034,28 @@ async function loadDashboard() {
     let history = [];
 
     try {
-        const historyUrl =
-            'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
-
-        const historyRes =
-            await fetch(historyUrl);
-
-        historyDataRaw =
-            await historyRes.json() || {};
-
+        const historyUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json';
+        const historyRes = await fetch(historyUrl);
+        historyDataRaw = await historyRes.json() || {};
         history = Object.values(historyDataRaw);
-
     } catch (err) {
         console.error('Error fetching history:', err);
     }
 
-    // --- Wealth History Health Check ---
-    console.log("=== WEALTH HISTORY HEALTH CHECK ===");
-    console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
-
-    history.sort(
-        (a, b) =>
-        new Date(a.date) - new Date(b.date)
-    );
+    history.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     let yesterdayWealth = null;
-
     if (history.length >= 2) {
-        yesterdayWealth =
-            history[history.length - 2].wealth;
+        yesterdayWealth = history[history.length - 2].wealth;
     }
 
     let dailyChange = 0;
     let dailyChangePct = 0;
-
     if (yesterdayWealth !== null) {
         dailyChange = totalWealth - yesterdayWealth;
         dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
     }
-    
+
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
     const scbPctVal = (scbTotal / totalWealth) * 100;
@@ -1086,6 +1071,7 @@ async function loadDashboard() {
 
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
+
     try {
         const snapshotKey = today.replaceAll('-', '');
         const snapshotUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history/' + snapshotKey + '.json';
@@ -1140,8 +1126,9 @@ async function loadDashboard() {
     const diversificationScore = 100 - largestAssetPctVal;
 
     renderAchievementsList(totalWealth, fireProgress);
-    renderDimeAnalytics(dimeAnalytics); // เรียกใช้งานฟังก์ชันแสดงผล DIME Analytics
+    renderDimeAnalytics(dimeAnalytics);
     renderWeeklyAnalytics(history);
+    renderMonthlyAnalytics(history);
 
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
     renderHistory(history, dailyChange, dailyChangePct, yesterdayWealth, today);
@@ -1235,7 +1222,6 @@ async function loadDashboard() {
     const lastUpdEl = document.getElementById('lastUpdated');
     if (lastUpdEl) lastUpdEl.innerText = 'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Chart.js (Bloomberg Terminal Theme)
     const ctx = document.getElementById('wealthChart');
     if (ctx) {
         new Chart(ctx, {
@@ -1271,14 +1257,6 @@ async function loadDashboard() {
 }
 
 loadDashboard();
-    // ลงทะเบียน Service Worker สำหรับ PWA
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('PWA Service Worker registered:', reg.scope))
-            .catch(err => console.error('PWA Service Worker registration failed:', err));
-    });
-}
 </script>
 </body>
 </html>
