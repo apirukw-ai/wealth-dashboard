@@ -974,25 +974,23 @@ async function loadDashboard() {
 
 // --- โค้ดใหม่ที่อัปเดต URL เป็น Firebase mfc-port ---
 try {
-    const mfcData = await fetch(
-        'https://mfc-port-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json'
-    ).then(r => r.json());
+    // ดึงรายการกองทุน MFC ทั้งหมดจาก Supabase Table 'policies'
+    const { data: mfcPolicies, error: mfcErr } = await supabaseClient
+        .from('policies')
+        .select('*');
 
-    // คำนวณมูลค่ารวมถ้าโครงสร้างเป็น List ของ policies หรืออ่านค่า value ตรงๆ
-    if (mfcData && mfcData.policies && Array.isArray(mfcData.policies)) {
-        mfcTotal = mfcData.policies.reduce((sum, item) => {
-            const units = Number(item.units || 0);
-            const nav = Number(item.nav || item.navToday || 0);
+    if (mfcErr) throw mfcErr;
+
+    if (mfcPolicies && mfcPolicies.length > 0) {
+        // รวมมูลค่าพอร์ต MFC: จำนวนหน่วย (units) x ราคา NAV ล่าสุด (navToday หรือ nav)
+        mfcTotal = mfcPolicies.reduce((sum, item) => {
+            const units = parseFloat(item.units || 0);
+            const nav = parseFloat(item.navToday || item.nav || 0);
             return sum + (units * nav);
         }, 0);
-    } else if (mfcData && (mfcData.value || typeof mfcData === 'number')) {
-        mfcTotal = Number(mfcData.value || mfcData);
-    } else {
-        mfcTotal = 0;
     }
-
 } catch (err) {
-    console.error('MFC load failed', err);
+    console.error('MFC Supabase load failed:', err);
 }
 
     try {
