@@ -975,14 +975,13 @@ async function loadDashboard() {
     let dimeTotal = 0;
     let dimeAnalytics = null;
     let history = [];
+    let historyDataRaw = {};
     let isLoadedFromNetwork = false;
 
     try {
-        // 1. [NETWORK FIRST] ดึงข้อมูลสดจาก Cloud ทั้งหมด (Supabase + Firebase)
+        // 1. [NETWORK FIRST] ดึงข้อมูลสดพร้อมกันจาก Supabase และ Firebase
         const [mfcRes, gpfRes, scbRes, dimeRes, dimeAnalyticsRes, historyRes] = await Promise.allSettled([
-            // MFC จาก Supabase
-            supabaseClient.from('policies').select('*').eq('portfolio_type', 'mfc_fund'),
-            // GPF, SCB, DIME จาก Firebase
+            supabaseClient.from('policies').select('*'),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json').then(r => r.json()),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json').then(r => r.json()),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json').then(r => r.json()),
@@ -990,7 +989,7 @@ async function loadDashboard() {
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
         ]);
 
-        // สกัดข้อมูล MFC จาก Supabase
+        // สกัด MFC จาก Supabase
         if (mfcRes.status === 'fulfilled' && mfcRes.value.data) {
             mfcTotal = mfcRes.value.data.reduce((sum, item) => {
                 const units = parseFloat(item.units || 0);
@@ -999,48 +998,49 @@ async function loadDashboard() {
             }, 0);
         }
 
-        // สกัดข้อมูล GPF
+        // สกัด GPF
         if (gpfRes.status === 'fulfilled' && gpfRes.value?.funds) {
             gpfRes.value.funds.forEach(f => {
                 gpfTotal += Number(f.units || 0) * Number(f.currentNav || 0);
             });
         }
 
-        // สกัดข้อมูล SCB
+        // สกัด SCB
         if (scbRes.status === 'fulfilled' && scbRes.value) {
             scbTotal = Number(scbRes.value.value || 0);
         }
 
-        // สกัดข้อมูล DIME
+        // สกัด DIME
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
             dimeTotal = Number(dimeRes.value.value || 0);
         }
 
-        // สกัดข้อมูล DIME Analytics
+        // สกัด DIME Analytics
         if (dimeAnalyticsRes.status === 'fulfilled') {
             dimeAnalytics = dimeAnalyticsRes.value;
         }
 
-        // สกัดข้อมูล Wealth History
+        // สกัด Wealth History
         if (historyRes.status === 'fulfilled' && historyRes.value) {
-            history = Object.values(historyRes.value);
+            historyDataRaw = historyRes.value || {};
+            history = Object.values(historyDataRaw);
         }
 
         isLoadedFromNetwork = true;
 
-        // บันทึกข้อมูลสดเก็บลง Cache เครื่องสำรองไว้ใช้ออฟไลน์
+        // บันทึก Cache สำรอง
         const dashboardCache = {
-            mfcTotal, gpfTotal, scbTotal, dimeTotal, dimeAnalytics, history,
+            mfcTotal, gpfTotal, scbTotal, dimeTotal, dimeAnalytics, history, historyDataRaw,
             timestamp: new Date().getTime()
         };
         localStorage.setItem('wealth_dashboard_cache', JSON.stringify(dashboardCache));
         console.log('☁️ ดึงข้อมูลสดจาก Cloud สำเร็จ');
 
     } catch (err) {
-        console.warn('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูลจาก Network:', err);
+        console.warn('⚠️ ไม่สามารถเชื่อมต่อ Cloud ได้:', err);
     }
 
-    // 2. [FALLBACK TO CACHE] หากดึงจาก Network ไม่สำเร็จ ให้ถอยมาอ่าน Cache ในเครื่อง
+    // 2. [FALLBACK TO CACHE] หาก Network ล้มเหลว ถอยมาใช้อ่าน Cache
     if (!isLoadedFromNetwork) {
         const cached = localStorage.getItem('wealth_dashboard_cache');
         if (cached) {
@@ -1052,6 +1052,7 @@ async function loadDashboard() {
                 dimeTotal = cacheData.dimeTotal || 0;
                 dimeAnalytics = cacheData.dimeAnalytics || null;
                 history = cacheData.history || [];
+                historyDataRaw = cacheData.historyDataRaw || {};
                 console.log('⚡ แสดงข้อมูลสำรองจาก Cache ในเครื่อง');
             } catch (e) {
                 console.error('Error parsing dashboard cache:', e);
@@ -1059,17 +1060,86 @@ async function loadDashboard() {
         }
     }
 
-    // 3. นำข้อมูลที่ได้ (ไม่ว่าจะจาก Network หรือ Cache) ไปเรนเดอร์ UI
-    const totalWealth = mfcTotal + gpfTotal + scbTotal + dimeTotal;
+    // 3. ประมวลผลตัวเลขหลัก
+    const mfc = mfcTotal;
+    const gpf = gpfTotal;
+    const scb = scbTotal;
+    const dime = dimeTotal;
+    const totalWealth = mfc + gpf + scb + dime;
 
-    // --- รันฟังก์ชันคำนวณและวาด UI เดิมทั้งหมดต่อจากตรงนี้ ---
+    console.log("=== WEALTH HISTORY HEALTH CHECK ===");
+    console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
+
+    history.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    let yesterdayWealth = null;
+    if (history.length >= 2) {
+        yesterdayWealth = history[history.length - 2].wealth;
+    }
+
+    let dailyChange = 0;
+    let dailyChangePct = 0;
+    if (yesterdayWealth !== null) {
+        dailyChange = totalWealth - yesterdayWealth;
+        dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
+    }
+    
+    const mfcPctVal = totalWealth > 0 ? (mfcTotal / totalWealth) * 100 : 0;
+    const gpfPctVal = totalWealth > 0 ? (gpfTotal / totalWealth) * 100 : 0;
+    const scbPctVal = totalWealth > 0 ? (scbTotal / totalWealth) * 100 : 0;
+    const dimePctVal = totalWealth > 0 ? (dimeTotal / totalWealth) * 100 : 0;
+
+    const ports = [
+        { name: 'GPF', value: gpfTotal, pct: gpfPctVal },
+        { name: 'MFC', value: mfcTotal, pct: mfcPctVal },
+        { name: 'SCB', value: scbTotal, pct: scbPctVal },
+        { name: 'DIME', value: dimeTotal, pct: dimePctVal }
+    ];
+    ports.sort((a, b) => b.value - a.value);
+
+    const today = new Date().toLocaleDateString('en-CA');
+    const now = new Date();
+    try {
+        const snapshotKey = today.replaceAll('-', '');
+        const snapshotUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history/' + snapshotKey + '.json';
+
+        const snapRes = await fetch(snapshotUrl);
+        const existing = await snapRes.json();
+
+        if (!existing) {
+            await fetch(snapshotUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: today,
+                    wealth: totalWealth,
+                    mfc: mfcTotal,
+                    gpf: gpfTotal,
+                    scb: scbTotal,
+                    dime: dimeTotal,
+                    createdAt: new Date().toISOString()
+                })
+            });
+            history.push({
+                date: today,
+                wealth: totalWealth,
+                mfc: mfcTotal,
+                gpf: gpfTotal,
+                scb: scbTotal,
+                dime: dimeTotal,
+                createdAt: new Date().toISOString()
+            });
+            history.sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
+    } catch (err) {
+        console.error('Error auto-saving snapshot:', err);
+    }
+
     renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotal, totalWealth);
     renderFireForecast(totalWealth);
-    // ... (ส่วนที่เหลือของ loadDashboard เดิม) ...
-}
 
     const largestAsset = ports[0].name;
-    const largestAssetPctVal = (ports[0].value / totalWealth) * 100;
+    const largestAssetPctVal = totalWealth > 0 ? (ports[0].value / totalWealth) * 100 : 0;
     const largestAssetValue = ports[0].value;
     renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue);
 
@@ -1083,7 +1153,7 @@ async function loadDashboard() {
     const diversificationScore = 100 - largestAssetPctVal;
 
     renderAchievementsList(totalWealth, fireProgress);
-    renderDimeAnalytics(dimeAnalytics); // เรียกใช้งานฟังก์ชันแสดงผล DIME Analytics
+    renderDimeAnalytics(dimeAnalytics);
     renderWeeklyAnalytics(history);
 
     renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
@@ -1178,7 +1248,7 @@ async function loadDashboard() {
     const lastUpdEl = document.getElementById('lastUpdated');
     if (lastUpdEl) lastUpdEl.innerText = 'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Chart.js (Bloomberg Terminal Theme)
+    // Chart.js
     const ctx = document.getElementById('wealthChart');
     if (ctx) {
         new Chart(ctx, {
