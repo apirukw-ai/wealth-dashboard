@@ -1293,12 +1293,15 @@ async function loadDashboard() {
 }
 
 loadDashboard();
-    // ลงทะเบียน Service Worker สำหรับ PWA
+
+// ✅ ปิดการทำงาน Service Worker และสั่งล้าง Registration เก่าทิ้งทั้งหมด
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('PWA Service Worker registered:', reg.scope))
-            .catch(err => console.error('PWA Service Worker registration failed:', err));
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+            registration.unregister().then(() => {
+                console.log('PWA Service Worker unregistered successfully.');
+            });
+        }
     });
 }
 </script>
