@@ -1055,8 +1055,13 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
         }
 
         // สกัด SCB
+        let scbCost = 0;
+        let scbProfit = 0;
+
         if (scbRes.status === 'fulfilled' && scbRes.value) {
             scbTotal = Number(scbRes.value.value || 0);
+            scbCost = Number(scbRes.value.cost || 0);     // 👈 เพิ่มการดึงต้นทุน
+            scbProfit = Number(scbRes.value.profit || 0); // 👈 เพิ่มการดึงกำไร
         }
 
         // สกัด DIME
@@ -1079,7 +1084,7 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
 
         // บันทึก Cache สำรอง
         const dashboardCache = {
-            mfcTotal, gpfTotal, scbTotal, dimeTotal, dimeAnalytics, history, historyDataRaw,
+            mfcTotal, gpfTotal, scbTotal, scbCost, scbProfit, dimeTotal, dimeAnalytics, history, historyDataRaw,
             timestamp: new Date().getTime()
         };
         localStorage.setItem('wealth_dashboard_cache', JSON.stringify(dashboardCache));
@@ -1116,6 +1121,25 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
     const dime = dimeTotal;
     const totalWealth = mfc + gpf + scb + dime;
 
+    // 📍 คำนวณ Portfolio Gain และอัปเดตลง ID ของการ์ด Portfolio Gain
+    const totalProfit = scbProfit; // (หากมีกำไรพอร์ตอื่นก็นำมาบวกเพิ่มตรงนี้ได้)
+    const totalCost = scbCost;
+    const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
+
+    const gainValEl = document.getElementById('dailyChangeValue'); // 👈 ใช้ ID นี้
+    const gainPctEl = document.getElementById('dailyChangePct');   // 👈 ใช้ ID นี้
+
+    if (gainValEl) {
+        const isPositive = totalProfit >= 0;
+        gainValEl.innerText = (isPositive ? '▲ ฿' : '▼ ฿') + Math.abs(totalProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        gainValEl.style.color = isPositive ? '#10b981' : '#ef4444'; // สีเขียวถ้ากำไร / สีแดงถ้าขาดทุน
+    }
+    if (gainPctEl) {
+        const isPositive = totalProfitPct >= 0;
+        gainPctEl.innerText = (isPositive ? '▲ ' : '▼ ') + totalProfitPct.toFixed(2) + '%';
+        gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
+    }
+    
     console.log("=== WEALTH HISTORY HEALTH CHECK ===");
     console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
 
@@ -1148,42 +1172,7 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
 
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
-    try {
-        const snapshotKey = today.replaceAll('-', '');
-        const snapshotUrl = 'https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history/' + snapshotKey + '.json';
-
-        const snapRes = await fetch(snapshotUrl);
-        const existing = await snapRes.json();
-
-        if (!existing) {
-            await fetch(snapshotUrl, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    date: today,
-                    wealth: totalWealth,
-                    mfc: mfcTotal,
-                    gpf: gpfTotal,
-                    scb: scbTotal,
-                    dime: dimeTotal,
-                    createdAt: new Date().toISOString()
-                })
-            });
-            history.push({
-                date: today,
-                wealth: totalWealth,
-                mfc: mfcTotal,
-                gpf: gpfTotal,
-                scb: scbTotal,
-                dime: dimeTotal,
-                createdAt: new Date().toISOString()
-            });
-            history.sort((a, b) => new Date(a.date) - new Date(b.date));
-        }
-    } catch (err) {
-        console.error('Error auto-saving snapshot:', err);
-    }
-
+                
     renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotal, totalWealth);
     renderFireForecast(totalWealth);
 
