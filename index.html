@@ -102,14 +102,14 @@
     <!-- ================= DASHBOARD GRID ================= -->
     <div id="mainDashboard" class="dashboard-grid">
 
-        <!-- HERO CARD หลัก (Total Wealth ใหญ่สะใจ) -->
+        <!-- HERO CARD หลัก (Total Wealth) -->
 <div class="hero-card">
     <div style="color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Wealth</div>
     <div id="totalWealth" class="financial-val" style="font-size: 52px; margin-top: 12px;">Loading...</div>
     
-    <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; width: 100%;">
+    <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <!-- ฝั่งซ้าย: ป้าย LIVE DATA และ FIRE Progress -->
-        <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <div style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">
                 ● LIVE DATA
             </div>
@@ -118,22 +118,13 @@
             </div>
         </div>
 
-        <!-- ฝั่งขวาสุด: รวมเวลาอัปเดตระบบ + วันที่ NAV (MFC) -->
-        <div style="margin-left: auto; text-align: right;">
+        <!-- ฝั่งขวา: เวลาอัปเดตระบบ + NAV (MFC) เพียงชุดเดียว -->
+        <div style="text-align: right;">
             <div id="lastUpdated" style="color: #94a3b8; font-size: 12px; font-weight: 500;">Updated --:-- PM</div>
             <div id="mfcNavDate" style="color: #64748b; font-size: 11px; margin-top: 2px;">NAV (MFC): --/--/-- --:-- น.</div>
         </div>
     </div>
 </div>
-                
-<!-- ✅ ปรับแก้ใหม่: ใส่หุ้มไว้ด้วยกันเพื่อให้อยู่ฝั่งขวาสุดอย่างสวยงาม -->
-<div style="display: flex; flex-direction: column; align-items: flex-end;">
-    <div id="lastUpdated" style="color: #64748b; font-size: 12px;">Updated 12:05 PM</div>
-    <div id="mfcNavDate" style="color: #64748b; font-size: 11px; margin-top: 2px;">NAV (MFC): --/--/-- --:-- น.</div>
-</div>
-</div>
-        </div>
-
         <!-- แถวที่ 1: Portfolio Gain, FIRE Forecast, Asset Allocation -->
         <!-- 1. Portfolio Gain Card -->
         <div id="dailyChangeCard" class="luxury-card">
