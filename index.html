@@ -994,6 +994,8 @@ async function loadDashboard() {
     let mfcTotal = 0;
     let gpfTotal = 0;
     let scbTotal = 0;
+    let scbCost = 0;
+    let scbProfit = 0;
     let dimeTotal = 0;
     let dimeAnalytics = null;
     let history = [];
@@ -1055,13 +1057,10 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
         }
 
         // สกัด SCB
-        let scbCost = 0;
-        let scbProfit = 0;
-
         if (scbRes.status === 'fulfilled' && scbRes.value) {
             scbTotal = Number(scbRes.value.value || 0);
-            scbCost = Number(scbRes.value.cost || 0);     // 👈 เพิ่มการดึงต้นทุน
-            scbProfit = Number(scbRes.value.profit || 0); // 👈 เพิ่มการดึงกำไร
+            scbCost = Number(scbRes.value.cost || 0);     // 👈 เอาคำว่า let ออก
+            scbProfit = Number(scbRes.value.profit || 0); // 👈 เอาคำว่า let ออก
         }
 
         // สกัด DIME
@@ -1096,23 +1095,25 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
 
     // 2. [FALLBACK TO CACHE] หาก Network ล้มเหลว ถอยมาใช้อ่าน Cache
     if (!isLoadedFromNetwork) {
-        const cached = localStorage.getItem('wealth_dashboard_cache');
-        if (cached) {
-            try {
-                const cacheData = JSON.parse(cached);
-                mfcTotal = cacheData.mfcTotal || 0;
-                gpfTotal = cacheData.gpfTotal || 0;
-                scbTotal = cacheData.scbTotal || 0;
-                dimeTotal = cacheData.dimeTotal || 0;
-                dimeAnalytics = cacheData.dimeAnalytics || null;
-                history = cacheData.history || [];
-                historyDataRaw = cacheData.historyDataRaw || {};
-                console.log('⚡ แสดงข้อมูลสำรองจาก Cache ในเครื่อง');
-            } catch (e) {
-                console.error('Error parsing dashboard cache:', e);
-            }
+    const cached = localStorage.getItem('wealth_dashboard_cache');
+    if (cached) {
+        try {
+            const cacheData = JSON.parse(cached);
+            mfcTotal = cacheData.mfcTotal || 0;
+            gpfTotal = cacheData.gpfTotal || 0;
+            scbTotal = cacheData.scbTotal || 0;
+            scbCost = cacheData.scbCost || 0;       // 👈 เพิ่มตรงนี้
+            scbProfit = cacheData.scbProfit || 0;   // 👈 เพิ่มตรงนี้
+            dimeTotal = cacheData.dimeTotal || 0;
+            dimeAnalytics = cacheData.dimeAnalytics || null;
+            history = cacheData.history || [];
+            historyDataRaw = cacheData.historyDataRaw || {};
+            console.log('⚡ แสดงข้อมูลสำรองจาก Cache ในเครื่อง');
+        } catch (e) {
+            console.error('Error parsing dashboard cache:', e);
         }
     }
+}
 
     // 3. ประมวลผลตัวเลขหลัก
     const mfc = mfcTotal;
