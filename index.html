@@ -103,17 +103,28 @@
     <div id="mainDashboard" class="dashboard-grid">
 
         <!-- HERO CARD หลัก (Total Wealth ใหญ่สะใจ) -->
-        <div class="hero-card">
-            <div style="color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Wealth</div>
-            <div id="totalWealth" class="financial-val" style="font-size: 52px; margin-top: 12px;">Loading...</div>
-            
-            <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
-                <div style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">
-                    ● LIVE DATA
-                </div>
-                <div id="heroFireBadge" style="color: #38bdf8; font-size: 14px; font-weight: 600;">
-                    🎯 --% to ฿2M
-                </div>
+<div class="hero-card">
+    <div style="color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Wealth</div>
+    <div id="totalWealth" class="financial-val" style="font-size: 52px; margin-top: 12px;">Loading...</div>
+    
+    <div style="margin-top: 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; width: 100%;">
+        <!-- ฝั่งซ้าย: ป้าย LIVE DATA และ FIRE Progress -->
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">
+                ● LIVE DATA
+            </div>
+            <div id="heroFireBadge" style="color: #38bdf8; font-size: 14px; font-weight: 600;">
+                🎯 --% to ฿2M
+            </div>
+        </div>
+
+        <!-- ฝั่งขวาสุด: รวมเวลาอัปเดตระบบ + วันที่ NAV (MFC) -->
+        <div style="margin-left: auto; text-align: right;">
+            <div id="lastUpdated" style="color: #94a3b8; font-size: 12px; font-weight: 500;">Updated --:-- PM</div>
+            <div id="mfcNavDate" style="color: #64748b; font-size: 11px; margin-top: 2px;">NAV (MFC): --/--/-- --:-- น.</div>
+        </div>
+    </div>
+</div>
                 
 <!-- ✅ ปรับแก้ใหม่: ใส่หุ้มไว้ด้วยกันเพื่อให้อยู่ฝั่งขวาสุดอย่างสวยงาม -->
 <div style="display: flex; flex-direction: column; align-items: flex-end;">
