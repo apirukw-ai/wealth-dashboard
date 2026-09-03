@@ -996,8 +996,11 @@ async function loadDashboard() {
         ]);
 
         // สกัด MFC จาก Supabase
-        if (mfcRes.status === 'fulfilled' && mfcRes.value.data) {
-            mfcTotal = mfcRes.value.data.reduce((sum, item) => {
+        // ✅ เปลี่ยนเป็นของใหม่ (สำหรับ fetch REST API ตรง)
+        if (mfcRes.status === 'fulfilled' && mfcRes.value) {
+            // รองรับทั้งกรณีที่คืนค่ามาเป็น Array โดยตรง หรือผ่าน .data
+            const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
+            mfcTotal = dataList.reduce((sum, item) => {
                 const units = parseFloat(item.units || 0);
                 const nav = parseFloat(item.navToday || item.nav || 0);
                 return sum + (units * nav);
