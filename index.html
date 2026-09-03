@@ -118,11 +118,10 @@
 <div id="lastUpdated" style="color: #64748b; font-size: 12px; margin-left: auto;"></div>
 
 <!-- ✅ ปรับแก้ใหม่: ใส่หุ้มไว้ด้วยกันเพื่อให้อยู่ฝั่งขวาสุดอย่างสวยงาม -->
-<div style="margin-left: auto; text-align: right;">
-    <div id="lastUpdated" style="color: #64748b; font-size: 12px;"></div>
-    <div id="mfcNavDate" style="color: #475569; font-size: 11px; margin-top: 2px;">
-        NAV (MFC): --/--/-- --:-- น.
-    </div>
+<div style="display: flex; flex-direction: column; align-items: flex-end;">
+    <div id="lastUpdated" style="color: #64748b; font-size: 12px;">Updated 12:05 PM</div>
+    <div id="mfcNavDate" style="color: #64748b; font-size: 11px; margin-top: 2px;">NAV (MFC): --/--/-- --:-- น.</div>
+</div>
 </div>
         </div>
 
@@ -188,13 +187,9 @@
             </div>
             <div id="allocationLegend" style="margin-top:12px; font-size:12px; color:#94a3b8;"></div>
             
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:16px;">
                 <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
-                    <!-- บรรทัดหัวข้อ MFC + วันที่อัปเดต -->
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="color:#94a3b8; font-size:11px;">MFC</div>
-                        <span id="mfcNavDate" style="color:#64748b; font-size:10px;">--/--/--</span>
-                    </div>
-    
+                    <div style="color:#94a3b8; font-size:11px;">MFC</div>
                     <div id="mfcVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
                     <div id="mfcPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
                 </div>
