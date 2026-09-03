@@ -35,12 +35,16 @@ self.addEventListener('fetch', (event) => {
   // กรองข้าม Request ที่มาจาก Extension ให้ทำงานเฉพาะ HTTP/HTTPS
   if (!event.request.url.startsWith('http')) return;
 
+  // 1. ถ้าเป็นการเรียก API ไปยัง Supabase หรือ Firebase ไม่ต้อง Cache ให้ดึงข้อมูลสดจาก Network เสมอ
+  if (event.request.url.includes('supabase.co') || event.request.url.includes('firebasedatabase.app')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // 2. สำหรับไฟล์อื่นๆ (HTML, JS, CSS) ให้พยายามดึงจาก Network ก่อน (Network First)
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
+    fetch(event.request)
+      .then((networkResponse) => {
         // บันทึกลง Cache เฉพาะ Request ที่สำเร็จ
         if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
           const responseToCache = networkResponse.clone();
@@ -49,7 +53,10 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      });
-    })
+      })
+      .catch(() => {
+        // ถ้าไม่มีสัญญาณอินเทอร์เน็ต ค่อยไปดึงไฟล์จาก Cache มาแสดงแทน
+        return caches.match(event.request);
+      })
   );
 });
