@@ -19,7 +19,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests
+          pip install requests firebase-admin # 👈 เพิ่ม firebase-admin
 
       - name: Run Snapshot Script
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }} # 👈 เพิ่มการดึง Secret สำหรับ Admin SDK
         run: python daily_snapshot.py
