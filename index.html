@@ -180,9 +180,13 @@
             </div>
             <div id="allocationLegend" style="margin-top:12px; font-size:12px; color:#94a3b8;"></div>
             
-            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:16px;">
                 <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
-                    <div style="color:#94a3b8; font-size:11px;">MFC</div>
+                    <!-- บรรทัดหัวข้อ MFC + วันที่อัปเดต -->
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="color:#94a3b8; font-size:11px;">MFC</div>
+                        <span id="mfcNavDate" style="color:#64748b; font-size:10px;">--/--/--</span>
+                    </div>
+    
                     <div id="mfcVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
                     <div id="mfcPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
                 </div>
@@ -1000,11 +1004,30 @@ async function loadDashboard() {
         if (mfcRes.status === 'fulfilled' && mfcRes.value) {
             // รองรับทั้งกรณีที่คืนค่ามาเป็น Array โดยตรง หรือผ่าน .data
             const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
+    
+            // 1. คำนวณยอดรวม MFC
             mfcTotal = dataList.reduce((sum, item) => {
                 const units = parseFloat(item.units || 0);
-                const nav = parseFloat(item.navToday || item.nav || 0);
+                const nav = parseFloat(item.nav || item.navToday || 0);
                 return sum + (units * nav);
             }, 0);
+
+            // 2. ดึงเวลาอัปเดตอัปเดตล่าสุดมาแสดงบน Mini Card
+            if (dataList.length > 0) {
+                const rawDate = dataList[0].updated_at || new Date().toISOString();
+                const dateObj = new Date(rawDate);
+        
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const yearBE = String(dateObj.getFullYear() + 543).slice(-2); // เช่น '69'
+                const hours = String(dateObj.getHours()).padStart(2, '0');
+                const mins = String(dateObj.getMinutes()).padStart(2, '0');
+
+                const mfcNavElem = document.getElementById('mfcNavDate');
+                if (mfcNavElem) {
+                    mfcNavElem.innerText = `${day}/${month}/${yearBE} ${hours}:${mins}`;
+                }
+            }
         }
 
         // สกัด GPF
