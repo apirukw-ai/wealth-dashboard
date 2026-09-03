@@ -114,8 +114,16 @@
                 <div id="heroFireBadge" style="color: #38bdf8; font-size: 14px; font-weight: 600;">
                     🎯 --% to ฿2M
                 </div>
-                <div id="lastUpdated" style="color: #64748b; font-size: 12px; margin-left: auto;"></div>
-            </div>
+                <!-- ของเดิม -->
+<div id="lastUpdated" style="color: #64748b; font-size: 12px; margin-left: auto;"></div>
+
+<!-- ✅ ปรับแก้ใหม่: ใส่หุ้มไว้ด้วยกันเพื่อให้อยู่ฝั่งขวาสุดอย่างสวยงาม -->
+<div style="margin-left: auto; text-align: right;">
+    <div id="lastUpdated" style="color: #64748b; font-size: 12px;"></div>
+    <div id="mfcNavDate" style="color: #475569; font-size: 11px; margin-top: 2px;">
+        NAV (MFC): --/--/-- --:-- น.
+    </div>
+</div>
         </div>
 
         <!-- แถวที่ 1: Portfolio Gain, FIRE Forecast, Asset Allocation -->
@@ -999,36 +1007,35 @@ async function loadDashboard() {
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
         ]);
 
-        // สกัด MFC จาก Supabase
-        // ✅ เปลี่ยนเป็นของใหม่ (สำหรับ fetch REST API ตรง)
-        if (mfcRes.status === 'fulfilled' && mfcRes.value) {
-            // รองรับทั้งกรณีที่คืนค่ามาเป็น Array โดยตรง หรือผ่าน .data
-            const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
-    
-            // 1. คำนวณยอดรวม MFC
-            mfcTotal = dataList.reduce((sum, item) => {
-                const units = parseFloat(item.units || 0);
-                const nav = parseFloat(item.nav || item.navToday || 0);
-                return sum + (units * nav);
-            }, 0);
+        // 1. ดึงข้อมูล MFC จาก Supabase
+// เปลี่ยนมาใช้ fetch (สำหรับ Fetch REST API ตรง)
+if (mfcRes.status === 'fulfilled' && mfcRes.value) {
+    const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
 
-            // 2. ดึงเวลาอัปเดตอัปเดตล่าสุดมาแสดงบน Mini Card
-            if (dataList.length > 0) {
-                const rawDate = dataList[0].updated_at || new Date().toISOString();
-                const dateObj = new Date(rawDate);
-        
-                const day = String(dateObj.getDate()).padStart(2, '0');
-                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const yearBE = String(dateObj.getFullYear() + 543).slice(-2); // เช่น '69'
-                const hours = String(dateObj.getHours()).padStart(2, '0');
-                const mins = String(dateObj.getMinutes()).padStart(2, '0');
+    // คำนวณยอดรวม MFC
+    mfcTotal = dataList.reduce((sum, item) => {
+        const units = parseFloat(item.units || 0);
+        const nav = parseFloat(item.nav || item.navToday || 0);
+        return sum + (units * nav);
+    }, 0);
 
-                const mfcNavElem = document.getElementById('mfcNavDate');
-                if (mfcNavElem) {
-                    mfcNavElem.innerText = `${day}/${month}/${yearBE} ${hours}:${mins}`;
-                }
-            }
+    // อัปเดตเวลา NAV (MFC) ที่มุมขวาบน
+    if (dataList.length > 0) {
+        const rawDate = dataList[0].updated_at || new Date().toISOString();
+        const dateObj = new Date(rawDate);
+
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const yearBE = String(dateObj.getFullYear() + 543).slice(-2);
+        const hours = String(dateObj.getHours()).padStart(2, '0');
+        const mins = String(dateObj.getMinutes()).padStart(2, '0');
+
+        const mfcNavElem = document.getElementById('mfcNavDate');
+        if (mfcNavElem) {
+            mfcNavElem.innerText = `NAV (MFC): ${day}/${month}/${yearBE} ${hours}:${mins} น.`;
         }
+    }
+}
 
         // สกัด GPF
         if (gpfRes.status === 'fulfilled' && gpfRes.value?.funds) {
