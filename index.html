@@ -177,40 +177,53 @@
         </div>
 
         <!-- 3. Asset Allocation Card -->
-        <div class="luxury-card">
-            <div style="font-size:13px; color:#94a3b8; font-weight:500; margin-bottom:12px;">Asset Allocation</div>
-            <div style="display:flex; height:10px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,0.05);">
-                <div id="mfcBar" style="background:#3b82f6; width:0%; transition: width 0.4s;"></div>
-                <div id="gpfBar" style="background:#10b981; width:0%; transition: width 0.4s;"></div>
-                <div id="scbBar" style="background:#a855f7; width:0%; transition: width 0.4s;"></div>
-                <div id="dimeBar" style="background:#f59e0b; width:0%; transition: width 0.4s;"></div>
-            </div>
-            <div id="allocationLegend" style="margin-top:12px; font-size:12px; color:#94a3b8;"></div>
-            
-            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:16px;">
-                <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
-                    <div style="color:#94a3b8; font-size:11px;">MFC</div>
-                    <div id="mfcVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-                    <div id="mfcPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-                </div>
-                <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
-                    <div style="color:#94a3b8; font-size:11px;">GPF</div>
-                    <div id="gpfVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-                    <div id="gpfPct" style="color:#10b981; font-size:11px; font-weight:600; margin-top:2px;"></div>
-                </div>
-                <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
-                    <div style="color:#94a3b8; font-size:11px;">SCB</div>
-                    <div id="scbVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-                    <div id="scbPct" style="color:#a855f7; font-size:11px; font-weight:600; margin-top:2px;"></div>
-                </div>
-                <div style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px;">
-                    <div style="color:#94a3b8; font-size:11px;">DIME</div>
-                    <div id="dimeVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-                    <div id="dimePct" style="color:#f59e0b; font-size:11px; font-weight:600; margin-top:2px;"></div>
-                </div>
-            </div>
+<div class="luxury-card">
+    <div style="font-size:13px; color:#94a3b8; font-weight:500; margin-bottom:12px;">Asset Allocation</div>
+    <div style="display:flex; height:10px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,0.05);">
+        <div id="mfcBar" style="background:#3b82f6; width:0%; transition: width 0.4s;"></div>
+        <div id="gpfBar" style="background:#10b981; width:0%; transition: width 0.4s;"></div>
+        <div id="scbBar" style="background:#a855f7; width:0%; transition: width 0.4s;"></div>
+        <div id="dimeBar" style="background:#f59e0b; width:0%; transition: width 0.4s;"></div>
+    </div>
+    <div id="allocationLegend" style="margin-top:12px; font-size:12px; color:#94a3b8;"></div>
+    
+    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:16px;">
+
+        <!-- 1. กล่อง MFC -->
+        <div onclick="openTracker('https://apirukw-ai.github.io/MFCN-tracker/')" 
+             style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
+            <div style="color:#94a3b8; font-size:11px;">MFC ↗</div>
+            <div id="mfcVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+            <div id="mfcPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
         </div>
 
+        <!-- 2. กล่อง GPF -->
+        <div onclick="openTracker('https://apirukw-ai.github.io/GPF-Tracker/')" 
+             style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
+            <div style="color:#94a3b8; font-size:11px;">GPF ↗</div>
+            <div id="gpfVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+            <div id="gpfPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
+        </div>
+
+        <!-- 3. กล่อง SCB -->
+        <div onclick="openTracker('https://apirukw-ai.github.io/scb-portfolio-tracker/')" 
+             style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
+            <div style="color:#94a3b8; font-size:11px;">SCB ↗</div>
+            <div id="scbVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+            <div id="scbPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
+        </div>
+
+        <!-- 4. กล่อง DIME -->
+        <div onclick="openTracker('https://apirukw-ai.github.io/dime-tracker/')" 
+             style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
+            <div style="color:#94a3b8; font-size:11px;">DIME ↗</div>
+            <div id="dimeVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+            <div id="dimePct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
+        </div>
+
+    </div> <!-- ปิด display:grid -->
+
+</div> <!-- ✅ ปิด luxury-card ตัวนอกสุด (เพิ่มตัวนี้เข้าไปครับ) -->
         <!-- แถวที่ 2: FIRE Progress, Goal ETA, Performance Badges -->
         <div id="fireProgressCard" class="luxury-card">
             <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
@@ -970,7 +983,9 @@ function renderMonthlyAnalytics(history) {
         projEl.style.color = '#38bdf8'; // สี Cyan
     }
 }
-
+function openTracker(url) {
+        window.open(url, '_blank');
+    }
 // --- ฟังก์ชันหลัก ---
 
 async function loadDashboard() {
