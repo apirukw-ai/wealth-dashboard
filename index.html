@@ -1101,13 +1101,20 @@ async function loadDashboard() {
 
         // ---------------- สกัด DIME ----------------
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
-            dimeTotal = Number(dimeRes.value.value || 0);
-            dimeCost = Number(dimeRes.value.cost || 0);
-            dimeProfit = Number(dimeRes.value.profit || 0);
+            dimeTotal = Number(dimeRes.value.value || dimeRes.value.totalValue || 0);
+            dimeCost = Number(dimeRes.value.cost || dimeRes.value.totalCost || 0);
+            dimeProfit = Number(dimeRes.value.profit || dimeRes.value.totalProfit || 0);
             
-            dimeDailyProfit = Number(dimeRes.value.dailyProfit || dimeRes.value.dailyGain || 0);
+            // 📍 อ่านค่ากำไรวันนี้โดยดึงจาก todayGain, dailyProfit หรือ dailyGain ที่อัปเดตไว้ใน Firebase
+            dimeDailyProfit = Number(dimeRes.value.todayGain || dimeRes.value.dailyProfit || dimeRes.value.dailyGain || 0);
+            
+            // คำนวณ % กำไรรายวันเทียบกับมูลค่าพอร์ตรวมก่อนหน้า (Previous Total Value)
             const dimePrevTotal = dimeTotal - dimeDailyProfit;
-            dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfit / dimePrevTotal) * 100 : 0;
+            if (dimeRes.value.dailyProfitPct !== undefined || dimeRes.value.todayGainPct !== undefined) {
+                dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || dimeRes.value.todayGainPct || 0);
+            } else {
+                dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfit / dimePrevTotal) * 100 : 0;
+            }
         }
 
         // ---------------- สกัด DIME Analytics ----------------
