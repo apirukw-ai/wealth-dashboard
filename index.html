@@ -128,225 +128,255 @@
             </div>
         </div>
 
-        <!-- แถวที่ 1: Portfolio Gain, FIRE Forecast, Asset Allocation -->
-        <div id="dailyChangeCard" class="luxury-card">
-            <div style="color:#94a3b8; font-size:13px; font-weight:500;">Portfolio Gain</div>
-            <div id="dailyChangeValue" class="financial-val" style="font-size:28px; margin-top:10px;">Loading...</div>
-            <div id="dailyChangePct" class="financial-val" style="margin-top:4px; font-size:15px;">-</div>
+        <!-- ================= แถวที่ 1 ================= -->
 
-            <!-- 📍 4 การ์ดย่อยแสดงผลงานแยกตามพอร์ต -->
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-                <!-- MFC -->
-                <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">MFC</div>
-                    <div id="mfcGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-                    <div id="mfcGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-                </div>
+<!-- 1.1 Portfolio Gain Card (กำไรสะสมรวม) -->
+<div id="portfolioGainCard" class="luxury-card">
+    <div style="color:#94a3b8; font-size:13px; font-weight:500;">Portfolio Gain (Total)</div>
+    <div id="totalGainValue" class="financial-val" style="font-size:28px; margin-top:10px;">Loading...</div>
+    <div id="totalGainPct" class="financial-val" style="margin-top:4px; font-size:15px;">-</div>
 
-                <!-- GPF -->
-                <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">GPF</div>
-                    <div id="gpfGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-                    <div id="gpfGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-                </div>
-
-                <!-- SCB -->
-                <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">SCB</div>
-                    <div id="scbGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-                    <div id="scbGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-                </div>
-
-                <!-- DIME -->
-                <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                    <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">DIME</div>
-                    <div id="dimeGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-                    <div id="dimeGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-                </div>
-            </div>
+    <!-- 📍 4 การ์ดย่อย: กำไรสะสมรวมแยกรายแอป -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">MFC</div>
+            <div id="mfcTotalGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="mfcTotalGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
         </div>
-
-        <!-- 2. FIRE Forecast Card -->
-        <div id="fireForecastCard" class="luxury-card">
-            <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🔥 FIRE Forecast</div>
-            
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <div>
-                    <div style="color:#94a3b8; font-size:11px;">Current</div>
-                    <div id="forecastCurrent" class="financial-val" style="font-size:16px; margin-top:2px;">-</div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="color:#94a3b8; font-size:11px;">Target</div>
-                    <div id="forecastTarget" class="financial-val" style="font-size:16px; margin-top:2px;">฿5.00M</div>
-                </div>
-            </div>
-
-            <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #94a3b8; font-size: 12px;">Current Contribution:</span>
-                <span class="financial-val" style="color: #38bdf8; font-size: 13px;">฿25,000/mo</span>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #94a3b8;">🐢 Conservative <strong style="color: #cbd5e1;">5%</strong></span>
-                    <span id="etaConservative" class="financial-val" style="color: #facc15;">-</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #94a3b8;">🚶 Base Case <strong style="color: #cbd5e1;">7%</strong></span>
-                    <span id="etaBase" class="financial-val" style="color: #38bdf8;">-</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #94a3b8;">🚀 Optimistic <strong style="color: #cbd5e1;">10%</strong></span>
-                    <span id="etaOptimistic" class="financial-val" style="color: #34d399;">-</span>
-                </div>
-            </div>
-
-            <hr style="border:none; border-top:1px solid #334155; margin: 10px 0;">
-
-            <div style="font-size: 11px; color: #94a3b8; display:flex; flex-direction:column; gap:3px;">
-                <div style="color:#38bdf8;">+฿5,000/mo → FIRE เร็วขึ้น 6 เดือน</div>
-                <div style="color:#38bdf8;">+฿10,000/mo → FIRE เร็วขึ้น 14 เดือน</div>
-            </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">GPF</div>
+            <div id="gpfTotalGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="gpfTotalGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
         </div>
-
-        <!-- 3. Asset Allocation Card -->
-        <div class="luxury-card">
-            <div style="font-size:13px; color:#94a3b8; font-weight:500; margin-bottom:12px;">Asset Allocation</div>
-            <div style="display:flex; height:10px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,0.05);">
-                <div id="mfcBar" style="background:#3b82f6; width:0%; transition: width 0.4s;"></div>
-                <div id="gpfBar" style="background:#10b981; width:0%; transition: width 0.4s;"></div>
-                <div id="scbBar" style="background:#a855f7; width:0%; transition: width 0.4s;"></div>
-                <div id="dimeBar" style="background:#f59e0b; width:0%; transition: width 0.4s;"></div>
-            </div>
-            <div id="allocationLegend" style="margin-top:12px; font-size:12px; color:#94a3b8;"></div>
-            
-            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:16px;">
-                <div onclick="openTracker('https://apirukw-ai.github.io/MFCN-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
-                    <div style="color:#94a3b8; font-size:11px;">MFC ↗</div>
-                    <div id="mfcVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-                    <div id="mfcPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-                </div>
-
-                <div onclick="openTracker('https://apirukw-ai.github.io/GPF-Tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
-                    <div style="color:#94a3b8; font-size:11px;">GPF ↗</div>
-                    <div id="gpfVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-                    <div id="gpfPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-                </div>
-
-                <div onclick="openTracker('https://apirukw-ai.github.io/scb-portfolio-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
-                    <div style="color:#94a3b8; font-size:11px;">SCB ↗</div>
-                    <div id="scbVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-                    <div id="scbPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-                </div>
-
-                <div onclick="openTracker('https://apirukw-ai.github.io/dime-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
-                    <div style="color:#94a3b8; font-size:11px;">DIME ↗</div>
-                    <div id="dimeVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-                    <div id="dimePct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-                </div>
-            </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">SCB</div>
+            <div id="scbTotalGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="scbTotalGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
         </div>
-
-        <!-- แถวที่ 2: FIRE Progress, Goal ETA, Performance Badges -->
-        <div id="fireProgressCard" class="luxury-card">
-            <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
-            <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
-            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:2px;">
-                <span id="fireCurrentWealth" class="financial-val" style="font-size:16px;">-</span>
-                <span id="fireTarget" style="font-size:13px; color:#64748b;">-</span>
-            </div>
-            
-            <div id="firePct" class="financial-val" style="font-size:32px; margin-top:10px; color:#34d399;">-</div>
-            <div id="fireLevel" style="font-size:12px; font-weight:600; color:#38bdf8; margin-top:2px;">-</div>
-            
-            <div style="height:10px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; margin-top:12px;">
-                <div id="fireBar" style="height:100%; width:0%; background: linear-gradient(to right, #10b981, #06b6d4); transition: width 0.4s;"></div>
-            </div>
-
-            <hr style="border:none; border-top:1px solid #334155; margin: 14px 0;">
-
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px;">
-                <div>
-                    <div style="color:#94a3b8; font-size:11px;">Next Milestone</div>
-                    <div style="color:#38bdf8; font-weight:600; margin-top:2px;">🎯 FIRE 75%</div>
-                </div>
-                <div style="text-align:right;">
-                    <div id="fire75CompletePct" class="financial-val" style="color:#fff;">-</div>
-                    <div id="fire75NeedPct" style="color:#f87171; font-size:11px; margin-top:2px;">-</div>
-                </div>
-            </div>
-            
-            <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:#94a3b8;">
-                <span>Remaining: <strong id="fireRemaining" class="financial-val" style="color:#f87171;">-</strong></span>
-                <span id="fireNeedPct" style="color:#f87171; font-weight:600;">-</span>
-            </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">DIME</div>
+            <div id="dimeTotalGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="dimeTotalGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
         </div>
-
-        <div id="goalEtaCard" class="luxury-card">
-            <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:12px;">🎯 Goal ETA</div>
-            
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="color:#94a3b8; font-size:12px;">Current Pace</span>
-                <span id="etaStatus" class="financial-val" style="font-size:16px; color:#38bdf8;">2031</span>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                <span style="color:#94a3b8; font-size:12px;">Need to Save</span>
-                <span id="etaMonthlyNeed" class="financial-val" style="font-size:15px; color:#fff;">-</span>
-            </div>
-
-            <hr style="border:none; border-top:1px solid #334155; margin: 10px 0;">
-
-            <div style="font-size:12px; color:#94a3b8; font-weight:600; margin-bottom:8px;">Scenarios</div>
-            <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
-                <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
-                    <span>+฿10k/month</span>
-                    <span id="scenario10k" class="financial-val" style="color:#38bdf8;">-</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
-                    <span>+฿25k/month</span>
-                    <span id="scenario25k" class="financial-val" style="color:#38bdf8;">-</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
-                    <span>+฿50k/month</span>
-                    <span id="scenario50k" class="financial-val" style="color:#34d399;">-</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="luxury-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(245, 158, 11, 0.3);">
-            <div style="color:#fbbf24; font-size:15px; font-weight:700; margin-bottom:14px;">🏅 Performance Badges</div>
-            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
-                    <span>✅</span><span>First Million Gain</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
-                    <span>✅</span><span>25% Portfolio Return</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-                    <span>🔒</span><span>100 Tracking Days</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-                    <span>🔒</span><span>1 Year Tracking Streak</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-                    <span>🔒</span><span>5M Wealth Reached</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ACHIEVEMENT SYSTEM CARD -->
-        <div class="luxury-card card-full">
-            <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
-            <div style="margin-bottom: 12px;">
-                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600; font-size: 14px; width: fit-content;">
-                    <span>✅</span><span>DIME Connected / Multi-Broker Portfolio</span>
-                </div>
-            </div>
-            <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; font-size: 14px;"></div>
-        </div>
-
     </div>
+</div>
+
+<!-- 1.2 Daily Profit Card (กำไรรายวัน) -->
+<div id="dailyProfitCard" class="luxury-card">
+    <div style="color:#94a3b8; font-size:13px; font-weight:500;">Daily Profit (Today)</div>
+    <div id="dailyChangeValue" class="financial-val" style="font-size:28px; margin-top:10px;">Loading...</div>
+    <div id="dailyChangePct" class="financial-val" style="margin-top:4px; font-size:15px;">-</div>
+
+    <!-- 📍 4 การ์ดย่อย: กำไรรายวันแยกรายแอป -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">MFC</div>
+            <div id="mfcGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="mfcGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">GPF</div>
+            <div id="gpfGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="gpfGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">SCB</div>
+            <div id="scbGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="scbGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">DIME</div>
+            <div id="dimeGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="dimeGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
+        </div>
+    </div>
+</div>
+
+<!-- 1.3 Asset Allocation Card -->
+<div class="luxury-card">
+    <div style="font-size:13px; color:#94a3b8; font-weight:500; margin-bottom:12px;">Asset Allocation</div>
+    <div style="display:flex; height:10px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,0.05);">
+        <div id="mfcBar" style="background:#3b82f6; width:0%; transition: width 0.4s;"></div>
+        <div id="gpfBar" style="background:#10b981; width:0%; transition: width 0.4s;"></div>
+        <div id="scbBar" style="background:#a855f7; width:0%; transition: width 0.4s;"></div>
+        <div id="dimeBar" style="background:#f59e0b; width:0%; transition: width 0.4s;"></div>
+    </div>
+    <div id="allocationLegend" style="margin-top:12px; font-size:12px; color:#94a3b8;"></div>
+    
+    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:16px;">
+        <div onclick="openTracker('https://apirukw-ai.github.io/MFCN-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
+            <div style="color:#94a3b8; font-size:11px;">MFC ↗</div>
+            <div id="mfcVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+            <div id="mfcPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
+        </div>
+
+        <div onclick="openTracker('https://apirukw-ai.github.io/GPF-Tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
+            <div style="color:#94a3b8; font-size:11px;">GPF ↗</div>
+            <div id="gpfVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+            <div id="gpfPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
+        </div>
+
+        <div onclick="openTracker('https://apirukw-ai.github.io/scb-portfolio-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
+            <div style="color:#94a3b8; font-size:11px;">SCB ↗</div>
+            <div id="scbVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+            <div id="scbPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
+        </div>
+
+        <div onclick="openTracker('https://apirukw-ai.github.io/dime-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
+            <div style="color:#94a3b8; font-size:11px;">DIME ↗</div>
+            <div id="dimeVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
+            <div id="dimePct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= แถวที่ 2 ================= -->
+
+<!-- 2.1 FIRE Progress Card -->
+<div id="fireProgressCard" class="luxury-card">
+    <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
+    <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:2px;">
+        <span id="fireCurrentWealth" class="financial-val" style="font-size:16px;">-</span>
+        <span id="fireTarget" style="font-size:13px; color:#64748b;">-</span>
+    </div>
+    
+    <div id="firePct" class="financial-val" style="font-size:32px; margin-top:10px; color:#34d399;">-</div>
+    <div id="fireLevel" style="font-size:12px; font-weight:600; color:#38bdf8; margin-top:2px;">-</div>
+    
+    <div style="height:10px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; margin-top:12px;">
+        <div id="fireBar" style="height:100%; width:0%; background: linear-gradient(to right, #10b981, #06b6d4); transition: width 0.4s;"></div>
+    </div>
+
+    <hr style="border:none; border-top:1px solid #334155; margin: 14px 0;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px;">
+        <div>
+            <div style="color:#94a3b8; font-size:11px;">Next Milestone</div>
+            <div style="color:#38bdf8; font-weight:600; margin-top:2px;">🎯 FIRE 75%</div>
+        </div>
+        <div style="text-align:right;">
+            <div id="fire75CompletePct" class="financial-val" style="color:#fff;">-</div>
+            <div id="fire75NeedPct" style="color:#f87171; font-size:11px; margin-top:2px;">-</div>
+        </div>
+    </div>
+    
+    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:#94a3b8;">
+        <span>Remaining: <strong id="fireRemaining" class="financial-val" style="color:#f87171;">-</strong></span>
+        <span id="fireNeedPct" style="color:#f87171; font-weight:600;">-</span>
+    </div>
+</div>
+
+<!-- 2.2 FIRE Forecast Card -->
+<div id="fireForecastCard" class="luxury-card">
+    <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🔥 FIRE Forecast</div>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div>
+            <div style="color:#94a3b8; font-size:11px;">Current</div>
+            <div id="forecastCurrent" class="financial-val" style="font-size:16px; margin-top:2px;">-</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="color:#94a3b8; font-size:11px;">Target</div>
+            <div id="forecastTarget" class="financial-val" style="font-size:16px; margin-top:2px;">฿5.00M</div>
+        </div>
+    </div>
+
+    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #94a3b8; font-size: 12px;">Current Contribution:</span>
+        <span class="financial-val" style="color: #38bdf8; font-size: 13px;">฿25,000/mo</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #94a3b8;">🐢 Conservative <strong style="color: #cbd5e1;">5%</strong></span>
+            <span id="etaConservative" class="financial-val" style="color: #facc15;">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #94a3b8;">🚶 Base Case <strong style="color: #cbd5e1;">7%</strong></span>
+            <span id="etaBase" class="financial-val" style="color: #38bdf8;">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #94a3b8;">🚀 Optimistic <strong style="color: #cbd5e1;">10%</strong></span>
+            <span id="etaOptimistic" class="financial-val" style="color: #34d399;">-</span>
+        </div>
+    </div>
+
+    <hr style="border:none; border-top:1px solid #334155; margin: 10px 0;">
+
+    <div style="font-size: 11px; color: #94a3b8; display:flex; flex-direction:column; gap:3px;">
+        <div style="color:#38bdf8;">+฿5,000/mo → FIRE เร็วขึ้น 6 เดือน</div>
+        <div style="color:#38bdf8;">+฿10,000/mo → FIRE เร็วขึ้น 14 เดือน</div>
+    </div>
+</div>
+
+<!-- 2.3 Goal ETA Card -->
+<div id="goalEtaCard" class="luxury-card">
+    <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:12px;">🎯 Goal ETA</div>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="color:#94a3b8; font-size:12px;">Current Pace</span>
+        <span id="etaStatus" class="financial-val" style="font-size:16px; color:#38bdf8;">2031</span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <span style="color:#94a3b8; font-size:12px;">Need to Save</span>
+        <span id="etaMonthlyNeed" class="financial-val" style="font-size:15px; color:#fff;">-</span>
+    </div>
+
+    <hr style="border:none; border-top:1px solid #334155; margin: 10px 0;">
+
+    <div style="font-size:12px; color:#94a3b8; font-weight:600; margin-bottom:8px;">Scenarios</div>
+    <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
+        <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
+            <span>+฿10k/month</span>
+            <span id="scenario10k" class="financial-val" style="color:#38bdf8;">-</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
+            <span>+฿25k/month</span>
+            <span id="scenario25k" class="financial-val" style="color:#38bdf8;">-</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
+            <span>+฿50k/month</span>
+            <span id="scenario50k" class="financial-val" style="color:#34d399;">-</span>
+        </div>
+    </div>
+</div>
+
+<!-- ================= แถวที่ 3 ================= -->
+
+<!-- 3.1 Performance Badges Card -->
+<div class="luxury-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(245, 158, 11, 0.3);">
+    <div style="color:#fbbf24; font-size:15px; font-weight:700; margin-bottom:14px;">🏅 Performance Badges</div>
+    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
+            <span>✅</span><span>First Million Gain</span>
+        </div>
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
+            <span>✅</span><span>25% Portfolio Return</span>
+        </div>
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+            <span>🔒</span><span>100 Tracking Days</span>
+        </div>
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+            <span>🔒</span><span>1 Year Tracking Streak</span>
+        </div>
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
+            <span>🔒</span><span>5M Wealth Reached</span>
+        </div>
+    </div>
+</div>
+
+<!-- 3.2 Achievements Card -->
+<div class="luxury-card" style="grid-column: span 2;">
+    <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
+    <div style="margin-bottom: 12px;">
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600; font-size: 14px; width: fit-content;">
+            <span>✅</span><span>DIME Connected / Multi-Broker Portfolio</span>
+        </div>
+    </div>
+    <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 14px;"></div>
+</div>
 
     <!-- ================= ADVANCED ANALYTICS (Accordion) ================= -->
     <div style="margin-top:24px; width:100%;">
@@ -1178,6 +1208,19 @@ async function loadDashboard() {
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
 
+    // 📍 ส่งตัวเลขเข้า 4 การ์ดย่อย Portfolio Gain (กำไรสะสมรวมแยกตามแอป)
+    updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿');
+    updateGainUI('dimeTotalGainVal', 'dimeTotalGainPct', dimeProfitUSD, dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0, '$');
+
+    // (หากมี mfcProfit / mfcCost และ gpfProfit / gpfCost)
+    if (typeof mfcProfit !== 'undefined' && typeof mfcCost !== 'undefined') {
+        updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿');
+    }
+    if (typeof gpfProfit !== 'undefined' && typeof gpfCost !== 'undefined') {
+        updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿');
+    }
+    
+    
     // 📍 เรียกใช้อัปเดต 4 การ์ดย่อย (DIME แสดงผลสัญลักษณ์ USD $)
     try {
         updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿');
