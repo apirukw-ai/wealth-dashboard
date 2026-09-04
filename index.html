@@ -989,7 +989,7 @@ function openTracker(url) {
 // --- ฟังก์ชันหลัก ---
 
 async function loadDashboard() {
-    console.log('START LOAD (Network First)');
+    console.log('START LOAD (Network Only)');
 
     let mfcTotal = 0;
     let gpfTotal = 0;
@@ -997,21 +997,21 @@ async function loadDashboard() {
     let scbCost = 0;
     let scbProfit = 0;
     let dimeTotal = 0;
+    let dimeCost = 0;     // 👈 เพิ่มตัวแปร
+    let dimeProfit = 0;   // 👈 เพิ่มตัวแปร
     let dimeAnalytics = null;
     let history = [];
     let historyDataRaw = {};
-    let isLoadedFromNetwork = false;
 
     try {
-        // 1. [NETWORK FIRST] ดึงข้อมูลสดพร้อมกันจาก Supabase และ Firebase
+        // 1. [NETWORK ONLY] ดึงข้อมูลสดจาก Supabase และ Firebase เสมอ
         const [mfcRes, gpfRes, scbRes, dimeRes, dimeAnalyticsRes, historyRes] = await Promise.allSettled([
-            // ✅ ของใหม่ (ใช้ fetch ตรง - ไม่ติด Cache SDK แน่นอน)
-    fetch('https://iproktvvetsbxxmpptuj.supabase.co/rest/v1/policies?select=*', {
-        headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw'
-        }
-    }).then(r => r.json()),
+            fetch('https://iproktvvetsbxxmpptuj.supabase.co/rest/v1/policies?select=*', {
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw'
+                }
+            }).then(r => r.json()),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json').then(r => r.json()),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json').then(r => r.json()),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json').then(r => r.json()),
@@ -1019,35 +1019,32 @@ async function loadDashboard() {
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
         ]);
 
-        // 1. ดึงข้อมูล MFC จาก Supabase
-// เปลี่ยนมาใช้ fetch (สำหรับ Fetch REST API ตรง)
-if (mfcRes.status === 'fulfilled' && mfcRes.value) {
-    const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
+        // สกัด MFC จาก Supabase
+        if (mfcRes.status === 'fulfilled' && mfcRes.value) {
+            const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
 
-    // คำนวณยอดรวม MFC
-    mfcTotal = dataList.reduce((sum, item) => {
-        const units = parseFloat(item.units || 0);
-        const nav = parseFloat(item.nav || item.navToday || 0);
-        return sum + (units * nav);
-    }, 0);
+            mfcTotal = dataList.reduce((sum, item) => {
+                const units = parseFloat(item.units || 0);
+                const nav = parseFloat(item.nav || item.navToday || 0);
+                return sum + (units * nav);
+            }, 0);
 
-    // อัปเดตเวลา NAV (MFC) ที่มุมขวาบน
-    if (dataList.length > 0) {
-        const rawDate = dataList[0].updated_at || new Date().toISOString();
-        const dateObj = new Date(rawDate);
+            if (dataList.length > 0) {
+                const rawDate = dataList[0].updated_at || new Date().toISOString();
+                const dateObj = new Date(rawDate);
 
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const yearBE = String(dateObj.getFullYear() + 543).slice(-2);
-        const hours = String(dateObj.getHours()).padStart(2, '0');
-        const mins = String(dateObj.getMinutes()).padStart(2, '0');
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const yearBE = String(dateObj.getFullYear() + 543).slice(-2);
+                const hours = String(dateObj.getHours()).padStart(2, '0');
+                const mins = String(dateObj.getMinutes()).padStart(2, '0');
 
-        const mfcNavElem = document.getElementById('mfcNavDate');
-        if (mfcNavElem) {
-            mfcNavElem.innerText = `NAV (MFC): ${day}/${month}/${yearBE} ${hours}:${mins} น.`;
+                const mfcNavElem = document.getElementById('mfcNavDate');
+                if (mfcNavElem) {
+                    mfcNavElem.innerText = `NAV (MFC): ${day}/${month}/${yearBE} ${hours}:${mins} น.`;
+                }
+            }
         }
-    }
-}
 
         // สกัด GPF
         if (gpfRes.status === 'fulfilled' && gpfRes.value?.funds) {
@@ -1059,13 +1056,15 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
         // สกัด SCB
         if (scbRes.status === 'fulfilled' && scbRes.value) {
             scbTotal = Number(scbRes.value.value || 0);
-            scbCost = Number(scbRes.value.cost || 0);     // 👈 เอาคำว่า let ออก
-            scbProfit = Number(scbRes.value.profit || 0); // 👈 เอาคำว่า let ออก
+            scbCost = Number(scbRes.value.cost || 0);
+            scbProfit = Number(scbRes.value.profit || 0);
         }
 
         // สกัด DIME
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
             dimeTotal = Number(dimeRes.value.value || 0);
+            dimeCost = Number(dimeRes.value.cost || 0);     // 👈 สกัด Cost สด
+            dimeProfit = Number(dimeRes.value.profit || 0); // 👈 สกัด Profit สด
         }
 
         // สกัด DIME Analytics
@@ -1079,42 +1078,13 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
             history = Object.values(historyDataRaw);
         }
 
-        isLoadedFromNetwork = true;
-
-        // บันทึก Cache สำรอง
-        const dashboardCache = {
-            mfcTotal, gpfTotal, scbTotal, scbCost, scbProfit, dimeTotal, dimeAnalytics, history, historyDataRaw,
-            timestamp: new Date().getTime()
-        };
-        localStorage.setItem('wealth_dashboard_cache', JSON.stringify(dashboardCache));
         console.log('☁️ ดึงข้อมูลสดจาก Cloud สำเร็จ');
 
     } catch (err) {
-        console.warn('⚠️ ไม่สามารถเชื่อมต่อ Cloud ได้:', err);
+        console.error('⚠️ ไม่สามารถเชื่อมต่อ Cloud ได้:', err);
     }
 
-    // 2. [FALLBACK TO CACHE] หาก Network ล้มเหลว ถอยมาใช้อ่าน Cache
-    if (!isLoadedFromNetwork) {
-    const cached = localStorage.getItem('wealth_dashboard_cache');
-    if (cached) {
-        try {
-            const cacheData = JSON.parse(cached);
-            mfcTotal = cacheData.mfcTotal || 0;
-            gpfTotal = cacheData.gpfTotal || 0;
-            scbTotal = cacheData.scbTotal || 0;
-            scbCost = cacheData.scbCost || 0;       // 👈 เพิ่มตรงนี้
-            scbProfit = cacheData.scbProfit || 0;   // 👈 เพิ่มตรงนี้
-            dimeTotal = cacheData.dimeTotal || 0;
-            dimeAnalytics = cacheData.dimeAnalytics || null;
-            history = cacheData.history || [];
-            historyDataRaw = cacheData.historyDataRaw || {};
-            console.log('⚡ แสดงข้อมูลสำรองจาก Cache ในเครื่อง');
-        } catch (e) {
-            console.error('Error parsing dashboard cache:', e);
-        }
-    }
-}
-
+    // ❌ ตัดส่วน localStorage.setItem และ if (!isLoadedFromNetwork) ออกทั้งหมด
     // 3. ประมวลผลตัวเลขหลัก
     const mfc = mfcTotal;
     const gpf = gpfTotal;
