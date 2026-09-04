@@ -120,7 +120,7 @@
 
         <!-- ฝั่งขวา: -->
         <!-- ✅ โครงสร้างใหม่ที่ปรับปรุงแล้ว -->
-        <div class="nav-timestamps-container text-[11px] text-slate-400 space-y-0.5">
+        <div class="nav-timestamps-container text-[10px] text-slate-400 space-y-0.5">
             <div id="mfcNavTime"><i class="fa-solid fa-clock text-amber-400"></i> NAV (MFC): <span class="val">-</span></div>
             <div id="gpfNavTime"><i class="fa-solid fa-clock text-amber-400"></i> NAV (GPF): <span class="val">-</span></div>
             <div id="scbNavTime"><i class="fa-solid fa-clock text-amber-400"></i> NAV (SCB): <span class="val">-</span></div>
@@ -1289,13 +1289,19 @@ async function updateDashboardTimestamps() {
             if (timeVal) document.querySelector('#mfcNavTime .val').textContent = formatThaiDateTime(timeVal);
         } catch(e){}
 
-        // 2. ดึงเวลา NAV (GPF)
+        // 2. ดึงเวลา NAV (GPF) จาก Path จริงใน Firebase
         try {
-            const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_summary/current.json');
-            const gpfData = await gpfRes.json();
-            const timeVal = gpfData?.updatedAt || gpfData?.lastUpdated;
-            if (timeVal) document.querySelector('#gpfNavTime .val').textContent = formatThaiDateTime(timeVal);
-        } catch(e){}
+            const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131/lastUpdated.json');
+            const gpfTimeStr = await gpfRes.json();
+            
+            if (gpfTimeStr && typeof gpfTimeStr === 'string') {
+                document.querySelector('#gpfNavTime .val').textContent = gpfTimeStr;
+            } else {
+                document.querySelector('#gpfNavTime .val').textContent = '-';
+            }
+        } catch(e) {
+            console.error("GPF Time Fetch Error:", e);
+        }
 
         // 3. ดึงเวลา NAV (SCB)
         try {
