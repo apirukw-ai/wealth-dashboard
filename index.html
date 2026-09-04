@@ -129,12 +129,43 @@
     </div>
 </div>
         <!-- แถวที่ 1: Portfolio Gain, FIRE Forecast, Asset Allocation -->
-        <!-- 1. Portfolio Gain Card -->
-        <div id="dailyChangeCard" class="luxury-card">
-            <div style="color:#94a3b8; font-size:13px; font-weight:500;">Portfolio Gain</div>
-            <div id="dailyChangeValue" class="financial-val" style="font-size:28px; margin-top:10px;"></div>
-            <div id="dailyChangePct" class="financial-val" style="margin-top:4px; font-size:15px;"></div>
+        <!-- 1. Portfolio Gain Card (เพิ่ม 4 การ์ดย่อย) -->
+<div id="dailyChangeCard" class="luxury-card">
+    <div style="color:#94a3b8; font-size:13px; font-weight:500;">Portfolio Gain</div>
+    <div id="dailyChangeValue" class="financial-val" style="font-size:28px; margin-top:10px;">Loading...</div>
+    <div id="dailyChangePct" class="financial-val" style="margin-top:4px; font-size:15px;">-</div>
+
+    <!-- 📍 4 การ์ดย่อยแสดงผลงานแยกตามพอร์ต -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <!-- MFC -->
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">MFC</div>
+            <div id="mfcGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="mfcGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
         </div>
+
+        <!-- GPF -->
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">GPF</div>
+            <div id="gpfGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="gpfGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
+        </div>
+
+        <!-- SCB -->
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">SCB</div>
+            <div id="scbGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="scbGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
+        </div>
+
+        <!-- DIME -->
+        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">DIME</div>
+            <div id="dimeGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
+            <div id="dimeGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
+        </div>
+    </div>
+</div>
 
         <!-- 2. FIRE Forecast Card -->
         <div id="fireForecastCard" class="luxury-card">
@@ -1117,6 +1148,12 @@ async function loadDashboard() {
         gainPctEl.innerHTML = (isPositive ? '▲ ' : '▼ ') + totalProfitPct.toFixed(2) + '%';
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
+
+    // อัปเดตการ์ดย่อยทั้ง 4 พอร์ตในการ์ด Portfolio Gain
+updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyGainAmount, mfcDailyGainPct);
+updateGainUI('gpfGainVal', 'gpfGainPct', dailyProfitSum, totalGpfDailyPct);
+updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfitAmt, scbDailyProfitPct);
+updateGainUI('dimeGainVal', 'dimeGainPct', totalDailyGain, dailyProfitPct);
     
     console.log("=== WEALTH HISTORY HEALTH CHECK ===");
     console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
@@ -1345,6 +1382,35 @@ async function updateDashboardTimestamps() {
     }
     return timeStr;
 }
+
+// 📍 ฟังก์ชันช่วยปรับสี ไอคอน (+/-) และสัญลักษณ์ลูกศรของ 4 การ์ดย่อย
+function updateGainUI(valElemId, pctElemId, gainVal, gainPct) {
+    const valEl = document.getElementById(valElemId);
+    const pctEl = document.getElementById(pctElemId);
+    if (!valEl || !pctEl) return;
+
+    if (gainVal === null || gainVal === undefined || isNaN(gainVal)) {
+        valEl.textContent = '-';
+        pctEl.textContent = '-';
+        valEl.style.color = '#94a3b8';
+        pctEl.style.color = '#94a3b8';
+        return;
+    }
+
+    const isPositive = gainVal >= 0;
+    const sign = isPositive ? '+' : '';
+    const arrow = isPositive ? '▲ ' : '▼ ';
+    const color = isPositive ? '#34d399' : '#f87171'; // เขียว (#34d399) / แดง (#f87171)
+
+    // ใส่ข้อมูลยอดเงินและ %
+    valEl.textContent = `${sign}฿${Math.abs(gainVal).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    pctEl.textContent = `${arrow}${sign}${gainPct.toFixed(2)}%`;
+
+    // เปลี่ยนสีข้อความ
+    valEl.style.color = color;
+    pctEl.style.color = color;
+}    
+    
 loadDashboard();
 
 // ✅ ปิดการทำงาน Service Worker และสั่งล้าง Registration เก่าทิ้งทั้งหมด
