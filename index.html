@@ -1122,22 +1122,24 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
     const dime = dimeTotal;
     const totalWealth = mfc + gpf + scb + dime;
 
-    // 📍 คำนวณ Portfolio Gain และอัปเดตลง ID ของการ์ด Portfolio Gain
-    const totalProfit = scbProfit; // (หากมีกำไรพอร์ตอื่นก็นำมาบวกเพิ่มตรงนี้ได้)
+    // คำนวณ Portfolio Gain
+    const totalProfit = scbProfit; // (หากมีพอร์ตอื่นก็นำมาบวกเพิ่มตรงนี้ได้)
     const totalCost = scbCost;
     const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
-    const gainValEl = document.getElementById('dailyChangeValue'); // 👈 ใช้ ID นี้
-    const gainPctEl = document.getElementById('dailyChangePct');   // 👈 ใช้ ID นี้
+    // ดึง Element จาก ID บนหน้าจอ
+    const gainValEl = document.getElementById('dailyChangeValue');
+    const gainPctEl = document.getElementById('dailyChangePct');
 
     if (gainValEl) {
         const isPositive = totalProfit >= 0;
-        gainValEl.innerText = (isPositive ? '▲ ฿' : '▼ ฿') + Math.abs(totalProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        gainValEl.style.color = isPositive ? '#10b981' : '#ef4444'; // สีเขียวถ้ากำไร / สีแดงถ้าขาดทุน
+        gainValEl.innerHTML = (isPositive ? '▲ ฿' : '▼ ฿') + Math.abs(totalProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        gainValEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
+
     if (gainPctEl) {
         const isPositive = totalProfitPct >= 0;
-        gainPctEl.innerText = (isPositive ? '▲ ' : '▼ ') + totalProfitPct.toFixed(2) + '%';
+        gainPctEl.innerHTML = (isPositive ? '▲ ' : '▼ ') + totalProfitPct.toFixed(2) + '%';
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
     
