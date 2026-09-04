@@ -1156,8 +1156,11 @@ async function loadDashboard() {
     const totalWealth = mfc + gpf + scb + dimeTHB;
 
     // รวมต้นทุนและกำไรสะสมจากทุกพอร์ต (MFC + GPF + SCB + DIME)
-    const totalCost = mfcCost + gpfCost + scbCost + (dimeCostUSD * fxRate);
-    const totalProfit = totalWealth - totalCost;
+    const mfcCostVal = typeof mfcCost !== 'undefined' ? mfcCost : 0;
+    const gpfCostVal = typeof gpfCost !== 'undefined' ? gpfCost : 0;
+        
+    const totalCost = mfcCostVal + gpfCostVal + scbCost + (dimeCostUSD * fxRate);
+    const totalProfit = scbProfit + (dimeProfitUSD * fxRate);
     const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
     const gainValEl = document.getElementById('dailyChangeValue');
