@@ -544,6 +544,18 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// 📍 ฟังก์ชันดึงอัตราแลกเปลี่ยน USD/THB แบบ Real-Time
+async function getUsdThbRate() {
+    try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        return data?.rates?.THB || 36.5;
+    } catch (e) {
+        console.warn("FX Rate fetch failed, fallback to 36.5:", e);
+        return 36.5;
+    }
+}
+
 function toggleAnalytics() {
     const container = document.getElementById('analyticsContainer');
     const arrow = document.getElementById('analyticsArrow');
@@ -630,13 +642,15 @@ function renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue)
     if (valEl) valEl.innerText = '฿' + largestAssetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotal, totalWealth) {
+function renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotalUSD, totalWealth, fxRate) {
     if (!totalWealth || totalWealth === 0) return;
+
+    const dimeTotalTHB = dimeTotalUSD * fxRate;
 
     const mfcPctVal = (mfcTotal / totalWealth) * 100;
     const gpfPctVal = (gpfTotal / totalWealth) * 100;
     const scbPctVal = (scbTotal / totalWealth) * 100;
-    const dimePctVal = (dimeTotal / totalWealth) * 100;
+    const dimePctVal = (dimeTotalTHB / totalWealth) * 100;
 
     const mfcValEl = document.getElementById('mfcVal');
     if (mfcValEl) mfcValEl.innerText = '฿' + mfcTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -653,8 +667,9 @@ function renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotal, totalWealth) 
     const scbPctEl = document.getElementById('scbPct');
     if (scbPctEl) scbPctEl.innerText = scbPctVal.toFixed(2) + '%';
 
+    // 📍 แสดงมูลค่า DIME ในช่อง Asset Allocation เป็น USD
     const dimeValEl = document.getElementById('dimeVal');
-    if (dimeValEl) dimeValEl.innerText = '฿' + dimeTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (dimeValEl) dimeValEl.innerText = '$' + dimeTotalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const dimePctEl = document.getElementById('dimePct');
     if (dimePctEl) dimePctEl.innerText = dimePctVal.toFixed(2) + '%';
 
@@ -1007,26 +1022,27 @@ async function loadDashboard() {
     console.log('START LOAD (Network Only)');
     updateDashboardTimestamps();
     
+    // ดึงอัตราแลกเปลี่ยน USD/THB ปัจจุบัน
+    const fxRate = await getUsdThbRate();
+    
     let mfcTotal = 0;
     let gpfTotal = 0;
     let scbTotal = 0;
     let scbCost = 0;
     let scbProfit = 0;
-    let dimeTotal = 0;
-    let dimeCost = 0;
-    let dimeProfit = 0;
+    let dimeTotalUSD = 0;
+    let dimeCostUSD = 0;
+    let dimeProfitUSD = 0;
     let dimeAnalytics = null;
     let history = [];
     let historyDataRaw = {};
 
-    // 📍 1. ประกาศตัวแปรกำไรรายวัน
     let mfcDailyProfit = 0, mfcDailyProfitPct = 0;
     let gpfDailyProfit = 0, gpfDailyProfitPct = 0;
     let scbDailyProfit = 0, scbDailyProfitPct = 0;
-    let dimeDailyProfit = 0, dimeDailyProfitPct = 0;
+    let dimeDailyProfitUSD = 0, dimeDailyProfitPct = 0;
 
     try {
-        // 1. [NETWORK ONLY] ดึงข้อมูลสดจาก Supabase และ Firebase
         const [mfcRes, gpfRes, scbRes, dimeRes, dimeAnalyticsRes, historyRes] = await Promise.allSettled([
             fetch('https://iproktvvetsbxxmpptuj.supabase.co/rest/v1/policies?select=*', {
                 headers: {
@@ -1056,22 +1072,6 @@ async function loadDashboard() {
 
             const mfcPrevTotal = mfcTotal - mfcDailyProfit;
             mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
-
-            if (dataList.length > 0) {
-                const rawDate = dataList[0].updated_at || new Date().toISOString();
-                const dateObj = new Date(rawDate);
-
-                const day = String(dateObj.getDate()).padStart(2, '0');
-                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const yearBE = String(dateObj.getFullYear() + 543).slice(-2);
-                const hours = String(dateObj.getHours()).padStart(2, '0');
-                const mins = String(dateObj.getMinutes()).padStart(2, '0');
-
-                const mfcNavElem = document.getElementById('mfcNavDate');
-                if (mfcNavElem) {
-                    mfcNavElem.innerText = `NAV (MFC): ${day}/${month}/${yearBE} ${hours}:${mins} น.`;
-                }
-            }
         }
 
         // ---------------- สกัด GPF ----------------
@@ -1098,18 +1098,13 @@ async function loadDashboard() {
             scbDailyProfitPct = Number(scbRes.value.dailyProfitPct || 0);
         }
 
-        // ---------------- สกัด DIME ----------------
+        // ---------------- สกัด DIME (USD) ----------------
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
-            dimeTotal = Number(dimeRes.value.value || 0);
-            dimeCost = Number(dimeRes.value.cost || 0);
-            dimeProfit = Number(dimeRes.value.profit || 0);
+            dimeTotalUSD = Number(dimeRes.value.value || 0);
+            dimeCostUSD = Number(dimeRes.value.cost || 0);
+            dimeProfitUSD = Number(dimeRes.value.profit || 0);
 
-            const rawDailyProfit = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || 0);
-            
-            dimeDailyProfit = (Math.abs(rawDailyProfit) < 5000 && dimeTotal > 100000) 
-                ? rawDailyProfit * 35.5 
-                : rawDailyProfit;
-
+            dimeDailyProfitUSD = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || 0);
             dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || 0);
         }
 
@@ -1124,21 +1119,21 @@ async function loadDashboard() {
             history = Object.values(historyDataRaw);
         }
 
-        console.log('☁️ ดึงข้อมูลสดจาก Cloud สำเร็จ');
-
     } catch (err) {
         console.error('⚠️ ไม่สามารถเชื่อมต่อ Cloud ได้:', err);
     }
 
-    // 📍 2. ประมวลผลตัวเลขหลัก
+    // 📍 ประมวลผลตัวเลขหลัก (แปลง DIME เป็น THB ก่อนนำไปรวม)
     const mfc = mfcTotal;
     const gpf = gpfTotal;
     const scb = scbTotal;
-    const dime = dimeTotal;
-    const totalWealth = mfc + gpf + scb + dime;
+    const dimeTHB = dimeTotalUSD * fxRate;
+    const dimeDailyProfitTHB = dimeDailyProfitUSD * fxRate;
 
-    const totalProfit = scbProfit;
-    const totalCost = scbCost;
+    const totalWealth = mfc + gpf + scb + dimeTHB;
+
+    const totalProfit = scbProfit + (dimeProfitUSD * fxRate);
+    const totalCost = scbCost + (dimeCostUSD * fxRate);
     const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
     const gainValEl = document.getElementById('dailyChangeValue');
@@ -1156,18 +1151,15 @@ async function loadDashboard() {
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
 
-    // 📍 3. เรียกใช้อัปเดต 4 การ์ดย่อย
+    // 📍 เรียกใช้อัปเดต 4 การ์ดย่อย (DIME แสดงผลสัญลักษณ์ USD $)
     try {
-        updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct);
-        updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct);
-        updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct);
-        updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfit, dimeDailyProfitPct);
+        updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿');
+        updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct, '฿');
+        updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct, '฿');
+        updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfitUSD, dimeDailyProfitPct, '$');
     } catch (err) {
         console.warn("Sub-cards sync skipped:", err);
     }
-
-    console.log("=== WEALTH HISTORY HEALTH CHECK ===");
-    console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
 
     history.sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -1186,20 +1178,20 @@ async function loadDashboard() {
     const mfcPctVal = totalWealth > 0 ? (mfcTotal / totalWealth) * 100 : 0;
     const gpfPctVal = totalWealth > 0 ? (gpfTotal / totalWealth) * 100 : 0;
     const scbPctVal = totalWealth > 0 ? (scbTotal / totalWealth) * 100 : 0;
-    const dimePctVal = totalWealth > 0 ? (dimeTotal / totalWealth) * 100 : 0;
+    const dimePctVal = totalWealth > 0 ? (dimeTHB / totalWealth) * 100 : 0;
 
     const ports = [
         { name: 'GPF', value: gpfTotal, pct: gpfPctVal },
         { name: 'MFC', value: mfcTotal, pct: mfcPctVal },
         { name: 'SCB', value: scbTotal, pct: scbPctVal },
-        { name: 'DIME', value: dimeTotal, pct: dimePctVal }
+        { name: 'DIME', value: dimeTHB, pct: dimePctVal }
     ];
     ports.sort((a, b) => b.value - a.value);
 
     const today = new Date().toLocaleDateString('en-CA');
     const now = new Date();
                 
-    renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotal, totalWealth);
+    renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotalUSD, totalWealth, fxRate);
     renderFireForecast(totalWealth);
 
     const largestAsset = ports[0].name;
@@ -1330,7 +1322,6 @@ async function loadDashboard() {
 
 async function updateDashboardTimestamps() {
     try {
-        // 1. ดึงเวลา NAV (MFC)
         try {
             const mfcRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json');
             const mfcData = await mfcRes.json();
@@ -1338,7 +1329,6 @@ async function updateDashboardTimestamps() {
             if (timeVal) document.querySelector('#mfcNavTime .val').textContent = formatThaiDateTime(timeVal);
         } catch(e){}
 
-        // 2. ดึงเวลา NAV (GPF)
         try {
             const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131/lastUpdated.json');
             let gpfTimeStr = await gpfRes.json();
@@ -1357,7 +1347,6 @@ async function updateDashboardTimestamps() {
             console.error("GPF Time Format Error:", e);
         }
 
-        // 3. ดึงเวลา NAV (SCB)
         try {
             const scbRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json');
             const scbData = await scbRes.json();
@@ -1365,7 +1354,6 @@ async function updateDashboardTimestamps() {
             if (timeVal) document.querySelector('#scbNavTime .val').textContent = formatThaiDateTime(timeVal);
         } catch(e){}
 
-        // 4. ดึงเวลา Market Price (DIME)
         try {
             const dimeRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json');
             const dimeData = await dimeRes.json();
@@ -1391,7 +1379,8 @@ function formatThaiDateTime(timeStr) {
     return timeStr;
 }
 
-function updateGainUI(valElemId, pctElemId, gainVal, gainPct) {
+// 📍 ฟังก์ชันอัปเดต UI รองรับสัญลักษณ์ currencySymbol ('฿' หรือ '$')
+function updateGainUI(valElemId, pctElemId, gainVal, gainPct, currencySymbol = '฿') {
     const valEl = document.getElementById(valElemId);
     const pctEl = document.getElementById(pctElemId);
     if (!valEl || !pctEl) return;
@@ -1405,12 +1394,12 @@ function updateGainUI(valElemId, pctElemId, gainVal, gainPct) {
     }
 
     const isPositive = gainVal >= 0;
-    const sign = isPositive ? '+' : '';
+    const sign = isPositive ? '+' : '-';
     const arrow = isPositive ? '▲ ' : '▼ ';
     const color = isPositive ? '#34d399' : '#f87171';
 
-    valEl.textContent = `${sign}฿${Math.abs(gainVal).toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    pctEl.textContent = `${arrow}${sign}${gainPct.toFixed(2)}%`;
+    valEl.textContent = `${sign}${currencySymbol}${Math.abs(gainVal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    pctEl.textContent = `${arrow}${isPositive ? '+' : ''}${gainPct.toFixed(2)}%`;
 
     valEl.style.color = color;
     pctEl.style.color = color;
