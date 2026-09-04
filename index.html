@@ -102,22 +102,20 @@
     <!-- ================= DASHBOARD GRID ================= -->
     <div id="mainDashboard" class="dashboard-grid">
 
-        <!-- HERO CARD หลัก (Total Wealth) -->
-<div class="hero-card">
-    <div style="color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Wealth</div>
-    <div id="totalWealth" class="financial-val" style="font-size: clamp(28px, 6vw, 48px); margin-top: 8px; line-height: 1.1; word-break: break-all;">Loading...</div>
-</div>
+        <div class="hero-card"> <!-- 1. เปิดนอกสุด -->
+    <div style="color: #94a3b8; font-size: 13px; ...">Total Wealth</div> <!-- ปิดในตัว -->
     
-    <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-        <!-- ฝั่งซ้าย: ป้าย LIVE DATA และ FIRE Progress -->
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-            <div style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">
-                ● LIVE DATA
-            </div>
-            <div id="heroFireBadge" style="color: #38bdf8; font-size: 14px; font-weight: 600;">
-                🎯 --% to ฿2M
-            </div>
+    <div id="totalWealth" class="financial-val" style="...">Loading...</div> <!-- ปิดในตัว -->
+
+    <div style="margin-top: 16px; ..."> <!-- 2. เปิดกล่องเวลา -->
+        <div style="font-size: 11px; ..." class="text-slate-400 space-y-1">
+            <div id="mfcNavTime"><i class="..."></i> NAV (MFC): <span class="val">-</span></div>
+            <div id="gpfNavTime"><i class="..."></i> NAV (GPF): <span class="val">-</span></div>
+            <div id="scbNavTime"><i class="..."></i> NAV (SCB): <span class="val">-</span></div>
+            <div id="dimePriceTime"><i class="..."></i> Market Price (DIME): <span class="val">-</span></div>
         </div>
+    </div> <!-- 📍 ปิดกล่องเวลา (ตัวที่ 1) -->
+</div> <!-- 📍 ปิด hero-card นอกสุด (ตัวที่ 2) -->
 
         <!-- ฝั่งขวา: -->
         <!-- ✅ โครงสร้างใหม่ที่ปรับปรุงแล้ว -->
@@ -1290,19 +1288,12 @@ async function updateDashboardTimestamps() {
             if (timeVal) document.querySelector('#mfcNavTime .val').textContent = formatThaiDateTime(timeVal);
         } catch(e){}
 
-        // 2. ดึงเวลา NAV (GPF) จาก Path จริงใน Firebase
+        // 2. ดึงเวลา NAV (GPF)
         try {
             const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131/lastUpdated.json');
             const gpfTimeStr = await gpfRes.json();
-            
-            if (gpfTimeStr && typeof gpfTimeStr === 'string') {
-                document.querySelector('#gpfNavTime .val').textContent = gpfTimeStr;
-            } else {
-                document.querySelector('#gpfNavTime .val').textContent = '-';
-            }
-        } catch(e) {
-            console.error("GPF Time Fetch Error:", e);
-        }
+            if (gpfTimeStr) document.querySelector('#gpfNavTime .val').textContent = gpfTimeStr;
+        } catch(e){}
 
         // 3. ดึงเวลา NAV (SCB)
         try {
@@ -1324,7 +1315,6 @@ async function updateDashboardTimestamps() {
         console.error("Timestamp Update Error:", err);
     }
 }
-
         // ฟังก์ชันแปลงรูปแบบ ISO String เป็นวันที่ + เวลาภาษาไทย
         function formatThaiDateTime(timeStr) {
     if (!timeStr) return '-';
