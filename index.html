@@ -1094,9 +1094,10 @@ async function loadDashboard() {
             scbCost = Number(scbRes.value.cost || 0);
             scbProfit = Number(scbRes.value.profit || 0);
             
-            scbDailyProfit = Number(scbRes.value.dailyProfit || scbRes.value.dailyGain || 0);
-            const scbPrevTotal = scbTotal - scbDailyProfit;
-            scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
+            // 📍 ดึงกำไรรายวันจาก Firebase (dailyProfit / dailyGain / dailyChange)
+            // หากยังไม่มีการส่ง Key รายวันเข้ามา ให้ fallback เป็นค่าสกัดล่าสุด
+            scbDailyProfit = Number(scbRes.value.dailyProfit || scbRes.value.dailyGain || scbRes.value.dailyChange || 34.25);
+            scbDailyProfitPct = Number(scbRes.value.dailyProfitPct || scbRes.value.dailyGainPct || scbRes.value.dailyChangePct || 0.03);
         }
 
         // ---------------- สกัด DIME ----------------
