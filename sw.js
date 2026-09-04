@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wealth-terminal-v1';
+const CACHE_NAME = 'wealth-terminal-v2'; // 👈 อัปเดต Version เพื่อล้าง Cache เก่า
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -8,7 +8,7 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
-// Install Event - โหลดไฟล์พื้นฐานลง Cache
+// 1. Install Event - บันทึกไฟล์ Assets ลง Cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -18,7 +18,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate Event - ลบ Cache เก่า
+// 2. Activate Event - ลบ Cache เก่าออกอัตโนมัติ
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -30,33 +30,31 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch Event - ดึงจาก Network ก่อน ถ้าไม่มีเน็ตค่อยดึงจาก Cache
+// 3. Fetch Event
 self.addEventListener('fetch', (event) => {
-  // กรองข้าม Request ที่มาจาก Extension ให้ทำงานเฉพาะ HTTP/HTTPS
   if (!event.request.url.startsWith('http')) return;
 
-  // 1. ถ้าเป็นการเรียก API ไปยัง Supabase หรือ Firebase ไม่ต้อง Cache ให้ดึงข้อมูลสดจาก Network เสมอ
+  // 🚫 1. API Calls (Supabase / Firebase) -> Network Only เสมอ (ห้าม Cache ตัวเลข)
   if (event.request.url.includes('supabase.co') || event.request.url.includes('firebasedatabase.app')) {
     event.respondWith(fetch(event.request));
     return;
   }
 
-  // 2. สำหรับไฟล์อื่นๆ (HTML, JS, CSS) ให้พยายามดึงจาก Network ก่อน (Network First)
+  // ⚡ 2. Static Assets (HTML, CSS, JS, Libraries) -> Stale-While-Revalidate
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // บันทึกลง Cache เฉพาะ Request ที่สำเร็จ
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        // ถ้าไม่มีสัญญาณอินเทอร์เน็ต ค่อยไปดึงไฟล์จาก Cache มาแสดงแทน
-        return caches.match(event.request);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((cachedResponse) => {
+        // ดึงไฟล์ใหม่จาก Network มาอัปเดตลง Cache เบื้องหลัง
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            cache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        }).catch(() => cachedResponse);
+
+        // แสดงผลจาก Cache ทันที ถ้าไม่มีใน Cache ค่อยรอจาก Network
+        return cachedResponse || fetchPromise;
+      });
+    })
   );
 });
