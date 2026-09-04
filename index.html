@@ -1325,16 +1325,15 @@ async function updateDashboardTimestamps() {
         // ฟังก์ชันแปลงรูปแบบ ISO String เป็นวันที่ + เวลาภาษาไทย
         function formatThaiDateTime(timeStr) {
     if (!timeStr) return '-';
-    // หากเป็น ISO String ให้แปลงเป็นวันที่ไทย
     if (timeStr.includes('T') || timeStr.includes('-')) {
         const date = new Date(timeStr);
         if (!isNaN(date.getTime())) {
-            const thaiDate = date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' });
-            const thaiTime = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            // บังคับแปลงเป็นโซนเวลาไทย (Asia/Bangkok)
+            const thaiDate = date.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', year: '2-digit' });
+            const thaiTime = date.toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
             return `${thaiDate} ${thaiTime} น.`;
         }
     }
-    // หากเป็นข้อความปกติอยู่แล้ว ให้ส่งกลับทันที
     return timeStr;
 }
 loadDashboard();
