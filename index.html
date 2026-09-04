@@ -1295,11 +1295,19 @@ async function updateDashboardTimestamps() {
             let gpfTimeStr = await gpfRes.json();
             
             if (gpfTimeStr) {
-                // 📍 เปลี่ยนจาก 2569 เป็น 69 ให้ตรงรูปแบบกับแอปอื่น
-                gpfTimeStr = gpfTimeStr.replace('/2569', '/69').replace('2569', '69');
+                // 📍 ดึงเฉพาะข้อความในวงเล็บ Auto (เช่น "04/09 11:39 น.")
+                const match = gpfTimeStr.match(/\((?:Auto\s*)?([^)]+)\)/i);
+                if (match && match[1]) {
+                    gpfTimeStr = match[1].trim(); // ได้ผลลัพธ์เป็น: 04/09 11:39 น.
+                } else {
+                    // หากไม่มีวงเล็บ ให้ตัด 2569 เป็น 69 แบบปกติ
+                    gpfTimeStr = gpfTimeStr.replace('/2569', '/69').replace('2569', '69');
+                }
                 document.querySelector('#gpfNavTime .val').textContent = gpfTimeStr;
             }
-        } catch(e){}
+        } catch(e) {
+            console.error("GPF Time Format Error:", e);
+        }
 
         // 3. ดึงเวลา NAV (SCB)
         try {
