@@ -1055,7 +1055,7 @@ async function loadDashboard() {
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
         ]);
 
-        // 📍 1. ประกาศตัวแปรไว้นอก try/catch เพื่อป้องกัน ReferenceError
+        // 📍 1. ประกาศตัวแปรกำไรรายวันไว้นอก try/catch เพื่อป้องกัน ReferenceError
         let mfcDailyProfit = 0, mfcDailyProfitPct = 0;
         let gpfDailyProfit = 0, gpfDailyProfitPct = 0;
         let scbDailyProfit = 0, scbDailyProfitPct = 0;
