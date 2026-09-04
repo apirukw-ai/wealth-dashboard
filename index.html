@@ -1267,25 +1267,6 @@ if (mfcRes.status === 'fulfilled' && mfcRes.value) {
     const totalWealthEl = document.getElementById('totalWealth');
     if (totalWealthEl) totalWealthEl.innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    const dailyValEl = document.getElementById('dailyChangeValue');
-    const dailyPctEl = document.getElementById('dailyChangePct');
-
-    if (yesterdayWealth === null) {
-        if (dailyValEl) { dailyValEl.innerText = "Waiting for tomorrow's snapshot..."; dailyValEl.style.color = '#94a3b8'; dailyValEl.style.fontSize = '15px'; }
-        if (dailyPctEl) { dailyPctEl.innerText = "Waiting for tomorrow's snapshot..."; dailyPctEl.style.color = '#94a3b8'; dailyPctEl.style.fontSize = '13px'; }
-    } else {
-        if (dailyValEl) {
-            dailyValEl.innerText = (dailyChange >= 0 ? '▲ ฿' : '▼ ฿') + Math.abs(dailyChange).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            dailyValEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171';
-            dailyValEl.style.fontSize = '26px';
-        }
-        if (dailyPctEl) {
-            dailyPctEl.innerText = (dailyChange >= 0 ? '▲ ' : '▼ ') + dailyChangePct.toFixed(2) + '%';
-            dailyPctEl.style.color = dailyChange >= 0 ? '#34d399' : '#f87171';
-            dailyPctEl.style.fontSize = '14px';
-        }
-    }
-
     const lastUpdEl = document.getElementById('lastUpdated');
     if (lastUpdEl) lastUpdEl.innerText = 'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
