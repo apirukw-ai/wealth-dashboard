@@ -1019,7 +1019,7 @@ async function loadDashboard() {
     let history = [];
     let historyDataRaw = {};
 
-    // 📍 1. ประกาศตัวแปรกำไรรายวันไว้นอก try/catch เพื่อให้อ่านค่าได้ทั่วฟังก์ชัน
+    // 📍 1. ประกาศตัวแปรกำไรรายวัน
     let mfcDailyProfit = 0, mfcDailyProfitPct = 0;
     let gpfDailyProfit = 0, gpfDailyProfitPct = 0;
     let scbDailyProfit = 0, scbDailyProfitPct = 0;
@@ -1094,7 +1094,6 @@ async function loadDashboard() {
             scbCost = Number(scbRes.value.cost || 0);
             scbProfit = Number(scbRes.value.profit || 0);
             
-            // 📍 อ่านค่ากำไรรายวันสดจาก Firebase โดยตรง
             scbDailyProfit = Number(scbRes.value.dailyProfit || 0);
             scbDailyProfitPct = Number(scbRes.value.dailyProfitPct || 0);
         }
@@ -1105,16 +1104,15 @@ async function loadDashboard() {
             dimeCost = Number(dimeRes.value.cost || 0);
             dimeProfit = Number(dimeRes.value.profit || 0);
 
-            // ดึงค่า dailyProfit หรือ todayGain จาก Firebase
             const rawDailyProfit = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || 0);
             
-            // แปลงค่า USD เป็น THB หากเป็นยอดดอลลาร์
             dimeDailyProfit = (Math.abs(rawDailyProfit) < 5000 && dimeTotal > 100000) 
                 ? rawDailyProfit * 35.5 
                 : rawDailyProfit;
 
             dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || 0);
         }
+
         // ---------------- สกัด DIME Analytics ----------------
         if (dimeAnalyticsRes.status === 'fulfilled') {
             dimeAnalytics = dimeAnalyticsRes.value;
@@ -1139,12 +1137,10 @@ async function loadDashboard() {
     const dime = dimeTotal;
     const totalWealth = mfc + gpf + scb + dime;
 
-    // คำนวณ Portfolio Gain รวม
     const totalProfit = scbProfit;
     const totalCost = scbCost;
     const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
-    // ดึง Element จาก ID บนหน้าจอ
     const gainValEl = document.getElementById('dailyChangeValue');
     const gainPctEl = document.getElementById('dailyChangePct');
 
@@ -1160,7 +1156,7 @@ async function loadDashboard() {
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
 
-    // 📍 3. เรียกใช้อัปเดต 4 การ์ดย่อย พร้อม catch ปิดบล็อกถูกต้อง
+    // 📍 3. เรียกใช้อัปเดต 4 การ์ดย่อย
     try {
         updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct);
         updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct);
@@ -1419,29 +1415,6 @@ function updateGainUI(valElemId, pctElemId, gainVal, gainPct) {
     valEl.style.color = color;
     pctEl.style.color = color;
 }    
-
-// ==========================================
-        // 📍 อัปเดต UI สำหรับ DIME (ต้องอยู่ข้างใน loadDashboard)
-        // ==========================================
-        const dimeDailyEl = document.getElementById('dimeDailyVal') || document.getElementById('dimeDailyGain');
-        const dimeDailyPctEl = document.getElementById('dimeDailyPct') || document.getElementById('dimeDailyGainPct');
-
-        if (dimeDailyEl) {
-            const prefix = dimeDailyProfit >= 0 ? '+' : '-';
-            dimeDailyEl.innerText = `${prefix}฿${Math.abs(dimeDailyProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            dimeDailyEl.style.color = dimeDailyProfit >= 0 ? '#10b981' : '#ef4444';
-        }
-
-        if (dimeDailyPctEl) {
-            const prefix = dimeDailyProfitPct >= 0 ? '+' : '';
-            dimeDailyPctEl.innerText = `(${prefix}${dimeDailyProfitPct.toFixed(2)}%)`;
-            dimeDailyPctEl.style.color = dimeDailyProfitPct >= 0 ? '#10b981' : '#ef4444';
-        }
-
-    } catch (error) {
-        console.error("Error loading dashboard data:", error);
-    }
-} // 👈 ปีกกาปิดจบฟังก์ชัน loadDashboard()
 
 // สั่งให้ฟังก์ชันเริ่มทำงาน
 loadDashboard();
