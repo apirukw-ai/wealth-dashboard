@@ -1149,15 +1149,37 @@ async function loadDashboard() {
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
 
-    // ปรับแก้จุดดึงข้อมูลเข้า 4 การ์ดย่อย พร้อมระบบป้องกัน Error (Fallback to 0)
-try {
-    updateGainUI('mfcGainVal', 'mfcGainPct', mfcData?.dailyGain ?? 0, mfcData?.dailyGainPct ?? 0);
-    updateGainUI('gpfGainVal', 'gpfGainPct', gpfData?.dailyGain ?? 0, gpfData?.dailyGainPct ?? 0);
-    updateGainUI('scbGainVal', 'scbGainPct', scbData?.dailyGain ?? 0, scbData?.dailyGainPct ?? 0);
-    updateGainUI('dimeGainVal', 'dimeGainPct', dimeData?.dailyGain ?? 0, dimeData?.dailyGainPct ?? 0);
-} catch (err) {
-    console.warn("Portfolio Gain sub-cards update skipped:", err);
-}
+    // 📍 ดึงค่าจากตัวเลข NAV/กำไรรายวัน บนหน้าจอส่งเข้า 4 การ์ดย่อยโดยตรง
+        try {
+            // ฟังก์ชันช่วยแกะตัวเลขจากข้อความบนหน้าจอ (เช่น "+฿1,250.00 (+0.50%)" -> ยอดเงิน และ %)
+            const parseValAndPct = (elementId) => {
+                const el = document.getElementById(elementId);
+                if (!el || !el.innerText) return { val: 0, pct: 0 };
+                const text = el.innerText;
+                const matches = text.match(/([+-]?[\d,]+\.?\d*)\s*\((.*?)\)/);
+                if (matches) {
+                    const val = parseFloat(matches[1].replace(/,/g, '')) || 0;
+                    const pct = parseFloat(matches[2].replace(/[%+]/g, '')) || 0;
+                    return { val, pct };
+                }
+                return { val: 0, pct: 0 };
+            };
+
+            // ดึงค่าของแต่ละพอร์ตจาก Element สรุปรายวันที่มีในระบบ
+            const mfc = parseValAndPct('mfcDailySummary');
+            const gpf = parseValAndPct('gpfDailySummary');
+            const scb = parseValAndPct('scbDailySummary');
+            const dime = parseValAndPct('dimeDailySummary');
+
+            // สั่งอัปเดตลง 4 การ์ดย่อย
+            updateGainUI('mfcGainVal', 'mfcGainPct', mfc.val, mfc.pct);
+            updateGainUI('gpfGainVal', 'gpfGainPct', gpf.val, gpf.pct);
+            updateGainUI('scbGainVal', 'scbGainPct', scb.val, scb.pct);
+            updateGainUI('dimeGainVal', 'dimeGainPct', dime.val, dime.pct);
+
+        } catch (err) {
+            console.warn("Sub-cards sync skipped:", err);
+        }
     
     console.log("=== WEALTH HISTORY HEALTH CHECK ===");
     console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
