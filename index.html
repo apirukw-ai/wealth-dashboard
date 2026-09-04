@@ -118,10 +118,13 @@
             </div>
         </div>
 
-        <!-- ฝั่งขวา: เวลาอัปเดตระบบ + NAV (MFC) เพียงชุดเดียว -->
-        <div style="text-align: right;">
-            <div id="lastUpdated" style="color: #94a3b8; font-size: 12px; font-weight: 500;">Updated --:-- PM</div>
-            <div id="mfcNavDate" style="color: #64748b; font-size: 11px; margin-top: 2px;">NAV (MFC): --/--/-- --:-- น.</div>
+        <!-- ฝั่งขวา: -->
+        <!-- ✅ โครงสร้างใหม่ที่ปรับปรุงแล้ว -->
+        <div class="nav-timestamps-container text-xs text-slate-400 space-y-1">
+            <div id="mfcNavTime"><i class="fa-solid fa-clock text-amber-400"></i> NAV (MFC): <span class="val">-</span></div>
+            <div id="gpfNavTime"><i class="fa-solid fa-clock text-amber-400"></i> NAV (GPF): <span class="val">-</span></div>
+            <div id="scbNavTime"><i class="fa-solid fa-clock text-amber-400"></i> NAV (SCB): <span class="val">-</span></div>
+            <div id="dimePriceTime"><i class="fa-solid fa-clock text-blue-400"></i> Market Price (DIME): <span class="val">-</span></div>
         </div>
     </div>
 </div>
@@ -990,7 +993,9 @@ function openTracker(url) {
 
 async function loadDashboard() {
     console.log('START LOAD (Network Only)');
-
+    // 📍 วางคำสั่งเรียกอัปเดตเวลาตรงบรรทัดนี้ได้เลยครับ
+    updateDashboardTimestamps();
+    
     let mfcTotal = 0;
     let gpfTotal = 0;
     let scbTotal = 0;
@@ -1274,7 +1279,48 @@ async function loadDashboard() {
     const chartSumEl = document.getElementById('chartSummary');
     if (chartSumEl) chartSumEl.innerText = history.length < 2 ? 'Collecting data for trend analysis' : 'Tracking ' + history.length + ' Snapshots';
 }
+async function updateDashboardTimestamps() {
+            try {
+                // 1. ดึงเวลา NAV (GPF)
+                const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_summary/current.json');
+                const gpfData = await gpfRes.json();
+                if (gpfData && gpfData.updatedAt) {
+                    document.querySelector('#gpfNavTime .val').textContent = formatThaiDateTime(gpfData.updatedAt);
+                }
 
+                // 2. ดึงเวลา NAV (SCB)
+                const scbRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json');
+                const scbData = await scbRes.json();
+                if (scbData && scbData.updatedAt) {
+                    document.querySelector('#scbNavTime .val').textContent = formatThaiDateTime(scbData.updatedAt);
+                }
+
+                // 3. ดึงเวลา Market Price (DIME)
+                const dimeRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json');
+                const dimeData = await dimeRes.json();
+                if (dimeData && dimeData.updatedAt) {
+                    document.querySelector('#dimePriceTime .val').textContent = formatThaiDateTime(dimeData.updatedAt);
+                }
+
+                // 4. ดึงเวลา NAV (MFC)
+                const mfcRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json');
+                const mfcData = await mfcRes.json();
+                if (mfcData && mfcData.updatedAt) {
+                    document.querySelector('#mfcNavTime .val').textContent = formatThaiDateTime(mfcData.updatedAt);
+                }
+            } catch (err) {
+                console.error("Timestamp Update Error:", err);
+            }
+        }
+
+        // ฟังก์ชันแปลงรูปแบบ ISO String เป็นวันที่ + เวลาภาษาไทย
+        function formatThaiDateTime(isoString) {
+            if (!isoString) return '-';
+            const date = new Date(isoString);
+            const thaiDate = date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' });
+            const thaiTime = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            return `${thaiDate} ${thaiTime} น.`;
+        }
 loadDashboard();
 
 // ✅ ปิดการทำงาน Service Worker และสั่งล้าง Registration เก่าทิ้งทั้งหมด
