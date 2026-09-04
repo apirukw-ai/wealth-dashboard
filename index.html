@@ -1055,15 +1055,29 @@ async function loadDashboard() {
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
         ]);
 
-        // สกัด MFC จาก Supabase
+        // 📍 ประกาศตัวแปรกำไรรายวันใน Scope หลักก่อน (ป้องกัน ReferenceError)
+        let mfcDailyProfit = 0, mfcDailyProfitPct = 0;
+        let gpfDailyProfit = 0, gpfDailyProfitPct = 0;
+        let scbDailyProfit = 0, scbDailyProfitPct = 0;
+        let dimeDailyProfit = 0, dimeDailyProfitPct = 0;
+
+        // 1. สกัด MFC
         if (mfcRes.status === 'fulfilled' && mfcRes.value) {
             const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
 
             mfcTotal = dataList.reduce((sum, item) => {
                 const units = parseFloat(item.units || 0);
                 const nav = parseFloat(item.nav || item.navToday || 0);
+                const navPrev = parseFloat(item.navPrev || item.navYesterday || item.costNav || nav);
+                
+                // คำนวณกำไรรายวันของ MFC
+                mfcDailyProfit += (nav - navPrev) * units;
+                
                 return sum + (units * nav);
             }, 0);
+
+            const mfcPrevTotal = mfcTotal - mfcDailyProfit;
+            mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
 
             if (dataList.length > 0) {
                 const rawDate = dataList[0].updated_at || new Date().toISOString();
@@ -1082,25 +1096,40 @@ async function loadDashboard() {
             }
         }
 
-        // สกัด GPF
+        // 2. สกัด GPF
         if (gpfRes.status === 'fulfilled' && gpfRes.value?.funds) {
             gpfRes.value.funds.forEach(f => {
-                gpfTotal += Number(f.units || 0) * Number(f.currentNav || 0);
+                const units = Number(f.units || 0);
+                const currentNav = Number(f.currentNav || 0);
+                const prevNav = Number(f.prevNav || f.avgNav || currentNav);
+                
+                gpfTotal += units * currentNav;
+                gpfDailyProfit += (currentNav - prevNav) * units;
             });
+            const gpfPrevTotal = gpfTotal - gpfDailyProfit;
+            gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
         }
 
-        // สกัด SCB
+        // 3. สกัด SCB
         if (scbRes.status === 'fulfilled' && scbRes.value) {
             scbTotal = Number(scbRes.value.value || 0);
             scbCost = Number(scbRes.value.cost || 0);
             scbProfit = Number(scbRes.value.profit || 0);
+            
+            scbDailyProfit = Number(scbRes.value.dailyProfit || scbRes.value.dailyGain || 0);
+            const scbPrevTotal = scbTotal - scbDailyProfit;
+            scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
         }
 
-        // สกัด DIME
+        // 4. สกัด DIME
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
             dimeTotal = Number(dimeRes.value.value || 0);
-            dimeCost = Number(dimeRes.value.cost || 0);     // 👈 สกัด Cost สด
-            dimeProfit = Number(dimeRes.value.profit || 0); // 👈 สกัด Profit สด
+            dimeCost = Number(dimeRes.value.cost || 0);
+            dimeProfit = Number(dimeRes.value.profit || 0);
+            
+            dimeDailyProfit = Number(dimeRes.value.dailyProfit || dimeRes.value.dailyGain || 0);
+            const dimePrevTotal = dimeTotal - dimeDailyProfit;
+            dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfit / dimePrevTotal) * 100 : 0;
         }
 
         // สกัด DIME Analytics
@@ -1120,7 +1149,6 @@ async function loadDashboard() {
         console.error('⚠️ ไม่สามารถเชื่อมต่อ Cloud ได้:', err);
     }
 
-    // ❌ ตัดส่วน localStorage.setItem และ if (!isLoadedFromNetwork) ออกทั้งหมด
     // 3. ประมวลผลตัวเลขหลัก
     const mfc = mfcTotal;
     const gpf = gpfTotal;
@@ -1128,8 +1156,8 @@ async function loadDashboard() {
     const dime = dimeTotal;
     const totalWealth = mfc + gpf + scb + dime;
 
-    // คำนวณ Portfolio Gain
-    const totalProfit = scbProfit; // (หากมีพอร์ตอื่นก็นำมาบวกเพิ่มตรงนี้ได้)
+    // คำนวณ Portfolio Gain รวม
+    const totalProfit = scbProfit;
     const totalCost = scbCost;
     const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
@@ -1149,37 +1177,15 @@ async function loadDashboard() {
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
 
-    // 📍 ดึงค่าจากตัวเลข NAV/กำไรรายวัน บนหน้าจอส่งเข้า 4 การ์ดย่อยโดยตรง
-        try {
-            // ฟังก์ชันช่วยแกะตัวเลขจากข้อความบนหน้าจอ (เช่น "+฿1,250.00 (+0.50%)" -> ยอดเงิน และ %)
-            const parseValAndPct = (elementId) => {
-                const el = document.getElementById(elementId);
-                if (!el || !el.innerText) return { val: 0, pct: 0 };
-                const text = el.innerText;
-                const matches = text.match(/([+-]?[\d,]+\.?\d*)\s*\((.*?)\)/);
-                if (matches) {
-                    const val = parseFloat(matches[1].replace(/,/g, '')) || 0;
-                    const pct = parseFloat(matches[2].replace(/[%+]/g, '')) || 0;
-                    return { val, pct };
-                }
-                return { val: 0, pct: 0 };
-            };
-
-            // ดึงค่าของแต่ละพอร์ตจาก Element สรุปรายวันที่มีในระบบ
-            const mfc = parseValAndPct('mfcDailySummary');
-            const gpf = parseValAndPct('gpfDailySummary');
-            const scb = parseValAndPct('scbDailySummary');
-            const dime = parseValAndPct('dimeDailySummary');
-
-            // สั่งอัปเดตลง 4 การ์ดย่อย
-            updateGainUI('mfcGainVal', 'mfcGainPct', mfc.val, mfc.pct);
-            updateGainUI('gpfGainVal', 'gpfGainPct', gpf.val, gpf.pct);
-            updateGainUI('scbGainVal', 'scbGainPct', scb.val, scb.pct);
-            updateGainUI('dimeGainVal', 'dimeGainPct', dime.val, dime.pct);
-
-        } catch (err) {
-            console.warn("Sub-cards sync skipped:", err);
-        }
+    // 📍 สั่งอัปเดตลง 4 การ์ดย่อยโดยใช้ตัวแปรที่คำนวณไว้จริงโดยตรง
+    try {
+        updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct);
+        updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct);
+        updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct);
+        updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfit, dimeDailyProfitPct);
+    } catch (err) {
+        console.warn("Sub-cards sync skipped:", err);
+    }
     
     console.log("=== WEALTH HISTORY HEALTH CHECK ===");
     console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
