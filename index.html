@@ -1101,20 +1101,20 @@ async function loadDashboard() {
 
         // ---------------- สกัด DIME ----------------
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
-            // อัตราแลกเปลี่ยน USD -> THB (ดึงจากตัวแปรในระบบ หรือใช้ 35.5 เป็นค่ามาตรฐาน)
-            const exchangeRate = typeof usdToThbRate !== 'undefined' ? usdToThbRate : 35.5;
-
-            // มูลค่าพอร์ต DIME แปลงเป็นเงินบาท
-            dimeTotal = Number(dimeRes.value.value || 0) * exchangeRate;
-            dimeCost = Number(dimeRes.value.cost || 0) * exchangeRate;
-            dimeProfit = Number(dimeRes.value.profit || 0) * exchangeRate;
+            dimeTotal = Number(dimeRes.value.value || 0);
+            dimeCost = Number(dimeRes.value.cost || 0);
+            dimeProfit = Number(dimeRes.value.profit || 0);
             
-            // 📍 ดึง dailyProfit (USD) แปลงเป็น THB
-            const dailyProfitUsd = Number(dimeRes.value.dailyProfit || 0);
-            dimeDailyProfit = dailyProfitUsd * exchangeRate;
+            // 📍 อ่านค่ากำไรรายวันจาก Firebase โดยตรง (ไม่ต้องคูณ อัตราแลกเปลี่ยน ซ้ำ)
+            dimeDailyProfit = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || dimeRes.value.dailyGain || 0);
             
-            // เปอร์เซ็นต์กำไรรายวัน
-            dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || 0);
+            // อ่านค่า % กำไรรายวัน (หากไม่มี ให้คำนวณจากยอดรวมก่อนหน้า)
+            if (dimeRes.value.dailyProfitPct !== undefined) {
+                dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || 0);
+            } else {
+                const dimePrevTotal = dimeTotal - dimeDailyProfit;
+                dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfit / dimePrevTotal) * 100 : 0;
+            }
         }
 
         // ---------------- สกัด DIME Analytics ----------------
