@@ -1280,47 +1280,59 @@ async function loadDashboard() {
     if (chartSumEl) chartSumEl.innerText = history.length < 2 ? 'Collecting data for trend analysis' : 'Tracking ' + history.length + ' Snapshots';
 }
 async function updateDashboardTimestamps() {
-            try {
-                // 1. ดึงเวลา NAV (GPF)
-                const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_summary/current.json');
-                const gpfData = await gpfRes.json();
-                if (gpfData && gpfData.updatedAt) {
-                    document.querySelector('#gpfNavTime .val').textContent = formatThaiDateTime(gpfData.updatedAt);
-                }
+    try {
+        // 1. ดึงเวลา NAV (MFC)
+        try {
+            const mfcRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json');
+            const mfcData = await mfcRes.json();
+            const timeVal = mfcData?.updatedAt || mfcData?.lastUpdated;
+            if (timeVal) document.querySelector('#mfcNavTime .val').textContent = formatThaiDateTime(timeVal);
+        } catch(e){}
 
-                // 2. ดึงเวลา NAV (SCB)
-                const scbRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json');
-                const scbData = await scbRes.json();
-                if (scbData && scbData.updatedAt) {
-                    document.querySelector('#scbNavTime .val').textContent = formatThaiDateTime(scbData.updatedAt);
-                }
+        // 2. ดึงเวลา NAV (GPF)
+        try {
+            const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_summary/current.json');
+            const gpfData = await gpfRes.json();
+            const timeVal = gpfData?.updatedAt || gpfData?.lastUpdated;
+            if (timeVal) document.querySelector('#gpfNavTime .val').textContent = formatThaiDateTime(timeVal);
+        } catch(e){}
 
-                // 3. ดึงเวลา Market Price (DIME)
-                const dimeRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json');
-                const dimeData = await dimeRes.json();
-                if (dimeData && dimeData.updatedAt) {
-                    document.querySelector('#dimePriceTime .val').textContent = formatThaiDateTime(dimeData.updatedAt);
-                }
+        // 3. ดึงเวลา NAV (SCB)
+        try {
+            const scbRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json');
+            const scbData = await scbRes.json();
+            const timeVal = scbData?.updatedAt || scbData?.lastUpdated;
+            if (timeVal) document.querySelector('#scbNavTime .val').textContent = formatThaiDateTime(timeVal);
+        } catch(e){}
 
-                // 4. ดึงเวลา NAV (MFC)
-                const mfcRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json');
-                const mfcData = await mfcRes.json();
-                if (mfcData && mfcData.updatedAt) {
-                    document.querySelector('#mfcNavTime .val').textContent = formatThaiDateTime(mfcData.updatedAt);
-                }
-            } catch (err) {
-                console.error("Timestamp Update Error:", err);
-            }
-        }
+        // 4. ดึงเวลา Market Price (DIME)
+        try {
+            const dimeRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json');
+            const dimeData = await dimeRes.json();
+            const timeVal = dimeData?.updatedAt || dimeData?.lastUpdated;
+            if (timeVal) document.querySelector('#dimePriceTime .val').textContent = formatThaiDateTime(timeVal);
+        } catch(e){}
+
+    } catch (err) {
+        console.error("Timestamp Update Error:", err);
+    }
+}
 
         // ฟังก์ชันแปลงรูปแบบ ISO String เป็นวันที่ + เวลาภาษาไทย
-        function formatThaiDateTime(isoString) {
-            if (!isoString) return '-';
-            const date = new Date(isoString);
+        function formatThaiDateTime(timeStr) {
+    if (!timeStr) return '-';
+    // หากเป็น ISO String ให้แปลงเป็นวันที่ไทย
+    if (timeStr.includes('T') || timeStr.includes('-')) {
+        const date = new Date(timeStr);
+        if (!isNaN(date.getTime())) {
             const thaiDate = date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: '2-digit' });
             const thaiTime = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
             return `${thaiDate} ${thaiTime} น.`;
         }
+    }
+    // หากเป็นข้อความปกติอยู่แล้ว ให้ส่งกลับทันที
+    return timeStr;
+}
 loadDashboard();
 
 // ✅ ปิดการทำงาน Service Worker และสั่งล้าง Registration เก่าทิ้งทั้งหมด
