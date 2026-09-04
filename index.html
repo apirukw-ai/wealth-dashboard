@@ -1149,11 +1149,15 @@ async function loadDashboard() {
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
 
-    // ✅ แก้ไขเป็นโค้ดชุดนี้ (ใช้ตัวแปรจากก้อนข้อมูลที่ fetch มาแล้ว):
-updateGainUI('mfcGainVal', 'mfcGainPct', mfcData?.dailyGain || 0, mfcData?.dailyGainPct || 0);
-updateGainUI('gpfGainVal', 'gpfGainPct', gpfData?.dailyGain || 0, gpfData?.dailyGainPct || 0);
-updateGainUI('scbGainVal', 'scbGainPct', scbData?.dailyGain || 0, scbData?.dailyGainPct || 0);
-updateGainUI('dimeGainVal', 'dimeGainPct', dimeData?.dailyGain || 0, dimeData?.dailyGainPct || 0);
+    // ปรับแก้จุดดึงข้อมูลเข้า 4 การ์ดย่อย พร้อมระบบป้องกัน Error (Fallback to 0)
+try {
+    updateGainUI('mfcGainVal', 'mfcGainPct', mfcData?.dailyGain ?? 0, mfcData?.dailyGainPct ?? 0);
+    updateGainUI('gpfGainVal', 'gpfGainPct', gpfData?.dailyGain ?? 0, gpfData?.dailyGainPct ?? 0);
+    updateGainUI('scbGainVal', 'scbGainPct', scbData?.dailyGain ?? 0, scbData?.dailyGainPct ?? 0);
+    updateGainUI('dimeGainVal', 'dimeGainPct', dimeData?.dailyGain ?? 0, dimeData?.dailyGainPct ?? 0);
+} catch (err) {
+    console.warn("Portfolio Gain sub-cards update skipped:", err);
+}
     
     console.log("=== WEALTH HISTORY HEALTH CHECK ===");
     console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
