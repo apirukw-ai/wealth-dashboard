@@ -1100,29 +1100,21 @@ async function loadDashboard() {
         }
 
         // ---------------- สกัด DIME ----------------
-if (dimeRes.status === 'fulfilled' && dimeRes.value) {
-    dimeTotal = Number(dimeRes.value.value || 0);
-    dimeCost = Number(dimeRes.value.cost || 0);
-    dimeProfit = Number(dimeRes.value.profit || 0);
+        if (dimeRes.status === 'fulfilled' && dimeRes.value) {
+            dimeTotal = Number(dimeRes.value.value || 0);
+            dimeCost = Number(dimeRes.value.cost || 0);
+            dimeProfit = Number(dimeRes.value.profit || 0);
 
-    // ดึงค่า dailyProfit (USD) แล้วแปลงเป็น THB
-    const rawDailyProfit = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || 0);
-    
-    // ถ้าพอร์ตเกิน 100,000 แต่ยอด dailyProfit < 5,000 แปลว่าส่งมาเป็น USD ให้คูณอัตราแลกเปลี่ยน (35.5)
-    if (Math.abs(rawDailyProfit) < 5000 && dimeTotal > 100000) {
-        dimeDailyProfit = rawDailyProfit * 35.5;
-    } else {
-        dimeDailyProfit = rawDailyProfit;
-    }
+            // ดึงค่า dailyProfit หรือ todayGain จาก Firebase
+            const rawDailyProfit = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || 0);
+            
+            // แปลงค่า USD เป็น THB หากเป็นยอดดอลลาร์
+            dimeDailyProfit = (Math.abs(rawDailyProfit) < 5000 && dimeTotal > 100000) 
+                ? rawDailyProfit * 35.5 
+                : rawDailyProfit;
 
-    // คำนวณ % กำไรรายวัน
-    if (dimeRes.value.dailyProfitPct !== undefined && dimeRes.value.dailyProfitPct !== 0) {
-        dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct);
-    } else {
-        const dimePrevTotal = dimeTotal - dimeDailyProfit;
-        dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfit / dimePrevTotal) * 100 : 0;
-    }
-}
+            dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || 0);
+        }
         // ---------------- สกัด DIME Analytics ----------------
         if (dimeAnalyticsRes.status === 'fulfilled') {
             dimeAnalytics = dimeAnalyticsRes.value;
@@ -1428,20 +1420,23 @@ function updateGainUI(valElemId, pctElemId, gainVal, gainPct) {
     pctEl.style.color = color;
 }    
 
-// อัปเดต UI สำหรับ DIME
-const dimeDailyEl = document.getElementById('dimeDailyVal') || document.getElementById('dimeDailyGain');
-const dimeDailyPctEl = document.getElementById('dimeDailyPct') || document.getElementById('dimeDailyGainPct');
+// 📍 อัปเดต UI สำหรับ DIME (วางก่อนปิดปีกกา } บรรทัด 1429)
+        const dimeDailyEl = document.getElementById('dimeDailyVal') || document.getElementById('dimeDailyGain') || document.querySelector('[data-dime-daily]');
+        const dimeDailyPctEl = document.getElementById('dimeDailyPct') || document.getElementById('dimeDailyGainPct') || document.querySelector('[data-dime-daily-pct]');
 
-if (dimeDailyEl) {
-    const prefix = dimeDailyProfit >= 0 ? '+' : '';
-    dimeDailyEl.innerText = `${prefix}฿${Math.abs(dimeDailyProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    dimeDailyEl.className = dimeDailyProfit >= 0 ? 'text-green-400' : 'text-red-400';
-}
+        console.log("DIME Daily Profit calculated:", dimeDailyProfit); // 👈 ดูค่าใน Console F12
 
-if (dimeDailyPctEl) {
-    const prefix = dimeDailyProfitPct >= 0 ? '+' : '';
-    dimeDailyPctEl.innerText = `(${prefix}${dimeDailyProfitPct.toFixed(2)}%)`;
-}    
+        if (dimeDailyEl) {
+            const prefix = dimeDailyProfit >= 0 ? '+' : '';
+            dimeDailyEl.innerText = `${prefix}฿${Math.abs(dimeDailyProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            dimeDailyEl.style.color = dimeDailyProfit >= 0 ? '#10b981' : '#ef4444';
+        }
+
+        if (dimeDailyPctEl) {
+            const prefix = dimeDailyProfitPct >= 0 ? '+' : '';
+            dimeDailyPctEl.innerText = `(${prefix}${dimeDailyProfitPct.toFixed(2)}%)`;
+            dimeDailyPctEl.style.color = dimeDailyProfitPct >= 0 ? '#10b981' : '#ef4444';
+        }
     
 loadDashboard();
 
