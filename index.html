@@ -1057,23 +1057,46 @@ async function loadDashboard() {
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
         ]);
 
-        // ---------------- สกัด MFC ----------------
+        // ---------------- สกัด MFC (อ้างอิง Column prev_amt จาก Supabase) ----------------
         if (mfcRes.status === 'fulfilled' && mfcRes.value) {
             const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
 
-            mfcTotal = dataList.reduce((sum, item) => {
+            mfcTotal = 0;
+            mfcDailyProfit = 0;
+
+            dataList.forEach(item => {
                 const units = parseFloat(item.units || 0);
-                const nav = parseFloat(item.nav || item.navToday || 0);
-                const navPrev = parseFloat(item.navPrev || item.navYesterday || item.costNav || nav);
-                
-                mfcDailyProfit += (nav - navPrev) * units;
-                return sum + (units * nav);
-            }, 0);
+                const nav = parseFloat(item.nav || 0);
+                const prevAmt = parseFloat(item.prev_amt || 0); // 👈 ดึงค่าจากคอลัมน์ prev_amt ตรงๆ
+
+                const currentVal = units * nav;
+                mfcTotal += currentVal;
+
+                // กำไรรายวัน = มูลค่าปัจจุบัน - มูลค่าวันก่อนหน้า
+                if (prevAmt > 0) {
+                    mfcDailyProfit += (currentVal - prevAmt);
+                }
+            });
 
             const mfcPrevTotal = mfcTotal - mfcDailyProfit;
             mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
-        }
 
+            if (dataList.length > 0) {
+                const rawDate = dataList[0].updated_at || dataList[0].created_at || new Date().toISOString();
+                const dateObj = new Date(rawDate);
+
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const yearBE = String(dateObj.getFullYear() + 543).slice(-2);
+                const hours = String(dateObj.getHours()).padStart(2, '0');
+                const mins = String(dateObj.getMinutes()).padStart(2, '0');
+
+                const mfcNavElem = document.querySelector('#mfcNavTime .val');
+                if (mfcNavElem) {
+                    mfcNavElem.innerText = `${day}/${month}/${yearBE} ${hours}:${mins} น.`;
+                }
+            }
+        }
         // ---------------- สกัด GPF ----------------
         if (gpfRes.status === 'fulfilled' && gpfRes.value?.funds) {
             gpfRes.value.funds.forEach(f => {
