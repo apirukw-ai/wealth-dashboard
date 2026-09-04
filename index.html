@@ -1185,43 +1185,66 @@ async function loadDashboard() {
 
     const totalWealth = mfc + gpf + scb + dimeTHB;
 
-    // รวมต้นทุนและกำไรสะสมจากทุกพอร์ต (MFC + GPF + SCB + DIME)
-    const mfcCostVal = typeof mfcCost !== 'undefined' ? mfcCost : 0;
-    const gpfCostVal = typeof gpfCost !== 'undefined' ? gpfCost : 0;
-        
-    const totalCost = mfcCostVal + gpfCostVal + scbCost + (dimeCostUSD * fxRate);
-    const totalProfit = scbProfit + (dimeProfitUSD * fxRate);
+    // 📍 1. คำนวณต้นทุนและกำไรสะสมของ MFC & GPF
+    const dataListMFC = Array.isArray(mfcRes?.value) ? mfcRes.value : (mfcRes?.value?.data || []);
+    const mfcCost = dataListMFC.reduce((sum, item) => sum + parseFloat(item.prev_amt || 0), 0);
+    const mfcProfit = mfcTotal - mfcCost;
+
+    let gpfCost = 0;
+    if (gpfRes.status === 'fulfilled' && gpfRes.value?.funds) {
+        gpfRes.value.funds.forEach(f => {
+            const units = Number(f.units || 0);
+            const costNav = Number(f.avgNav || f.prevNav || f.currentNav || 0);
+            gpfCost += units * costNav;
+        });
+    }
+    const gpfProfit = gpfTotal - gpfCost;
+
+    // 📍 2. รวมต้นทุนและกำไรสะสมจากทุกพอร์ต (MFC + GPF + SCB + DIME)
+    const totalCost = mfcCost + gpfCost + scbCost + (dimeCostUSD * fxRate);
+    const totalProfit = mfcProfit + gpfProfit + scbProfit + (dimeProfitUSD * fxRate);
     const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
+
+    // 📍 3. แสดงผลการ์ดใหญ่ Portfolio Gain (กำไรสะสมรวม)
+    const totalGainValEl = document.getElementById('totalGainValue');
+    const totalGainPctEl = document.getElementById('totalGainPct');
+    if (totalGainValEl) {
+        const isPos = totalProfit >= 0;
+        totalGainValEl.innerHTML = (isPos ? '▲ ฿' : '▼ ฿') + Math.abs(totalProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        totalGainValEl.style.color = isPos ? '#10b981' : '#ef4444';
+    }
+    if (totalGainPctEl) {
+        const isPos = totalProfitPct >= 0;
+        totalGainPctEl.innerHTML = (isPos ? '▲ ' : '▼ ') + totalProfitPct.toFixed(2) + '%';
+        totalGainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
+    }
+
+    // 📍 4. แสดงผลการ์ดใหญ่ Daily Profit (กำไรรายวันวันนี้)
+    const totalDailyProfitToday = mfcDailyProfit + gpfDailyProfit + scbDailyProfit + (dimeDailyProfitUSD * fxRate);
+    const totalDailyProfitPct = (totalWealth - totalDailyProfitToday) > 0 
+        ? (totalDailyProfitToday / (totalWealth - totalDailyProfitToday)) * 100 
+        : 0;
 
     const gainValEl = document.getElementById('dailyChangeValue');
     const gainPctEl = document.getElementById('dailyChangePct');
-
     if (gainValEl) {
-        const isPositive = totalProfit >= 0;
-        gainValEl.innerHTML = (isPositive ? '▲ ฿' : '▼ ฿') + Math.abs(totalProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        gainValEl.style.color = isPositive ? '#10b981' : '#ef4444';
+        const isPos = totalDailyProfitToday >= 0;
+        gainValEl.innerHTML = (isPos ? '▲ ฿' : '▼ ฿') + Math.abs(totalDailyProfitToday).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        gainValEl.style.color = isPos ? '#10b981' : '#ef4444';
     }
-
     if (gainPctEl) {
-        const isPositive = totalProfitPct >= 0;
-        gainPctEl.innerHTML = (isPositive ? '▲ ' : '▼ ') + totalProfitPct.toFixed(2) + '%';
-        gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
+        const isPos = totalDailyProfitPct >= 0;
+        gainPctEl.innerHTML = (isPos ? '▲ ' : '▼ ') + totalDailyProfitPct.toFixed(2) + '%';
+        gainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
     }
 
-    // 📍 ส่งตัวเลขเข้า 4 การ์ดย่อย Portfolio Gain (กำไรสะสมรวมแยกตามแอป)
+    // 📍 5. อัปเดต 4 การ์ดย่อย Portfolio Gain (กำไรสะสมรวมแยกตามแอป)
+    updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿');
+    updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿');
     updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿');
     updateGainUI('dimeTotalGainVal', 'dimeTotalGainPct', dimeProfitUSD, dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0, '$');
 
-    // (หากมี mfcProfit / mfcCost และ gpfProfit / gpfCost)
-    if (typeof mfcProfit !== 'undefined' && typeof mfcCost !== 'undefined') {
-        updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿');
-    }
-    if (typeof gpfProfit !== 'undefined' && typeof gpfCost !== 'undefined') {
-        updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿');
-    }
-    
-    
-    // 📍 เรียกใช้อัปเดต 4 การ์ดย่อย (DIME แสดงผลสัญลักษณ์ USD $)
+    // 📍 6. อัปเดต 4 การ์ดย่อย Daily Profit (กำไรรายวันวันนี้แยกตามแอป)
     try {
         updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿');
         updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct, '฿');
