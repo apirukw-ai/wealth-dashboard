@@ -1149,11 +1149,11 @@ async function loadDashboard() {
         gainPctEl.style.color = isPositive ? '#10b981' : '#ef4444';
     }
 
-    // อัปเดตการ์ดย่อยทั้ง 4 พอร์ตในการ์ด Portfolio Gain
-updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyGainAmount, mfcDailyGainPct);
-updateGainUI('gpfGainVal', 'gpfGainPct', dailyProfitSum, totalGpfDailyPct);
-updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfitAmt, scbDailyProfitPct);
-updateGainUI('dimeGainVal', 'dimeGainPct', totalDailyGain, dailyProfitPct);
+    // ✅ แก้ไขเป็นโค้ดชุดนี้ (ใช้ตัวแปรจากก้อนข้อมูลที่ fetch มาแล้ว):
+updateGainUI('mfcGainVal', 'mfcGainPct', mfcData?.dailyGain || 0, mfcData?.dailyGainPct || 0);
+updateGainUI('gpfGainVal', 'gpfGainPct', gpfData?.dailyGain || 0, gpfData?.dailyGainPct || 0);
+updateGainUI('scbGainVal', 'scbGainPct', scbData?.dailyGain || 0, scbData?.dailyGainPct || 0);
+updateGainUI('dimeGainVal', 'dimeGainPct', dimeData?.dailyGain || 0, dimeData?.dailyGainPct || 0);
     
     console.log("=== WEALTH HISTORY HEALTH CHECK ===");
     console.log("Keys in wealth_history:", Object.keys(historyDataRaw));
