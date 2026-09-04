@@ -1289,19 +1289,17 @@ async function updateDashboardTimestamps() {
             if (timeVal) document.querySelector('#mfcNavTime .val').textContent = formatThaiDateTime(timeVal);
         } catch(e){}
 
-        // 2. ดึงเวลา NAV (GPF) จาก Path จริงใน Firebase
+        // 2. ดึงเวลา NAV (GPF)
         try {
             const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131/lastUpdated.json');
-            const gpfTimeStr = await gpfRes.json();
+            let gpfTimeStr = await gpfRes.json();
             
-            if (gpfTimeStr && typeof gpfTimeStr === 'string') {
+            if (gpfTimeStr) {
+                // 📍 เปลี่ยนจาก 2569 เป็น 69 ให้ตรงรูปแบบกับแอปอื่น
+                gpfTimeStr = gpfTimeStr.replace('/2569', '/69').replace('2569', '69');
                 document.querySelector('#gpfNavTime .val').textContent = gpfTimeStr;
-            } else {
-                document.querySelector('#gpfNavTime .val').textContent = '-';
             }
-        } catch(e) {
-            console.error("GPF Time Fetch Error:", e);
-        }
+        } catch(e){}
 
         // 3. ดึงเวลา NAV (SCB)
         try {
