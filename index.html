@@ -438,7 +438,7 @@
             <span id="analyticsArrow" style="color:#38bdf8;">▶</span> Advanced Analytics Module
         </div>
 
-        <div id="analyticsContainer" style="display:none; margin-top:16px;" class="analytics-grid">
+        <div id="analyticsContainer" style="display:none; margin-top:16px; grid-template-columns: repeat(3, 1fr); gap: 20px;" class="analytics-grid">
 
             <!-- Wealth Trend Card -->
             <div id="wealthTrendCard" class="luxury-card">
@@ -635,15 +635,21 @@ async function getUsdThbRate() {
 }
 
 function toggleAnalytics() {
-    const container = document.getElementById('analyticsContainer');
-    const arrow = document.getElementById('analyticsArrow');
-    
-    if (container.style.display === 'none' || container.style.display === '') {
-        container.style.display = 'grid';
-        arrow.innerText = '▼';
+    var container = document.getElementById("analyticsContainer");
+    var arrow = document.getElementById("analyticsArrow");
+    if (container.style.display === "none" || container.style.display === "") {
+        // เช็กความกว้างจอ: ถ้าเปิดบนคอมให้เป็น 3 คอลัมน์ ถ้าบนมือถือให้เป็น 1 คอลัมน์
+        if (window.innerWidth > 768) {
+            container.style.display = "grid";
+            container.style.gridTemplateColumns = "repeat(3, 1fr)";
+        } else {
+            container.style.display = "flex";
+            container.style.flexDirection = "column";
+        }
+        arrow.innerHTML = "▼";
     } else {
-        container.style.display = 'none';
-        arrow.innerText = '▶';
+        container.style.display = "none";
+        arrow.innerHTML = "▶";
     }
 }
 
