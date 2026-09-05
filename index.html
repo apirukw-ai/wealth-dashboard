@@ -1137,55 +1137,28 @@ async function loadDashboard() {
             gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
         }
 
-        // ---------------- สกัด SCB (อ้างอิงสูตรตามแอป SCB) ----------------
+        // ---------------- สกัด SCB ----------------
         if (scbRes.status === 'fulfilled' && scbRes.value) {
-            const scbData = scbRes.value;
-            const fundList = scbData.funds || scbData.data || [];
+            const scbData = scbRes.value.data || scbRes.value;
+            
+            scbTotal = Number(scbData.value || scbData.totalValue || scbData.total_value || 0);
+            scbCost = Number(scbData.cost || scbData.totalCost || scbData.total_cost || 0);
+            scbProfit = scbTotal - scbCost; // กำไรสะสม
 
-            scbTotal = 0;
-            scbCost = 0;
-            scbDailyProfit = 0;
-
-            if (Array.isArray(fundList) && fundList.length > 0) {
-                let totalValYesterday = 0;
-
-                fundList.forEach(f => {
-                    const units = Number(f.units || 0);
-                    const currentNav = Number(f.currentNav || 0);
-                    const avgNav = Number(f.avgNav || 0);
-                    const dailyPct = Number(f.dailyPct || 0);
-
-                    const fVal = units * currentNav;
-                    const cost = units * avgNav;
-                    
-                    // คำนวณมูลค่าเมื่อวานย้อนกลับจาก % Daily Change
-                    const valYesterday = dailyPct !== 0 ? (fVal / (1 + (dailyPct / 100))) : fVal;
-
-                    scbTotal += fVal;
-                    scbCost += cost;
-                    totalValYesterday += valYesterday;
-                });
-
-                // 1. กำไรสะสมทั้งหมด (Portfolio Gain) = มูลค่าปัจจุบัน - ต้นทุนรวม
-                scbProfit = scbTotal - scbCost;
-
-                // 2. กำไรรายวัน (Daily Profit) = มูลค่าปัจจุบันรวม - มูลค่าเมื่อวานรวม
-                scbDailyProfit = scbTotal - totalValYesterday;
-                scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
-
+            // ดึง Daily Profit จาก SCB
+            if (typeof scbData.dailyProfit !== 'undefined') {
+                scbDailyProfit = Number(scbData.dailyProfit);
+            } else if (typeof scbData.daily_profit !== 'undefined') {
+                scbDailyProfit = Number(scbData.daily_profit);
+            } else if (typeof scbData.todayGain !== 'undefined') {
+                scbDailyProfit = Number(scbData.todayGain);
             } else {
-                // กรณี API ส่งยอดรวมมารวดเดียว (Fallback)
-                scbTotal = Number(scbData.value || scbData.totalVal || 0);
-                scbCost = Number(scbData.cost || scbData.totalCost || 0);
-                scbProfit = scbTotal - scbCost;
-
-                const dailyPct = Number(scbData.dailyPct || scbData.dailyProfitPct || 0);
-                const valYesterday = dailyPct !== 0 ? (scbTotal / (1 + (dailyPct / 100))) : scbTotal;
-                scbDailyProfit = scbTotal - valYesterday;
-                scbDailyProfitPct = dailyPct;
+                scbDailyProfit = 0; // ถ้าหาไม่พบให้เป็น 0 (จะไม่เท่ากับ scbProfit)
             }
-        }
 
+            const scbPrevTotal = scbTotal - scbDailyProfit;
+            scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
+        }
         // ---------------- สกัด DIME (USD) ----------------
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
             dimeTotalUSD = Number(dimeRes.value.value || 0);
@@ -1256,18 +1229,17 @@ async function loadDashboard() {
         gainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
     }
 
-    // 📍 1. อัปเดต 4 การ์ดย่อย Portfolio Gain (ฝั่งซ้าย: กำไรสะสมทั้งหมด)
-    updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿');
-    updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿');
-    updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿'); // 👈 ใช้ scbProfit (กำไรสะสม)
-    updateGainUI('dimeTotalGainVal', 'dimeTotalGainPct', dimeProfitUSD, dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0, '$');
+    // 📍 1. อัปเดต 4 การ์ดย่อย Portfolio Gain (กำไรสะสมรวม)
+    try { updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿'); } catch(e) {}
+    try { updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿'); } catch(e) {}
+    try { updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿'); } catch(e) {}
+    try { updateGainUI('dimeTotalGainVal', 'dimeTotalGainPct', dimeProfitUSD, dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0, '$'); } catch(e) {}
 
-    // 📍 2. อัปเดต 4 การ์ดย่อย Daily Profit (ฝั่งขวา: กำไรรายวันวันนี้)
-    try {
-        updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿');
-        updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct, '฿');
-        updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct, '฿'); // 👈 แก้ตรงนี้เป็น scbDailyProfit (กำไรรายวัน)
-        updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfitUSD, dimeDailyProfitPct, '$');
+    // 📍 2. อัปเดต 4 การ์ดย่อย Daily Profit (กำไรรายวันวันนี้)
+    try { updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿'); } catch(e) {}
+    try { updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct, '฿'); } catch(e) {}
+    try { updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct, '฿'); } catch(e) {}
+    try { updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfitUSD, dimeDailyProfitPct, '$'); } catch(e) {}
     } catch (err) {
         console.warn("Sub-cards sync skipped:", err);
     }
