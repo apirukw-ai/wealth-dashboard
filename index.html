@@ -574,7 +574,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 📍 ฟังก์ชันดึงอัตราแลกเปลี่ยน USD/THB แบบ Real-Time
 async function getUsdThbRate() {
     try {
         const res = await fetch('https://open.er-api.com/v6/latest/USD');
@@ -697,7 +696,6 @@ function renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotalUSD, totalWealt
     const scbPctEl = document.getElementById('scbPct');
     if (scbPctEl) scbPctEl.innerText = scbPctVal.toFixed(2) + '%';
 
-    // 📍 แสดงมูลค่า DIME ในช่อง Asset Allocation เป็น USD
     const dimeValEl = document.getElementById('dimeVal');
     if (dimeValEl) dimeValEl.innerText = '$' + dimeTotalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const dimePctEl = document.getElementById('dimePct');
@@ -1098,7 +1096,6 @@ async function loadDashboard() {
                 const nav = parseFloat(item.nav || 0);
                 const prevAmt = parseFloat(item.prev_amt || 0);
                 
-                // ต้นทุน MFC (หากไม่มีฟิลด์ cost ให้ใช้อัตราส่วนหรือ prev_amt เป็นฐาน)
                 const costVal = parseFloat(item.cost || item.cost_val || item.initial_cost || prevAmt || (units * nav));
 
                 const currentVal = units * nav;
@@ -1145,7 +1142,6 @@ async function loadDashboard() {
             scbCost = Number(scbData.cost || scbData.totalCost || scbData.total_cost || 0);
             scbProfit = scbTotal - scbCost; // กำไรสะสม
 
-            // ดึง Daily Profit จาก SCB
             if (typeof scbData.dailyProfit !== 'undefined') {
                 scbDailyProfit = Number(scbData.dailyProfit);
             } else if (typeof scbData.daily_profit !== 'undefined') {
@@ -1153,12 +1149,13 @@ async function loadDashboard() {
             } else if (typeof scbData.todayGain !== 'undefined') {
                 scbDailyProfit = Number(scbData.todayGain);
             } else {
-                scbDailyProfit = 0; // ถ้าหาไม่พบให้เป็น 0 (จะไม่เท่ากับ scbProfit)
+                scbDailyProfit = 0;
             }
 
             const scbPrevTotal = scbTotal - scbDailyProfit;
             scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
         }
+
         // ---------------- สกัด DIME (USD) ----------------
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
             dimeTotalUSD = Number(dimeRes.value.value || 0);
@@ -1168,6 +1165,7 @@ async function loadDashboard() {
             dimeDailyProfitUSD = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || 0);
             dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || 0);
         }
+
         // ---------------- สกัด DIME Analytics ----------------
         if (dimeAnalyticsRes.status === 'fulfilled') {
             dimeAnalytics = dimeAnalyticsRes.value;
@@ -1183,25 +1181,25 @@ async function loadDashboard() {
         console.error('⚠️ ไม่สามารถเชื่อมต่อ Cloud ได้:', err);
     }
 
-    // 📍 1. แปลงมูลค่า DIME (USD) เป็น THB ตามอัตราแลกเปลี่ยนจริง
+    // 📍 1. แปลงมูลค่า DIME (USD) เป็น THB
     const dimeTHB = dimeTotalUSD * fxRate;
     const dimeDailyProfitTHB = dimeDailyProfitUSD * fxRate;
 
     // 📍 2. คำนวณ Total Wealth รวม 4 พอร์ต (THB)
     const totalWealth = mfcTotal + gpfTotal + scbTotal + dimeTHB;
 
-    // 📍 3. รวมต้นทุนและกำไรสะสมภาพรวม ทั้ง 4 พอร์ต (Portfolio Gain Total)
+    // 📍 3. รวมต้นทุนและกำไรสะสมภาพรวม ทั้ง 4 พอร์ต
     const totalCost = mfcCost + gpfCost + scbCost + (dimeCostUSD * fxRate);
     const totalProfit = mfcProfit + gpfProfit + scbProfit + (dimeProfitUSD * fxRate);
     const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
-    // 📍 4. รวมกำไรรายวันภาพรวม ทั้ง 4 พอร์ต (Daily Profit Today)
+    // 📍 4. รวมกำไรรายวันภาพรวม ทั้ง 4 พอร์ต
     const totalDailyProfitToday = mfcDailyProfit + gpfDailyProfit + scbDailyProfit + dimeDailyProfitTHB;
     const totalDailyProfitPct = (totalWealth - totalDailyProfitToday) > 0 
         ? (totalDailyProfitToday / (totalWealth - totalDailyProfitToday)) * 100 
         : 0;
 
-    // 📍 5. แสดงผลการ์ดใหญ่ Portfolio Gain (กำไรสะสมรวม)
+    // 📍 5. แสดงผลการ์ดใหญ่ Portfolio Gain
     const totalGainValEl = document.getElementById('totalGainValue');
     const totalGainPctEl = document.getElementById('totalGainPct');
     if (totalGainValEl) {
@@ -1215,7 +1213,7 @@ async function loadDashboard() {
         totalGainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
     }
 
-    // 📍 6. แสดงผลการ์ดใหญ่ Daily Profit (กำไรรายวันวันนี้)
+    // 📍 6. แสดงผลการ์ดใหญ่ Daily Profit
     const gainValEl = document.getElementById('dailyChangeValue');
     const gainPctEl = document.getElementById('dailyChangePct');
     if (gainValEl) {
@@ -1229,35 +1227,35 @@ async function loadDashboard() {
         gainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
     }
 
- // 📍 1. อัปเดต 4 การ์ดย่อย Portfolio Gain
+    // 📍 7. อัปเดต 4 การ์ดย่อย Portfolio Gain
     try { updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿'); } catch (err) {}
     try { updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿'); } catch (err) {}
     try { updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿'); } catch (err) {}
     try { updateGainUI('dimeTotalGainVal', 'dimeTotalGainPct', dimeProfitUSD, dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0, '$'); } catch (err) {}
 
-    // 📍 2. อัปเดต 4 การ์ดย่อย Daily Profit
+    // 📍 8. อัปเดต 4 การ์ดย่อย Daily Profit
     try { updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿'); } catch (err) {}
     try { updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct, '฿'); } catch (err) {}
     try { updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct, '฿'); } catch (err) {}
     try { updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfitUSD, dimeDailyProfitPct, '$'); } catch (err) {}
 
-    // 📍 3. คำนวณความเปลี่ยนแปลงจาก Wealth History
+    // 📍 9. คำนวณความเปลี่ยนแปลงจาก Wealth History
+    let yesterdayWealth = null;
+    let dailyChange = 0;
+    let dailyChangePct = 0;
+
     if (Array.isArray(history) && history.length > 0) {
         history.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        let yesterdayWealth = null;
         if (history.length >= 2) {
             yesterdayWealth = history[history.length - 2].wealth;
         }
 
-        let dailyChange = 0;
-        let dailyChangePct = 0;
         if (yesterdayWealth !== null) {
             dailyChange = totalWealth - yesterdayWealth;
             dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
         }
     }
-}
     
     const mfcPctVal = totalWealth > 0 ? (mfcTotal / totalWealth) * 100 : 0;
     const gpfPctVal = totalWealth > 0 ? (gpfTotal / totalWealth) * 100 : 0;
@@ -1403,7 +1401,7 @@ async function loadDashboard() {
     const chartSumEl = document.getElementById('chartSummary');
     if (chartSumEl) chartSumEl.innerText = history.length < 2 ? 'Collecting data for trend analysis' : 'Tracking ' + history.length + ' Snapshots';
 
-} // 👈 🎯 ปิดฟังก์ชัน loadDashboard() ตรงนี้เลยครับ!
+} // 👈 🎯 ปิดฟังก์ชัน loadDashboard() ตรงนี้อย่างถูกต้องครับ
 
 async function updateDashboardTimestamps() {
     try {
@@ -1464,7 +1462,6 @@ function formatThaiDateTime(timeStr) {
     return timeStr;
 }
 
-// 📍 ฟังก์ชันอัปเดต UI รองรับสัญลักษณ์ currencySymbol ('฿' หรือ '$')
 function updateGainUI(valElemId, pctElemId, gainVal, gainPct, currencySymbol = '฿') {
     const valEl = document.getElementById(valElemId);
     const pctEl = document.getElementById(pctElemId);
