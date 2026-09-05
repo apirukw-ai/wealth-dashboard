@@ -1137,30 +1137,53 @@ async function loadDashboard() {
             gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
         }
 
-        // ---------------- สกัด SCB (แยก Profit สะสม กับ Daily Profit ชัดเจน) ----------------
+        // ---------------- สกัด SCB (อ้างอิงสูตรตามแอป SCB) ----------------
         if (scbRes.status === 'fulfilled' && scbRes.value) {
-            const data = scbRes.value.data || scbRes.value;
-            
-            scbTotal = Number(data.value || data.total_value || 0);
-            scbCost = Number(data.cost || data.total_cost || 0);
-            
-            // 1. กำไรสะสมรวม (Total Profit) = มูลค่าปัจจุบัน - ต้นทุน
-            scbProfit = Number(data.profit || data.total_profit || (scbTotal - scbCost));
+            const scbData = scbRes.value;
+            const fundList = scbData.funds || scbData.data || [];
 
-            // 2. กำไรรายวัน (Daily Profit) = ดึงจาก daily_profit หรือคำนวณจาก prev_amt/prev_value
-            if (typeof data.dailyProfit !== 'undefined') {
-                scbDailyProfit = Number(data.dailyProfit);
-            } else if (typeof data.daily_profit !== 'undefined') {
-                scbDailyProfit = Number(data.daily_profit);
-            } else if (data.prev_value || data.prev_amt) {
-                const prev = Number(data.prev_value || data.prev_amt);
-                scbDailyProfit = scbTotal - prev;
+            scbTotal = 0;
+            scbCost = 0;
+            scbDailyProfit = 0;
+
+            if (Array.isArray(fundList) && fundList.length > 0) {
+                let totalValYesterday = 0;
+
+                fundList.forEach(f => {
+                    const units = Number(f.units || 0);
+                    const currentNav = Number(f.currentNav || 0);
+                    const avgNav = Number(f.avgNav || 0);
+                    const dailyPct = Number(f.dailyPct || 0);
+
+                    const fVal = units * currentNav;
+                    const cost = units * avgNav;
+                    
+                    // คำนวณมูลค่าเมื่อวานย้อนกลับจาก % Daily Change
+                    const valYesterday = dailyPct !== 0 ? (fVal / (1 + (dailyPct / 100))) : fVal;
+
+                    scbTotal += fVal;
+                    scbCost += cost;
+                    totalValYesterday += valYesterday;
+                });
+
+                // 1. กำไรสะสมทั้งหมด (Portfolio Gain) = มูลค่าปัจจุบัน - ต้นทุนรวม
+                scbProfit = scbTotal - scbCost;
+
+                // 2. กำไรรายวัน (Daily Profit) = มูลค่าปัจจุบันรวม - มูลค่าเมื่อวานรวม
+                scbDailyProfit = scbTotal - totalValYesterday;
+                scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
+
             } else {
-                scbDailyProfit = 0; // ถ้าไม่มีข้อมูลวันก่อนหน้าให้เป็น 0
-            }
+                // กรณี API ส่งยอดรวมมารวดเดียว (Fallback)
+                scbTotal = Number(scbData.value || scbData.totalVal || 0);
+                scbCost = Number(scbData.cost || scbData.totalCost || 0);
+                scbProfit = scbTotal - scbCost;
 
-            const scbPrevTotal = scbTotal - scbDailyProfit;
-            scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
+                const dailyPct = Number(scbData.dailyPct || scbData.dailyProfitPct || 0);
+                const valYesterday = dailyPct !== 0 ? (scbTotal / (1 + (dailyPct / 100))) : scbTotal;
+                scbDailyProfit = scbTotal - valYesterday;
+                scbDailyProfitPct = dailyPct;
+            }
         }
 
         // ---------------- สกัด DIME (USD) ----------------
