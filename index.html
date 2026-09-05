@@ -92,22 +92,48 @@
             color: #ffffff;
             word-break: break-word;
         }
-        /* Responsive Fixes for Mobile Devices */
+        /* Responsive Fixes - Force Single Column on Mobile */
 @media (max-width: 768px) {
-  /* ป้องกันตัวเลข Total Wealth ตกบรรทัด */
-  #totalWealth, .financial-val {
-    font-size: 32px !important;
+  /* 1. บังคับ Grid หลัก และ Grid ซ้อนให้เรียงแถวเดี่ยวแนวยาว */
+  #mainDashboard,
+  .dashboard-grid,
+  .grid,
+  div[class*="grid-cols"] {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    gap: 16px !important;
+  }
+
+  /* 2. การ์ดย่อยภายใน (4 พอร์ต) ให้ปรับเป็น 2 คอลัมน์พอดีกรอบ */
+  .grid-cols-2,
+  div[style*="grid-template-columns"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* 3. ย่อขนาดฟอนต์ตัวเลขหลักไม่ให้ดันขอบ */
+  .financial-val,
+  #totalWealth,
+  div[style*="font-size: 58px"],
+  div[style*="font-size: 50px"] {
+    font-size: 28px !important;
+    line-height: 1.2 !important;
     white-space: nowrap !important;
     word-break: keep-all !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 
-  /* ปรับการ์ดขวาสุดที่หลุดจอ ให้ขยับลงมาต่อด้านล่างเป็นแนวตั้ง */
-  .dashboard-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* ปรับขนาดตัวเลขรองบนมือถือ */
-  .hero-card {
+  /* 4. คุมกล่องการ์ดให้อยู่ในความกว้างจอพอดี */
+  .hero-card,
+  .card,
+  div[class*="card"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     padding: 16px !important;
   }
 }
