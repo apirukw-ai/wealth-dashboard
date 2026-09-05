@@ -1229,28 +1229,35 @@ async function loadDashboard() {
         gainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
     }
 
- // 📍 1. อัปเดต 4 การ์ดย่อย Daily Profit
+ // 📍 1. อัปเดต 4 การ์ดย่อย Portfolio Gain
+    try { updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿'); } catch (err) {}
+    try { updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿'); } catch (err) {}
+    try { updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿'); } catch (err) {}
+    try { updateGainUI('dimeTotalGainVal', 'dimeTotalGainPct', dimeProfitUSD, dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0, '$'); } catch (err) {}
+
+    // 📍 2. อัปเดต 4 การ์ดย่อย Daily Profit
     try { updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿'); } catch (err) {}
     try { updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct, '฿'); } catch (err) {}
     try { updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct, '฿'); } catch (err) {}
     try { updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfitUSD, dimeDailyProfitPct, '$'); } catch (err) {}
 
-    // 📍 2. คำนวณความเปลี่ยนแปลงจาก Wealth History
-    history.sort((a, b) => new Date(a.date) - new Date(b.date));
+    // 📍 3. คำนวณความเปลี่ยนแปลงจาก Wealth History
+    if (Array.isArray(history) && history.length > 0) {
+        history.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    let yesterdayWealth = null;
-    if (history.length >= 2) {
-        yesterdayWealth = history[history.length - 2].wealth;
+        let yesterdayWealth = null;
+        if (history.length >= 2) {
+            yesterdayWealth = history[history.length - 2].wealth;
+        }
+
+        let dailyChange = 0;
+        let dailyChangePct = 0;
+        if (yesterdayWealth !== null) {
+            dailyChange = totalWealth - yesterdayWealth;
+            dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
+        }
     }
-
-    let dailyChange = 0;
-    let dailyChangePct = 0;
-    if (yesterdayWealth !== null) {
-        dailyChange = totalWealth - yesterdayWealth;
-        dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
-    }
-
-} // 👈 ใส่ปีกกาปิดฟังก์ชัน loadDashboard() ตรงนี้ครับ!
+}
     
     const mfcPctVal = totalWealth > 0 ? (mfcTotal / totalWealth) * 100 : 0;
     const gpfPctVal = totalWealth > 0 ? (gpfTotal / totalWealth) * 100 : 0;
