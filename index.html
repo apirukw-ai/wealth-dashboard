@@ -92,6 +92,7 @@
             color: #ffffff;
             word-break: break-word;
         }
+                
         /* บังคับคอนเทนเนอร์ Dropdown ให้ขยายเต็ม 100% ขั้นเด็ดขาด */
 details, 
 details[open] {
@@ -115,6 +116,17 @@ details[open] {
 }        
         /* Responsive Fixes - Specially for Number Overflow */
 @media (max-width: 768px) {
+    /* บังคับระยะห่างบรรทัดเวลาอัปเดตบนมือถือให้ชิดกัน */
+.timestamp-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important; /* ปรับลด-เพิ่ม ตัวเลขนี้ได้ตามต้องการ */
+}
+
+.timestamp-list div {
+    margin: 0 !important;
+    line-height: 1.2 !important;
+}      
   /* 1. บังคับ Layout หลักเป็นแนวยาว 1 คอลัมน์ */
   #mainDashboard,
   .dashboard-grid,
@@ -186,12 +198,12 @@ details[open] {
                 </div>
 
                 <!-- ฝั่งขวา: -->
-                <div style="font-size: 11px; line-height: 1.3;" class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-slate-400">
-                    <div id="mfcNavTime">MFC: <span class="val">-</span></div>
-                    <div id="gpfNavTime">GPF: <span class="val">-</span></div>
-                    <div id="scbNavTime">SCB: <span class="val">-</span></div>
-                    <div id="dimePriceTime">DIME: <span class="val">-</span></div>
-                </div>
+<div style="font-size: 11px; line-height: 1.3;" class="timestamp-list text-slate-400">
+    <div id="mfcNavTime">MFC: <span class="val">-</span></div>
+    <div id="gpfNavTime">GPF: <span class="val">-</span></div>
+    <div id="scbNavTime">SCB: <span class="val">-</span></div>
+    <div id="dimePriceTime">DIME: <span class="val">-</span></div>
+</div>
             </div>
         </div>
 
