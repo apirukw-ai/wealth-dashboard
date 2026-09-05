@@ -110,7 +110,9 @@ details[open] {
     gap: 20px !important;
     box-sizing: border-box !important;
 }
-        
+.card-full {
+    grid-column: 1 / -1 !important;
+}        
         /* Responsive Fixes - Specially for Number Overflow */
 @media (max-width: 768px) {
   /* 1. บังคับ Layout หลักเป็นแนวยาว 1 คอลัมน์ */
@@ -444,7 +446,7 @@ details[open] {
 </div>
 
     <!-- ================= ADVANCED ANALYTICS (Accordion) ================= -->
-    <div style="margin-top:24px; width:100%;">
+    <div style="margin-top:24px; width:100%; grid-column: 1 / -1;">
         <div onclick="toggleAnalytics()" style="
             font-size:15px; font-weight:600; cursor:pointer; padding:16px 20px;
             background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid #334155; 
