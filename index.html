@@ -1217,17 +1217,17 @@ async function loadDashboard() {
         gainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
     }
 
-    // 📍 7. ส่งค่าเข้า 4 การ์ดย่อย Portfolio Gain (กำไรสะสมรวมแยกรายแอป)
+    // 📍 1. อัปเดต 4 การ์ดย่อย Portfolio Gain (ฝั่งซ้าย: กำไรสะสมทั้งหมด)
     updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿');
     updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿');
-    updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿');
+    updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿'); // 👈 ใช้ scbProfit (กำไรสะสม)
     updateGainUI('dimeTotalGainVal', 'dimeTotalGainPct', dimeProfitUSD, dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0, '$');
 
-    // 📍 8. ส่งค่าเข้า 4 การ์ดย่อย Daily Profit (กำไรรายวันวันนี้แยกรายแอป)
+    // 📍 2. อัปเดต 4 การ์ดย่อย Daily Profit (ฝั่งขวา: กำไรรายวันวันนี้)
     try {
         updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿');
         updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct, '฿');
-        updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct, '฿');
+        updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct, '฿'); // 👈 แก้ตรงนี้เป็น scbDailyProfit (กำไรรายวัน)
         updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfitUSD, dimeDailyProfitPct, '$');
     } catch (err) {
         console.warn("Sub-cards sync skipped:", err);
