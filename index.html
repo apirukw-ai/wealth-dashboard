@@ -92,18 +92,23 @@
             color: #ffffff;
             word-break: break-word;
         }
-        /* 1. วางโค้ดแก้ปัญหา Dropdown บีบตัว และ ล็อค 3 คอลัมน์ ไว้ตรงนี้ */
-details {
-    width: 100%;
-    grid-column: 1 / -1;
+        /* บังคับคอนเทนเนอร์ Dropdown ให้ขยายเต็ม 100% ขั้นเด็ดขาด */
+details, 
+details[open] {
+    display: block !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    grid-column: 1 / -1 !important;
 }
 
+/* บังคับกริดด้านในให้กาง 100% และล็อค 3 คอลัมน์ */
 .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    width: 100%;
-    box-sizing: border-box;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    gap: 20px !important;
+    box-sizing: border-box !important;
 }
         
         /* Responsive Fixes - Specially for Number Overflow */
