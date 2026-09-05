@@ -92,6 +92,25 @@
             color: #ffffff;
             word-break: break-word;
         }
+        /* Responsive Fixes for Mobile Devices */
+@media (max-width: 768px) {
+  /* ป้องกันตัวเลข Total Wealth ตกบรรทัด */
+  #totalWealth, .financial-val {
+    font-size: 32px !important;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+  }
+
+  /* ปรับการ์ดขวาสุดที่หลุดจอ ให้ขยับลงมาต่อด้านล่างเป็นแนวตั้ง */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ปรับขนาดตัวเลขรองบนมือถือ */
+  .hero-card {
+    padding: 16px !important;
+  }
+}
     </style>
 </head>
 <body>
