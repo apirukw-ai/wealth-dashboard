@@ -92,6 +92,20 @@
             color: #ffffff;
             word-break: break-word;
         }
+        /* 1. วางโค้ดแก้ปัญหา Dropdown บีบตัว และ ล็อค 3 คอลัมน์ ไว้ตรงนี้ */
+details {
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+        
         /* Responsive Fixes - Specially for Number Overflow */
 @media (max-width: 768px) {
   /* 1. บังคับ Layout หลักเป็นแนวยาว 1 คอลัมน์ */
