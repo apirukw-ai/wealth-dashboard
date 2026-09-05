@@ -92,29 +92,28 @@
             color: #ffffff;
             word-break: break-word;
         }
-        /* 1. บังคับ Desktop (กว้างเกิน 768px) ให้กลับมาแสดงแถวละ 3 การ์ด */
-@media (min-width: 769px) {
-  /* บังคับ Advanced Analytics Module และ Grid 3 ช่องให้แสดง 3 คอลัมน์ */
-  .grid-cols-3,
-  #analyticsModule .grid,
-  #analyticsModule div[class*="grid"],
-  .dashboard-grid .grid-cols-3 {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 16px !important;
-  }
+        /* ================= RESPONSIVE LAYOUT FIXES ================= */
 
-  /* คืนค่า Grid หลักของ Dashboard บน Desktop */
+/* 1. สำหรับหน้าจอใหญ่ Desktop (ความกว้างตั้งแต่ 769px ขึ้นไป) */
+@media (min-width: 769px) {
+  /* คืนค่า Grid หลักของ Dashboard */
   .dashboard-grid {
     display: grid !important;
     grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
     gap: 16px !important;
   }
+
+  /* คืนค่า Advanced Analytics Container ให้แสดงการ์ดขนานแถวละ 3 ช่อง */
+  #analyticsContainer {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
 }
 
-/* 2. บังคับเฉพาะมือถือ (กว้างไม่เกิน 768px) ให้แสดง 1 คอลัมน์ */
+/* 2. สำหรับหน้าจอมือถือ Mobile (ความกว้างไม่เกิน 768px) */
 @media (max-width: 768px) {
-  #mainDashboard,
+  /* บังคับเฉพาะ Dashboard หลักเรียงแนวยาว 1 คอลัมน์บนมือถือ */
   .dashboard-grid {
     display: flex !important;
     flex-direction: column !important;
@@ -122,14 +121,14 @@
     gap: 16px !important;
   }
 
-  #analyticsModule .grid,
-  .grid-cols-3 {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
+  /* Analytics บนมือถือให้เรียง 1 คอลัมน์ */
+  #analyticsContainer {
+    display: flex !important;
+    flex-direction: column !important;
     gap: 12px !important;
   }
 
-  /* ย่อขนาดตัวเลขการ์ด Asset Allocation ไม่ให้ล้นขอบ */
+  /* ย่อขนาดตัวเลขการ์ด Asset Allocation บนมือถือไม่ให้ล้นขอบ */
   .asset-card-val,
   div[style*="font-size: 28px"],
   div[style*="font-size: 24px"] {
@@ -139,12 +138,7 @@
     text-overflow: ellipsis !important;
   }
 
-  /* ปรับการ์ด FIRE Progress */
-  #fireCurrentVal {
-    font-size: 20px !important;
-    white-space: nowrap !important;
-  }
-
+  /* คุมขนาดการ์ดรวมไม่ให้ดันขอบจอ */
   .card, .hero-card {
     width: 100% !important;
     box-sizing: border-box !important;
