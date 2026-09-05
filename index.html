@@ -1137,14 +1137,30 @@ async function loadDashboard() {
             gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
         }
 
-        // ---------------- สกัด SCB ----------------
+        // ---------------- สกัด SCB (แยก Profit สะสม กับ Daily Profit ชัดเจน) ----------------
         if (scbRes.status === 'fulfilled' && scbRes.value) {
-            scbTotal = Number(scbRes.value.value || 0);
-            scbCost = Number(scbRes.value.cost || 0);
-            scbProfit = Number(scbRes.value.profit || (scbTotal - scbCost));
+            const data = scbRes.value.data || scbRes.value;
             
-            scbDailyProfit = Number(scbRes.value.dailyProfit || 0);
-            scbDailyProfitPct = Number(scbRes.value.dailyProfitPct || 0);
+            scbTotal = Number(data.value || data.total_value || 0);
+            scbCost = Number(data.cost || data.total_cost || 0);
+            
+            // 1. กำไรสะสมรวม (Total Profit) = มูลค่าปัจจุบัน - ต้นทุน
+            scbProfit = Number(data.profit || data.total_profit || (scbTotal - scbCost));
+
+            // 2. กำไรรายวัน (Daily Profit) = ดึงจาก daily_profit หรือคำนวณจาก prev_amt/prev_value
+            if (typeof data.dailyProfit !== 'undefined') {
+                scbDailyProfit = Number(data.dailyProfit);
+            } else if (typeof data.daily_profit !== 'undefined') {
+                scbDailyProfit = Number(data.daily_profit);
+            } else if (data.prev_value || data.prev_amt) {
+                const prev = Number(data.prev_value || data.prev_amt);
+                scbDailyProfit = scbTotal - prev;
+            } else {
+                scbDailyProfit = 0; // ถ้าไม่มีข้อมูลวันก่อนหน้าให้เป็น 0
+            }
+
+            const scbPrevTotal = scbTotal - scbDailyProfit;
+            scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
         }
 
         // ---------------- สกัด DIME (USD) ----------------
