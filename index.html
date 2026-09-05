@@ -103,7 +103,7 @@ details[open] {
 
 /* บังคับกริดด้านในให้กาง 100% และล็อค 3 คอลัมน์ */
 .dashboard-grid {
-    display: grid !important;
+    display: grid; /* ลบ !important ออกจากบรรทัดนี้บรรทัดเดียว */
     grid-template-columns: repeat(3, 1fr) !important;
     width: 100% !important;
     min-width: 100% !important;
