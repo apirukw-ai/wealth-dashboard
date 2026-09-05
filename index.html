@@ -1402,7 +1402,8 @@ async function loadDashboard() {
 
     const chartSumEl = document.getElementById('chartSummary');
     if (chartSumEl) chartSumEl.innerText = history.length < 2 ? 'Collecting data for trend analysis' : 'Tracking ' + history.length + ' Snapshots';
-}
+
+} // 👈 🎯 ปิดฟังก์ชัน loadDashboard() ตรงนี้เลยครับ!
 
 async function updateDashboardTimestamps() {
     try {
