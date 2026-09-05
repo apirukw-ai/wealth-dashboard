@@ -1078,7 +1078,7 @@ async function loadDashboard() {
                 }
             }).then(r => r.json()),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json').then(r => r.json()),
-            fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json').then(r => r.json()),
+            fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/ports/my-scb-port.json').then(r => r.json()), // 👈 แก้ตรงนี้เป็น ports/my-scb-port.json
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json').then(r => r.json()),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_analytics/current.json').then(r => r.json()),
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
@@ -1134,63 +1134,44 @@ async function loadDashboard() {
             gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
         }
 
-        // ---------------- สกัด SCB (รองรับโครงสร้าง API จริงทุกรูปแบบ) ----------------
+        // ---------------- สกัด SCB (ถอดสูตรตรงจากแอป SCB) ----------------
         if (scbRes.status === 'fulfilled' && scbRes.value) {
-            const scbRaw = scbRes.value;
-            const fundList = scbRaw.funds || scbRaw.data || (Array.isArray(scbRaw) ? scbRaw : null);
+            let scbFunds = [];
+            
+            if (Array.isArray(scbRes.value)) {
+                scbFunds = scbRes.value;
+            } else if (scbRes.value && typeof scbRes.value === 'object') {
+                scbFunds = scbRes.value.funds || scbRes.value.items || Object.values(scbRes.value);
+            }
+
+            scbFunds = scbFunds.filter(f => f && typeof f === 'object');
 
             scbTotal = 0;
             scbCost = 0;
-            scbDailyProfit = 0;
+            let totalValYesterday = 0;
 
-            if (fundList && Array.isArray(fundList) && fundList.length > 0) {
-                // 📍 แบบที่ 1: SCB ส่งมาเป็น Array รายกองทุน (คำนวณตามสูตรแอป SCB)
-                let totalValYesterday = 0;
+            scbFunds.forEach(f => {
+                const units = Number(f.units || 0);
+                const currentNav = Number(f.currentNav || 0);
+                const avgNav = Number(f.avgNav || 0);
+                const dailyPct = Number(f.dailyPct || 0);
 
-                fundList.forEach(f => {
-                    const units = Number(f.units || 0);
-                    const currentNav = Number(f.currentNav || 0);
-                    const avgNav = Number(f.avgNav || 0);
-                    const dailyPct = Number(f.dailyPct || 0);
+                const fVal = units * currentNav;
+                const cost = units * avgNav;
+                const valYesterday = fVal / (1 + (dailyPct / 100));
 
-                    const fVal = units * currentNav;
-                    const cost = units * avgNav;
-                    const valYesterday = dailyPct !== 0 ? (fVal / (1 + (dailyPct / 100))) : fVal;
+                scbTotal += fVal;
+                scbCost += cost;
+                totalValYesterday += valYesterday;
+            });
 
-                    scbTotal += fVal;
-                    scbCost += cost;
-                    totalValYesterday += valYesterday;
-                });
+            // 1. กำไรสะสมรวม (Portfolio Gain Total)
+            scbProfit = scbTotal - scbCost;
 
-                scbProfit = scbTotal - scbCost;
-                scbDailyProfit = scbTotal - totalValYesterday;
-
-            } else {
-                // 📍 แบบที่ 2: SCB ส่งมาเป็น Object สรุปรวมยอด
-                const data = scbRaw.data || scbRaw;
-
-                scbTotal = Number(data.value || data.totalValue || data.total_value || 0);
-                scbCost = Number(data.cost || data.totalCost || data.total_cost || 0);
-                scbProfit = Number(data.profit || data.totalProfit || (scbTotal - scbCost));
-
-                // ค้นหาฟิลด์ Daily Profit ตามคีย์ต่างๆ ของ SCB
-                if (typeof data.dailyProfit !== 'undefined') scbDailyProfit = Number(data.dailyProfit);
-                else if (typeof data.daily_profit !== 'undefined') scbDailyProfit = Number(data.daily_profit);
-                else if (typeof data.todayGain !== 'undefined') scbDailyProfit = Number(data.todayGain);
-                else if (typeof data.today_gain !== 'undefined') scbDailyProfit = Number(data.today_gain);
-                else if (typeof data.dailyPct !== 'undefined') {
-                    const pct = Number(data.dailyPct);
-                    const valYesterday = pct !== 0 ? (scbTotal / (1 + (pct / 100))) : scbTotal;
-                    scbDailyProfit = scbTotal - valYesterday;
-                } else {
-                    scbDailyProfit = 0;
-                }
-            }
-
-            const scbPrevTotal = scbTotal - scbDailyProfit;
-            scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
+            // 2. กำไรรายวันวันนี้ (Daily Profit Today)
+            scbDailyProfit = scbTotal - totalValYesterday;
+            scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
         }
-
         // ---------------- สกัด DIME (USD) ----------------
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
             dimeTotalUSD = Number(dimeRes.value.value || 0);
