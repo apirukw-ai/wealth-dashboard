@@ -92,24 +92,42 @@
             color: #ffffff;
             word-break: break-word;
         }
-        /* Responsive Fixes - Specially for Number Overflow */
+        /* Restructure Advanced Analytics and Layout for Desktop & Mobile */
+@media (min-width: 769px) {
+  /* คืนค่าแถวละ 3 การ์ดบนหน้าจอ Desktop สำหรับ Analytics และ Grid ย่อย */
+  .analytics-grid,
+  #analyticsModule .grid,
+  .grid-cols-3 {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+/* Responsive Styles for Mobile Devices Only */
 @media (max-width: 768px) {
-  /* 1. บังคับ Layout หลักเป็นแนวยาว 1 คอลัมน์ */
+  /* บังคับ Layout หลักเป็นแนวตั้ง 1 คอลัมน์เฉพาะบนมือถือ */
   #mainDashboard,
-  .dashboard-grid,
-  .grid {
+  .dashboard-grid {
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
     gap: 16px !important;
   }
 
-  /* 2. แก้ตัวเลขล้นในช่องการ์ดย่อย Asset Allocation (MFC, GPF, SCB, DIME) */
+  /* การ์ดย่อย Analytics และ Asset บนมือถือ ให้ปรับเป็น 1 หรือ 2 คอลัมน์ตามความเหมาะสม */
+  #analyticsModule .grid,
+  .analytics-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ย่อตัวเลขการ์ด Asset Allocation ไม่ให้ล้นขอบขวา */
   .asset-card-val,
   div[style*="font-size: 28px"],
-  div[style*="font-size: 24px"],
-  div[style*="font-size: 22px"] {
-    font-size: 16px !important; /* ปรับย่อขนาดตัวเลขในการ์ดย่อยลงให้พอดีช่อง */
+  div[style*="font-size: 24px"] {
+    font-size: 16px !important;
     line-height: 1.3 !important;
     white-space: nowrap !important;
     word-break: keep-all !important;
@@ -117,21 +135,13 @@
     text-overflow: ellipsis !important;
   }
 
-  /* 3. แก้การ์ด FIRE Progress ตัวเลขโดนตัด ... */
-  .fire-card-val,
+  /* ปรับการ์ด FIRE Progress */
   #fireCurrentVal {
-    font-size: 22px !important;
+    font-size: 20px !important;
     white-space: nowrap !important;
   }
 
-  /* ปรับให้ Current / Target ในการ์ด FIRE ขึ้นบรรทัดใหม่ ไม่ดันกันออกขวา */
-  .fire-target-container {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 4px !important;
-  }
-
-  /* 4. ปรับ Padding ของการ์ดรวมไม่ให้ดันขอบจอ */
+  /* คุมการ์ดไม่ให้ดันขอบจอ */
   .card, .hero-card {
     width: 100% !important;
     box-sizing: border-box !important;
