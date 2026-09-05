@@ -1086,13 +1086,9 @@ async function loadDashboard() {
             fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
         ]);
 
-        // ---------------- สกัด MFC (รวมเป็นบล็อกเดียว ไม่ซ้ำซ้อน) ----------------
-        let mfcCost = 0;
-        let mfcProfit = 0;
-
+        // ---------------- สกัด MFC ----------------
         if (mfcRes.status === 'fulfilled' && mfcRes.value) {
             const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
-
             mfcTotal = 0;
             mfcCost = 0;
             mfcDailyProfit = 0;
@@ -1100,45 +1096,26 @@ async function loadDashboard() {
             dataList.forEach(item => {
                 const units = parseFloat(item.units || 0);
                 const nav = parseFloat(item.nav || 0);
-                const prevAmt = parseFloat(item.prev_amt || 0); // มูลค่าวันก่อนหน้า
-                const costVal = parseFloat(item.cost || item.cost_val || prevAmt || 0); // ต้นทุนสะสม (ถ้าไม่มีคอลัมน์ cost ใช้ prevAmt แทน)
+                const prevAmt = parseFloat(item.prev_amt || 0);
+                
+                // ต้นทุน MFC (หากไม่มีฟิลด์ cost ให้ใช้อัตราส่วนหรือ prev_amt เป็นฐาน)
+                const costVal = parseFloat(item.cost || item.cost_val || item.initial_cost || prevAmt || (units * nav));
 
                 const currentVal = units * nav;
                 mfcTotal += currentVal;
                 mfcCost += costVal;
 
-                // กำไรรายวัน = มูลค่าปัจจุบัน - มูลค่าวันก่อนหน้า
                 if (prevAmt > 0) {
                     mfcDailyProfit += (currentVal - prevAmt);
                 }
             });
 
             mfcProfit = mfcTotal - mfcCost;
-
             const mfcPrevTotal = mfcTotal - mfcDailyProfit;
             mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
-
-            // อัปเดตเวลา NAV
-            if (dataList.length > 0) {
-                const rawDate = dataList[0].updated_at || dataList[0].created_at || new Date().toISOString();
-                const dateObj = new Date(rawDate);
-
-                const day = String(dateObj.getDate()).padStart(2, '0');
-                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const yearBE = String(dateObj.getFullYear() + 543).slice(-2);
-                const hours = String(dateObj.getHours()).padStart(2, '0');
-                const mins = String(dateObj.getMinutes()).padStart(2, '0');
-
-                const mfcNavElem = document.querySelector('#mfcNavTime .val');
-                if (mfcNavElem) {
-                    mfcNavElem.innerText = `${day}/${month}/${yearBE} ${hours}:${mins} น.`;
-                }
-            }
         }
-        // ---------------- สกัด GPF (รวมเป็นบล็อกเดียว) ----------------
-        let gpfCost = 0;
-        let gpfProfit = 0;
 
+        // ---------------- สกัด GPF ----------------
         if (gpfRes.status === 'fulfilled' && gpfRes.value?.funds) {
             gpfTotal = 0;
             gpfCost = 0;
@@ -1147,24 +1124,20 @@ async function loadDashboard() {
             gpfRes.value.funds.forEach(f => {
                 const units = Number(f.units || 0);
                 const currentNav = Number(f.currentNav || 0);
-                const avgNav = Number(f.avgNav || currentNav); // ราคา NAV ต้นทุนเฉลี่ย
-                const prevNav = Number(f.prevNav || avgNav || currentNav); // ราคา NAV วันก่อนหน้า
+                const avgNav = Number(f.avgNav || f.costNav || currentNav);
+                const prevNav = Number(f.prevNav || avgNav || currentNav);
 
                 gpfTotal += units * currentNav;
-                gpfCost += units * avgNav; // ต้นทุนรวม GPF
-                gpfDailyProfit += (currentNav - prevNav) * units; // กำไรรายวัน
+                gpfCost += units * avgNav;
+                gpfDailyProfit += (currentNav - prevNav) * units;
             });
 
-            gpfProfit = gpfTotal - gpfCost; // กำไรสะสมรวม GPF
-
+            gpfProfit = gpfTotal - gpfCost;
             const gpfPrevTotal = gpfTotal - gpfDailyProfit;
             gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
         }
 
-        // ---------------- สกัด SCB (รวมเป็นบล็อกเดียว) ----------------
-        let scbCost = 0;
-        let scbProfit = 0;
-
+        // ---------------- สกัด SCB ----------------
         if (scbRes.status === 'fulfilled' && scbRes.value) {
             scbTotal = Number(scbRes.value.value || 0);
             scbCost = Number(scbRes.value.cost || 0);
@@ -1174,10 +1147,7 @@ async function loadDashboard() {
             scbDailyProfitPct = Number(scbRes.value.dailyProfitPct || 0);
         }
 
-        // ---------------- สกัด DIME (USD - รวมเป็นบล็อกเดียว) ----------------
-        let dimeCostUSD = 0;
-        let dimeProfitUSD = 0;
-
+        // ---------------- สกัด DIME (USD) ----------------
         if (dimeRes.status === 'fulfilled' && dimeRes.value) {
             dimeTotalUSD = Number(dimeRes.value.value || 0);
             dimeCostUSD = Number(dimeRes.value.cost || 0);
@@ -1186,7 +1156,6 @@ async function loadDashboard() {
             dimeDailyProfitUSD = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || 0);
             dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || 0);
         }
-
         // ---------------- สกัด DIME Analytics ----------------
         if (dimeAnalyticsRes.status === 'fulfilled') {
             dimeAnalytics = dimeAnalyticsRes.value;
