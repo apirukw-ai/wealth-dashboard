@@ -99,48 +99,39 @@
             width: 100%;
         }
 
-        /* Responsive Fixes - Specially for Mobile & Number Overflow */
-        @media (max-width: 768px) {
-            .analytics-grid {
-                grid-template-columns: 1fr !important;
-                gap: 14px !important;
-            }
+        /* ================= FORCE ANALYTICS 3-COLUMNS DESKTOP ================= */
+@media (min-width: 769px) {
+  /* 1. บังคับคอนเทนเนอร์หลักของ Analytics ให้เป็น 3 คอลัมน์ */
+  #analyticsContainer,
+  .analytics-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 20px !important;
+    width: 100% !important;
+  }
 
-            /* 1. บังคับ Layout หลักเป็นแนวยาว 1 คอลัมน์บนมือถือ */
-            #mainDashboard,
-            .dashboard-grid {
-                display: flex !important;
-                flex-direction: column !important;
-                width: 100% !important;
-                gap: 16px !important;
-            }
+  /* 2. บังคับการ์ดทุกใบภายใน Analytics ให้ขยายเต็มความกว้างคอลัมน์ของตัวเอง */
+  #analyticsContainer .luxury-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
 
-            /* 2. แก้ตัวเลขล้นในช่องการ์ดย่อย Asset Allocation */
-            .asset-card-val,
-            div[style*="font-size: 28px"],
-            div[style*="font-size: 24px"],
-            div[style*="font-size: 22px"] {
-                font-size: 16px !important;
-                line-height: 1.3 !important;
-                white-space: nowrap !important;
-                word-break: keep-all !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
-            }
+  /* 3. การ์ดที่ต้องการให้ยาวเต็มแถว (เช่น US DIME, Weekly, Monthly, History Chart) */
+  #analyticsContainer .card-full {
+    grid-column: 1 / -1 !important;
+  }
+}
 
-            /* 3. แก้การ์ด FIRE Progress ตัวเลขโดนตัด ... */
-            .fire-card-val,
-            #fireCurrentVal {
-                font-size: 22px !important;
-                white-space: nowrap !important;
-            }
-
-            /* 4. ปรับ Padding ไม่ให้ดันขอบจอ */
-            .card, .hero-card, .luxury-card {
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-        }
+@media (max-width: 768px) {
+  #analyticsContainer,
+  .analytics-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+}
     </style>
 </head>
 <body>
@@ -638,14 +629,7 @@ function toggleAnalytics() {
     var container = document.getElementById("analyticsContainer");
     var arrow = document.getElementById("analyticsArrow");
     if (container.style.display === "none" || container.style.display === "") {
-        // เช็กความกว้างจอ: ถ้าเปิดบนคอมให้เป็น 3 คอลัมน์ ถ้าบนมือถือให้เป็น 1 คอลัมน์
-        if (window.innerWidth > 768) {
-            container.style.display = "grid";
-            container.style.gridTemplateColumns = "repeat(3, 1fr)";
-        } else {
-            container.style.display = "flex";
-            container.style.flexDirection = "column";
-        }
+        container.style.display = "grid";
         arrow.innerHTML = "▼";
     } else {
         container.style.display = "none";
