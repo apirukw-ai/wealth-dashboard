@@ -1134,22 +1134,57 @@ async function loadDashboard() {
             gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
         }
 
-        // ---------------- สกัด SCB ----------------
+        // ---------------- สกัด SCB (รองรับโครงสร้าง API จริงทุกรูปแบบ) ----------------
         if (scbRes.status === 'fulfilled' && scbRes.value) {
-            const scbData = scbRes.value.data || scbRes.value;
-            
-            scbTotal = Number(scbData.value || scbData.totalValue || scbData.total_value || 0);
-            scbCost = Number(scbData.cost || scbData.totalCost || scbData.total_cost || 0);
-            scbProfit = scbTotal - scbCost; // กำไรสะสม
+            const scbRaw = scbRes.value;
+            const fundList = scbRaw.funds || scbRaw.data || (Array.isArray(scbRaw) ? scbRaw : null);
 
-            if (typeof scbData.dailyProfit !== 'undefined') {
-                scbDailyProfit = Number(scbData.dailyProfit);
-            } else if (typeof scbData.daily_profit !== 'undefined') {
-                scbDailyProfit = Number(scbData.daily_profit);
-            } else if (typeof scbData.todayGain !== 'undefined') {
-                scbDailyProfit = Number(scbData.todayGain);
+            scbTotal = 0;
+            scbCost = 0;
+            scbDailyProfit = 0;
+
+            if (fundList && Array.isArray(fundList) && fundList.length > 0) {
+                // 📍 แบบที่ 1: SCB ส่งมาเป็น Array รายกองทุน (คำนวณตามสูตรแอป SCB)
+                let totalValYesterday = 0;
+
+                fundList.forEach(f => {
+                    const units = Number(f.units || 0);
+                    const currentNav = Number(f.currentNav || 0);
+                    const avgNav = Number(f.avgNav || 0);
+                    const dailyPct = Number(f.dailyPct || 0);
+
+                    const fVal = units * currentNav;
+                    const cost = units * avgNav;
+                    const valYesterday = dailyPct !== 0 ? (fVal / (1 + (dailyPct / 100))) : fVal;
+
+                    scbTotal += fVal;
+                    scbCost += cost;
+                    totalValYesterday += valYesterday;
+                });
+
+                scbProfit = scbTotal - scbCost;
+                scbDailyProfit = scbTotal - totalValYesterday;
+
             } else {
-                scbDailyProfit = 0;
+                // 📍 แบบที่ 2: SCB ส่งมาเป็น Object สรุปรวมยอด
+                const data = scbRaw.data || scbRaw;
+
+                scbTotal = Number(data.value || data.totalValue || data.total_value || 0);
+                scbCost = Number(data.cost || data.totalCost || data.total_cost || 0);
+                scbProfit = Number(data.profit || data.totalProfit || (scbTotal - scbCost));
+
+                // ค้นหาฟิลด์ Daily Profit ตามคีย์ต่างๆ ของ SCB
+                if (typeof data.dailyProfit !== 'undefined') scbDailyProfit = Number(data.dailyProfit);
+                else if (typeof data.daily_profit !== 'undefined') scbDailyProfit = Number(data.daily_profit);
+                else if (typeof data.todayGain !== 'undefined') scbDailyProfit = Number(data.todayGain);
+                else if (typeof data.today_gain !== 'undefined') scbDailyProfit = Number(data.today_gain);
+                else if (typeof data.dailyPct !== 'undefined') {
+                    const pct = Number(data.dailyPct);
+                    const valYesterday = pct !== 0 ? (scbTotal / (1 + (pct / 100))) : scbTotal;
+                    scbDailyProfit = scbTotal - valYesterday;
+                } else {
+                    scbDailyProfit = 0;
+                }
             }
 
             const scbPrevTotal = scbTotal - scbDailyProfit;
