@@ -42,12 +42,12 @@
 
         /* ระบบ CSS Grid Responsive ป้องกันล้นหน้าจอ */
         .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* เปลี่ยนบรรทัดนี้เพื่อล็อคเป็น 3 คอลัมน์ */
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
 
         /* Apple + Bloomberg Hybrid Card Style */
         .luxury-card {
