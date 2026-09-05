@@ -29,9 +29,18 @@ def create_daily_snapshot():
         scb_res = requests.get(f"{FIREBASE_BASE_URL}/scb_summary/current.json").json()
         scb_total = float(scb_res.get('value', 0)) if scb_res else 0
 
-        # 5. ดึงยอด DIME จาก Firebase
+        # 5. ดึงยอด DIME จาก Firebase (หน่วย USD) และแปลงเป็นเงินบาท (THB)
         dime_res = requests.get(f"{FIREBASE_BASE_URL}/dime_summary/current.json").json()
-        dime_total = float(dime_res.get('value', 0)) if dime_res else 0
+        dime_usd = float(dime_res.get('value', 0)) if dime_res else 0
+        
+        # ดึงอัตราแลกเปลี่ยนสด (USD -> THB)
+        fx_res = requests.get("https://api.exchangerate-api.com/v4/latest/USD")
+        if fx_res.status_code == 200:
+            usd_to_thb = fx_res.json().get('rates', {}).get('THB', 34.0)
+        else:
+            usd_to_thb = 34.0 # ค่าสำรองฉุกเฉินกรณี API ล่ม
+            
+        dime_total = dime_usd * usd_to_thb
 
         # 6. คำนวณยอดรวมทั้งหมด
         total_wealth = mfc_total + gpf_total + scb_total + dime_total
