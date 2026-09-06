@@ -1248,6 +1248,22 @@ async function loadDashboard() {
     // GPF (ถ้าไม่ได้เก็บกำไรไว้ ให้ % เป็น 0 ไปก่อน)
     gpfProfitPct = 0;
     gpfDailyProfitPct = 0;
+
+    // ==========================================
+    // คำนวณ % กำไรสะสมภาพรวมทั้งพอร์ต (Portfolio Gain Total %)
+    // ==========================================
+    const currentUsdRate = (typeof usdRate !== 'undefined' && usdRate) ? usdRate : ((typeof usdToThb !== 'undefined' && usdToThb) ? usdToThb : 32.89);
+    
+    const dimeTotalTHB = dimeTotalUSD * currentUsdRate;
+    const dimeProfitTHB = dimeProfitUSD * currentUsdRate;
+
+    const totalWealthVal = mfcTotal + gpfTotal + scbTotal + dimeTotalTHB;
+    const totalProfitVal = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
+    const totalCostVal = totalWealthVal - totalProfitVal;
+
+    // ส่งค่าเปอร์เซ็นต์ภาพรวมพอร์ตไปแสดงผล
+    totalProfitPct = totalCostVal > 0 ? (totalProfitVal / totalCostVal) * 100 : 0;
+    if (typeof portfolioGainPct !== 'undefined') portfolioGainPct = totalProfitPct;
     
     // ---------------- สกัด DIME Analytics ----------------
     console.log("แอบดูข้อมูล DIME Analytics:", dimeAnalyticsData); // 👈 เพิ่มบรรทัดนี้
