@@ -25,9 +25,18 @@ def create_daily_snapshot():
         gpf_res = requests.get(f"{FIREBASE_BASE_URL}/gpf_ports/my-gpf-4750131.json").json()
         gpf_total = sum(float(f.get('units', 0)) * float(f.get('currentNav', 0)) for f in gpf_res.get('funds', []))
 
-        # 4. ดึงยอด SCB จาก Firebase
-        scb_res = requests.get(f"{FIREBASE_BASE_URL}/scb_summary/current.json").json()
-        scb_total = float(scb_res.get('value', 0)) if scb_res else 0
+        # 4. ดึงยอด SCB จาก Supabase (ตาราง scb_funds)
+        scb_res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/scb_funds",
+            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+        ).json()
+        
+        # ตรวจสอบว่าเป็น list (ดึงสำเร็จ) แล้วคำนวณยอดรวม (units * currentNav)
+        if isinstance(scb_res, list):
+            scb_total = sum(float(f.get('units', 0)) * float(f.get('currentNav', 0)) for f in scb_res)
+        else:
+            scb_total = 0
+            print(f"⚠️ ไม่สามารถดึงข้อมูล SCB ได้: {scb_res}")
 
         # 5. ดึงยอด DIME จาก Firebase (หน่วย USD) และแปลงเป็นเงินบาท (THB)
         dime_res = requests.get(f"{FIREBASE_BASE_URL}/dime_summary/current.json").json()
