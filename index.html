@@ -1297,9 +1297,25 @@ async function loadDashboard() {
     }
 
          
-    // ---------------- สกัด Wealth History ----------------
+    // ---------------- สกัดและปรับโครงสร้าง Wealth History ----------------
+let history = [];
 if (wealthHistory && Array.isArray(wealthHistory)) {
-    history = wealthHistory; // ใช้ Array จาก Supabase ได้เลยตรงๆ
+    history = wealthHistory.map(item => {
+        const dateVal = item.snapshot_date || item.date || item.created_at || '';
+        const totalVal = Number(item.total_wealth ?? item.totalWealth ?? item.total ?? 0);
+        
+        return {
+            ...item,
+            date: dateVal,
+            snapshot_date: dateVal,
+            total: totalVal,
+            total_wealth: totalVal,
+            mfc: Number(item.mfc || 0),
+            gpf: Number(item.gpf || 0),
+            scb: Number(item.scb || 0),
+            dime: Number(item.dime || 0)
+        };
+    });
 }
 
 } catch (err) {
