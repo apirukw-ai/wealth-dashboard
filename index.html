@@ -1635,98 +1635,125 @@ function updateUI() {
 
     const fmtPct = (num) => `${(Number(num) || 0) >= 0 ? '▲ +' : '▼ '}${fmt(num)}%`;
 
-    const setEl = (selectors, text, colorClass = null) => {
-        const list = Array.isArray(selectors) ? selectors : [selectors];
-        for (const s of list) {
-            const el = s.startsWith('.') || s.startsWith('#') || s.includes(' ') 
-                ? document.querySelector(s) 
-                : document.getElementById(s);
-            if (el) {
-                el.textContent = text;
-                if (colorClass) el.className = colorClass;
-                return el;
-            }
+    // 1. อัปเดต Total Wealth หน้าหลัก
+    const totalWealthEl = document.getElementById('totalWealth') || document.querySelector('.total-wealth-val');
+    if (totalWealthEl) totalWealthEl.textContent = `฿${fmt(totalWealth)}`;
+
+    // ค้นหาการ์ดแต่ละใบจากข้อความ หัวข้อ
+    const allCards = Array.from(document.querySelectorAll('div')).filter(el => el.children.length > 1);
+
+    // --- 2. การ์ด PORTFOLIO GAIN (TOTAL) ---
+    const gainCard = allCards.find(c => {
+        const t = c.innerText || '';
+        return t.includes('Portfolio Gain') && t.includes('MFC') && t.includes('GPF');
+    });
+
+    if (gainCard) {
+        // อัปเดตยอดรวมใหญ่ประจำการ์ด
+        const mainVal = Array.from(gainCard.querySelectorAll('div, span, h1, h2, h3')).find(e => 
+            e.children.length === 0 && (e.textContent.includes('0.00') || e.textContent.includes('฿'))
+        );
+        if (mainVal) mainVal.textContent = fmtSigned(totalProfit);
+
+        const mainPct = Array.from(gainCard.querySelectorAll('div, span')).find(e => 
+            e.children.length === 0 && e.textContent.includes('%')
+        );
+        if (mainPct) {
+            mainPct.textContent = fmtPct(totalProfitPct);
+            mainPct.className = totalProfitPct >= 0 ? 'text-green-400' : 'text-red-400';
         }
-        return null;
-    };
 
-    // 1. Total Wealth (หน้าหลัก)
-    setEl(['#totalWealth', '.total-wealth-val'], `฿${fmt(totalWealth)}`);
-
-    // 2. Portfolio Gain (Total)
-    setEl(['#totalProfit', '#portfolioGainVal'], fmtSigned(totalProfit));
-    setEl(['#totalProfitPct', '#portfolioGainPct'], fmtPct(totalProfitPct), totalProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
-
-    // 3. Daily Profit (Today)
-    setEl(['#totalDailyProfit', '#totalDailyProfitToday', '#dailyProfitVal'], fmtSigned(totalDailyProfit));
-    setEl(['#totalDailyProfitPct', '#dailyProfitPct'], fmtPct(totalDailyProfitPct), totalDailyProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
-
-    // 4. Asset Allocation (%)
-    if (totalWealth > 0) {
-        setEl(['#mfcAllocPct', '#mfcPct'], `${fmt((mfcTotal / totalWealth) * 100)}%`);
-        setEl(['#gpfAllocPct', '#gpfPct'], `${fmt((gpfTotal / totalWealth) * 100)}%`);
-        setEl(['#scbAllocPct', '#scbPct'], `${fmt((scbTotal / totalWealth) * 100)}%`);
-        setEl(['#dimeAllocPct', '#dimePct'], `${fmt((dimeTHB / totalWealth) * 100)}%`);
+        // อัปเดตกล่องย่อย 4 พอร์ต
+        updateAppSubItems(gainCard, {
+            MFC: { val: fmtSigned(mfcProfit), pct: fmtPct(mfcProfitPct) },
+            GPF: { val: fmtSigned(gpfProfit), pct: fmtPct(gpfProfitPct) },
+            SCB: { val: fmtSigned(scbProfit), pct: fmtPct(scbProfitPct) },
+            DIME: { val: fmtSigned(dimeProfitUSD, '$'), pct: fmtPct(dimeProfitPct) }
+        });
     }
 
-    // 5. สแกนอัปเดตกล่องย่อยตามประเภทการ์ดอย่างแม่นยำ
-    document.querySelectorAll('div').forEach(card => {
-        const cardText = card.innerText || '';
-
-        // --- การ์ด PORTFOLIO GAIN ---
-        if (cardText.includes('Portfolio Gain')) {
-            updateCardSubBoxes(card, {
-                MFC: { profit: fmtSigned(mfcProfit), pct: fmtPct(mfcProfitPct) },
-                GPF: { profit: fmtSigned(gpfProfit), pct: fmtPct(gpfProfitPct) },
-                SCB: { profit: fmtSigned(scbProfit), pct: fmtPct(scbProfitPct) },
-                DIME: { profit: fmtSigned(dimeProfitUSD, '$'), pct: fmtPct(dimeProfitPct) }
-            });
-        }
-
-        // --- การ์ด DAILY PROFIT ---
-        if (cardText.includes('Daily Profit')) {
-            updateCardSubBoxes(card, {
-                MFC: { profit: fmtSigned(mfcDailyProfit), pct: fmtPct(mfcDailyProfitPct) },
-                GPF: { profit: fmtSigned(gpfDailyProfit), pct: fmtPct(gpfDailyProfitPct) },
-                SCB: { profit: fmtSigned(scbDailyProfit), pct: fmtPct(scbDailyProfitPct) },
-                DIME: { profit: fmtSigned(dimeDailyProfitUSD, '$'), pct: fmtPct(dimeDailyProfitPct) }
-            });
-        }
-
-        // --- การ์ด ASSET ALLOCATION ---
-        if (cardText.includes('Asset Allocation')) {
-            const totals = { MFC: `฿${fmt(mfcTotal)}`, GPF: `฿${fmt(gpfTotal)}`, SCB: `฿${fmt(scbTotal)}`, DIME: `$${fmt(dimeTotalUSD)}` };
-            Object.keys(totals).forEach(app => {
-                const subBox = Array.from(card.querySelectorAll('div')).find(b => b.innerText.includes(app));
-                if (subBox) {
-                    const dashEl = Array.from(subBox.querySelectorAll('span, div')).find(e => e.children.length === 0 && e.textContent.trim() === '-');
-                    if (dashEl) dashEl.textContent = totals[app];
-                }
-            });
-        }
+    // --- 3. การ์ด DAILY PROFIT (TODAY) ---
+    const dailyCard = allCards.find(c => {
+        const t = c.innerText || '';
+        return t.includes('Daily Profit') && t.includes('MFC') && t.includes('GPF');
     });
-}
 
-function updateCardSubBoxes(cardElement, dataMap) {
-    Object.keys(dataMap).forEach(app => {
-        const subBoxes = cardElement.querySelectorAll('div');
-        subBoxes.forEach(box => {
-            const txt = box.innerText || '';
-            // เจาะจงเฉพาะกล่องย่อยของพอร์ตนั้นๆ
-            if ((txt.startsWith(app) || txt.includes(app)) && txt.length < 60) {
-                const targetNodes = box.querySelectorAll('span, div');
-                targetNodes.forEach(node => {
-                    if (node.children.length === 0) {
-                        const content = node.textContent.trim();
-                        if (content.includes('%')) {
-                            node.textContent = dataMap[app].pct;
-                        } else if (content === '-' || content.includes('0.00') || content.includes('฿') || content.includes('$')) {
-                            node.textContent = dataMap[app].profit;
-                        }
+    if (dailyCard) {
+        // อัปเดตยอดรวมใหญ่ประจำการ์ด
+        const mainVal = Array.from(dailyCard.querySelectorAll('div, span, h1, h2, h3')).find(e => 
+            e.children.length === 0 && (e.textContent.includes('0.00') || e.textContent.includes('฿'))
+        );
+        if (mainVal) mainVal.textContent = fmtSigned(totalDailyProfit);
+
+        const mainPct = Array.from(dailyCard.querySelectorAll('div, span')).find(e => 
+            e.children.length === 0 && e.textContent.includes('%')
+        );
+        if (mainPct) {
+            mainPct.textContent = fmtPct(totalDailyProfitPct);
+            mainPct.className = totalDailyProfitPct >= 0 ? 'text-green-400' : 'text-red-400';
+        }
+
+        // อัปเดตกล่องย่อย 4 พอร์ต
+        updateAppSubItems(dailyCard, {
+            MFC: { val: fmtSigned(mfcDailyProfit), pct: fmtPct(mfcDailyProfitPct) },
+            GPF: { val: fmtSigned(gpfDailyProfit), pct: fmtPct(gpfDailyProfitPct) },
+            SCB: { val: fmtSigned(scbDailyProfit), pct: fmtPct(scbDailyProfitPct) },
+            DIME: { val: fmtSigned(dimeDailyProfitUSD, '$'), pct: fmtPct(dimeDailyProfitPct) }
+        });
+    }
+
+    // --- 4. การ์ด ASSET ALLOCATION ---
+    const allocCard = allCards.find(c => {
+        const t = c.innerText || '';
+        return t.includes('Asset Allocation') && t.includes('MFC') && t.includes('GPF');
+    });
+
+    if (allocCard) {
+        const allocData = {
+            MFC: { total: `฿${fmt(mfcTotal)}`, pct: totalWealth > 0 ? `${fmt((mfcTotal / totalWealth) * 100)}%` : '0.00%' },
+            GPF: { total: `฿${fmt(gpfTotal)}`, pct: totalWealth > 0 ? `${fmt((gpfTotal / totalWealth) * 100)}%` : '0.00%' },
+            SCB: { total: `฿${fmt(scbTotal)}`, pct: totalWealth > 0 ? `${fmt((scbTotal / totalWealth) * 100)}%` : '0.00%' },
+            DIME: { total: `$${fmt(dimeTotalUSD)}`, pct: totalWealth > 0 ? `${fmt((dimeTHB / totalWealth) * 100)}%` : '0.00%' }
+        };
+
+        Object.keys(allocData).forEach(app => {
+            const subBox = Array.from(allocCard.querySelectorAll('div')).find(b => {
+                const txt = b.innerText || '';
+                return txt.includes(app) && txt.length < 50;
+            });
+
+            if (subBox) {
+                const leafNodes = Array.from(subBox.querySelectorAll('span, div, p')).filter(n => n.children.length === 0 && !n.textContent.includes(app));
+                leafNodes.forEach(node => {
+                    const txt = node.textContent.trim();
+                    if (txt.includes('%')) {
+                        node.textContent = allocData[app].pct;
+                    } else if (txt === '-' || txt.includes('0.00') || txt.includes('฿') || txt.includes('$')) {
+                        node.textContent = allocData[app].total;
                     }
                 });
             }
         });
+    }
+}
+
+function updateAppSubItems(cardElement, dataMap) {
+    Object.keys(dataMap).forEach(app => {
+        const subBox = Array.from(cardElement.querySelectorAll('div')).find(b => {
+            const txt = b.innerText || '';
+            return txt.includes(app) && txt.length < 80;
+        });
+
+        if (subBox) {
+            const leafNodes = Array.from(subBox.querySelectorAll('span, div, p')).filter(n => n.children.length === 0 && !n.textContent.includes(app));
+            
+            if (leafNodes.length >= 2) {
+                leafNodes[0].textContent = dataMap[app].val;
+                leafNodes[1].textContent = dataMap[app].pct;
+            } else if (leafNodes.length === 1) {
+                leafNodes[0].textContent = dataMap[app].val;
+            }
+        }
     });
 }
 </script>
