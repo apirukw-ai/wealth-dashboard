@@ -1173,140 +1173,108 @@ function openTracker(url) {
 }
 
 // --- ฟังก์ชันหลัก ---
-
 async function loadDashboard() {
     console.log('START LOAD (Network Only)');
-    updateDashboardTimestamps();
+    if (typeof updateDashboardTimestamps === 'function') updateDashboardTimestamps();
     
-    // ดึงอัตราแลกเปลี่ยน USD/THB ปัจจุบัน
-    const fxRate = await getUsdThbRate();
+    // 1. ดึงอัตราแลกเปลี่ยน USD/THB
+    const fxRate = (typeof getUsdThbRate === 'function') ? await getUsdThbRate() : 32.89;
     
-    // 📍 ประกาศตัวแปรรวมยอดของแต่ละแอป
-    let mfcTotal = 0, mfcCost = 0, mfcProfit = 0;
-    let gpfTotal = 0, gpfCost = 0, gpfProfit = 0;
-    let scbTotal = 0, scbCost = 0, scbProfit = 0;
-    let dimeTotalUSD = 0, dimeCostUSD = 0, dimeProfitUSD = 0;
-    
-    // 📍 ประกาศตัวแปรกำไรรายวันของแต่ละแอป
-    let mfcDailyProfit = 0, mfcDailyProfitPct = 0;
-    let gpfDailyProfit = 0, gpfDailyProfitPct = 0;
-    let scbDailyProfit = 0, scbDailyProfitPct = 0;
-    let dimeDailyProfitUSD = 0, dimeDailyProfitPct = 0;
-
-    let dimeAnalytics = null;
-    let history = [];
-    let historyDataRaw = {};
-
     try {
-    const [summaryRes, dimeAnalyticsData, wealthHistory] = await Promise.all([
-        supabaseClient.from('v_portfolio_summary').select('*').single(),
-        supabaseClient.from('dime_ports').select('*').then(res => res.data || []),
-        supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
-    ]);
+        // 2. ดึงข้อมูลจาก Supabase แบบ Parallel
+        const [summaryRes, dimeAnalyticsData, wealthHistory] = await Promise.all([
+            supabaseClient.from('v_portfolio_summary').select('*').single(),
+            supabaseClient.from('dime_ports').select('*').then(res => res.data || []),
+            supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
+        ]);
 
-    const summary = summaryRes.data || {};
+        const summary = summaryRes.data || {};
 
-    // 1. ดึงค่ายอดสรุปไปใช้งานได้ทันที (ไม่ต้องวนลูปคำนวณซ้ำ)
-    gpfTotal = Number(summary.gpf_total || 0);
-    gpfProfit = Number(summary.gpf_profit || 0);
-    gpfDailyProfit = Number(summary.gpf_daily_profit || 0);
+        // 3. อัปเดตข้อมูลเข้าตัวแปรหลักโดยตรง (ไม่ใช้ let/const นำหน้าเพื่อเข้า Global Scope)
+        gpfTotal = Number(summary.gpf_total || 0);
+        gpfProfit = Number(summary.gpf_profit || 0);
+        gpfDailyProfit = Number(summary.gpf_daily_profit || 0);
 
-    scbTotal = Number(summary.scb_total || 0);
-    scbProfit = Number(summary.scb_profit || 0);
-    scbDailyProfit = Number(summary.scb_daily_profit || 0);
+        scbTotal = Number(summary.scb_total || 0);
+        scbProfit = Number(summary.scb_profit || 0);
+        scbDailyProfit = Number(summary.scb_daily_profit || 0);
 
-    dimeTotalUSD = Number(summary.dime_total || 0);
-    dimeProfitUSD = Number(summary.dime_profit || 0);
-    dimeDailyProfitUSD = Number(summary.dime_daily_profit || 0);
+        dimeTotalUSD = Number(summary.dime_total_usd || 0);
+        dimeProfitUSD = Number(summary.dime_profit_usd || 0);
+        dimeDailyProfitUSD = Number(summary.dime_daily_profit_usd || 0);
 
-    mfcTotal = Number(summary.mfc_total || 0);
-    mfcProfit = Number(summary.mfc_profit || 0);
-    mfcDailyProfit = Number(summary.mfc_daily_profit || 0);
+        mfcTotal = Number(summary.mfc_total || 0);
+        mfcProfit = Number(summary.mfc_profit || 0);
+        mfcDailyProfit = Number(summary.mfc_daily_profit || 0);
 
-    // ==========================================
-    // คำนวณ % กำไรสะสม และ % รายวัน (อัปเดตเข้าตัวแปรหลัก)
-    // ==========================================
+        // 4. แปลงมูลค่า DIME (USD) เป็น บาท (THB)
+        const dimeTHB = dimeTotalUSD * fxRate;
+        const dimeProfitTHB = dimeProfitUSD * fxRate;
+        const dimeDailyProfitTHB = dimeDailyProfitUSD * fxRate;
 
-    // 1. MFC
-    mfcProfitPct = (mfcTotal - mfcProfit) > 0 ? (mfcProfit / (mfcTotal - mfcProfit)) * 100 : 0;
-    mfcDailyProfitPct = (mfcTotal - mfcDailyProfit) > 0 ? (mfcDailyProfit / (mfcTotal - mfcDailyProfit)) * 100 : 0;
+        // 5. คำนวณ % กำไรสะสม และ % รายวัน แต่ละพอร์ต
+        const gpfCost = gpfTotal - gpfProfit;
+        gpfProfitPct = gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0;
+        gpfDailyProfitPct = (gpfTotal - gpfDailyProfit) > 0 ? (gpfDailyProfit / (gpfTotal - gpfDailyProfit)) * 100 : 0;
 
-    // 2. SCB
-    scbProfitPct = (scbTotal - scbProfit) > 0 ? (scbProfit / (scbTotal - scbProfit)) * 100 : 0;
-    scbDailyProfitPct = (scbTotal - scbDailyProfit) > 0 ? (scbDailyProfit / (scbTotal - scbDailyProfit)) * 100 : 0;
+        const scbCost = scbTotal - scbProfit;
+        scbProfitPct = scbCost > 0 ? (scbProfit / scbCost) * 100 : 0;
+        scbDailyProfitPct = (scbTotal - scbDailyProfit) > 0 ? (scbDailyProfit / (scbTotal - scbDailyProfit)) * 100 : 0;
 
-    // 3. DIME (คิด % จาก USD)
-    dimeProfitPct = (dimeTotalUSD - dimeProfitUSD) > 0 ? (dimeProfitUSD / (dimeTotalUSD - dimeProfitUSD)) * 100 : 0;
-    dimeDailyProfitPct = (dimeTotalUSD - dimeDailyProfitUSD) > 0 ? (dimeDailyProfitUSD / (dimeTotalUSD - dimeDailyProfitUSD)) * 100 : 0;
+        const mfcCost = mfcTotal - mfcProfit;
+        mfcProfitPct = mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0;
+        mfcDailyProfitPct = (mfcTotal - mfcDailyProfit) > 0 ? (mfcDailyProfit / (mfcTotal - mfcDailyProfit)) * 100 : 0;
 
-    // 4. GPF
-    gpfProfitPct = 0;
-    gpfDailyProfitPct = 0;
+        const dimeCostUSD = dimeTotalUSD - dimeProfitUSD;
+        dimeProfitPct = dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0;
+        dimeDailyProfitPct = (dimeTotalUSD - dimeDailyProfitUSD) > 0 ? (dimeDailyProfitUSD / (dimeTotalUSD - dimeDailyProfitUSD)) * 100 : 0;
 
-    // ==========================================
-    // คำนวณ % กำไรสะสมภาพรวมทั้งพอร์ต (Portfolio Gain Total %)
-    // ==========================================
-    const currentUsdRate = (typeof usdRate !== 'undefined' && usdRate) ? usdRate : ((typeof usdToThb !== 'undefined' && usdToThb) ? usdToThb : 32.89);
+        // 6. คำนวณยอดรวมภาพรวมทั้งพอร์ต (Total)
+        totalWealth = mfcTotal + gpfTotal + scbTotal + dimeTHB;
+        totalProfit = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
+        totalDailyProfit = mfcDailyProfit + gpfDailyProfit + scbDailyProfit + dimeDailyProfitTHB;
 
-    const dimeTotalTHB = dimeTotalUSD * currentUsdRate;
-    const dimeProfitTHB = dimeProfitUSD * currentUsdRate;
+        const totalCost = totalWealth - totalProfit;
+        totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
-    const totalWealthVal = mfcTotal + gpfTotal + scbTotal + dimeTotalTHB;
-    const totalProfitVal = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
-    const totalCostVal = totalWealthVal - totalProfitVal;
+        const prevTotalWealth = totalWealth - totalDailyProfit;
+        totalDailyProfitPct = prevTotalWealth > 0 ? (totalDailyProfit / prevTotalWealth) * 100 : 0;
 
-    // อัปเดต % กำไรภาพรวมพอร์ต
-    totalProfitPct = totalCostVal > 0 ? (totalProfitVal / totalCostVal) * 100 : 0;
-    if (typeof portfolioGainPct !== 'undefined') portfolioGainPct = totalProfitPct;
-    
-    // ---------------- สกัด DIME Analytics ----------------
-    console.log("แอบดูข้อมูล DIME Analytics:", dimeAnalyticsData); // 👈 เพิ่มบรรทัดนี้
-    if (dimeAnalyticsData) {
-        dimeAnalytics = dimeAnalyticsData; 
+        // ผูกเข้า Window Scope เพื่อป้องกัน ReferenceError บน UI
+        window.portfolioGainPct = totalProfitPct;
+        window.totalProfitPct = totalProfitPct;
+        window.totalDailyProfitPct = totalDailyProfitPct;
+
+        // 7. จัดการ DIME Analytics & Wealth History
+        if (dimeAnalyticsData) dimeAnalytics = dimeAnalyticsData;
+
+        if (wealthHistory && Array.isArray(wealthHistory)) {
+            history = wealthHistory.map(item => {
+                const dateVal = item.snapshot_date || item.date || item.created_at || '';
+                const totalVal = Number(item.total_wealth ?? item.totalWealth ?? item.total ?? 0);
+                return {
+                    ...item,
+                    date: dateVal,
+                    snapshot_date: dateVal,
+                    total: totalVal,
+                    total_wealth: totalVal,
+                    mfc: Number(item.mfc || 0),
+                    gpf: Number(item.gpf || 0),
+                    scb: Number(item.scb || 0),
+                    dime: Number(item.dime || 0)
+                };
+            });
+        }
+
+        // 8. สั่ง Render หน้าจอและกราฟ
+        if (typeof updateUI === 'function') updateUI();
+        if (typeof renderCharts === 'function') renderCharts();
+
+    } catch (err) {
+        console.error('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูล Dashboard:', err);
     }
-
-         
-    // ---------------- สกัดและปรับโครงสร้าง Wealth History ----------------
-let history = [];
-if (wealthHistory && Array.isArray(wealthHistory)) {
-    history = wealthHistory.map(item => {
-        const dateVal = item.snapshot_date || item.date || item.created_at || '';
-        const totalVal = Number(item.total_wealth ?? item.totalWealth ?? item.total ?? 0);
-        
-        return {
-            ...item,
-            date: dateVal,
-            snapshot_date: dateVal,
-            total: totalVal,
-            total_wealth: totalVal,
-            mfc: Number(item.mfc || 0),
-            gpf: Number(item.gpf || 0),
-            scb: Number(item.scb || 0),
-            dime: Number(item.dime || 0)
-        };
-    });
 }
 
-} catch (err) {
-    console.error('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูล Dashboard:', err);
-}
-    // 📍 1. แปลงมูลค่า DIME (USD) เป็น THB
-    const dimeTHB = dimeTotalUSD * fxRate;
-    const dimeDailyProfitTHB = dimeDailyProfitUSD * fxRate;
-
-    // 📍 2. คำนวณ Total Wealth รวม 4 พอร์ต (THB)
-    const totalWealth = mfcTotal + gpfTotal + scbTotal + dimeTHB;
-
-    // 📍 3. รวมต้นทุนและกำไรสะสมภาพรวม ทั้ง 4 พอร์ต
-    const totalCost = mfcCost + gpfCost + scbCost + (dimeCostUSD * fxRate);
-    const totalProfit = mfcProfit + gpfProfit + scbProfit + (dimeProfitUSD * fxRate);
-    const totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
-
-    // 📍 4. รวมกำไรรายวันภาพรวม ทั้ง 4 พอร์ต
-    const totalDailyProfitToday = mfcDailyProfit + gpfDailyProfit + scbDailyProfit + dimeDailyProfitTHB;
-    const totalDailyProfitPct = (totalWealth - totalDailyProfitToday) > 0 
-        ? (totalDailyProfitToday / (totalWealth - totalDailyProfitToday)) * 100 
-        : 0;
 
     // 📍 5. แสดงผลการ์ดใหญ่ Portfolio Gain
     const totalGainValEl = document.getElementById('totalGainValue');
