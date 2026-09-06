@@ -10,18 +10,21 @@ jobs:
   snapshot:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: Install dependencies
         run: |
-          pip install requests firebase-admin # 👈 เพิ่ม firebase-admin
+          pip install requests
 
       - name: Run Snapshot Script
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }} # 👈 เพิ่มการดึง Secret สำหรับ Admin SDK
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          FIREBASE_BASE_URL: ${{ secrets.FIREBASE_BASE_URL }}
+          FIREBASE_SECRET: ${{ secrets.FIREBASE_SECRET }}
         run: python daily_snapshot.py
