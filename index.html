@@ -1232,7 +1232,7 @@ async function loadDashboard() {
         mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
     }
 
-    // ---------------- สกัด GPF ----------------
+    // ---------------- 1. สกัด GPF ----------------
     gpfTotal = 0;
     gpfCost = 0;
     gpfDailyProfit = 0;
@@ -1240,16 +1240,19 @@ async function loadDashboard() {
     if (Array.isArray(gpfData) && gpfData.length > 0) {
         gpfData.forEach(item => {
             const units = Number(item.units || 0);
-            const nav = Number(item.nav || item.currentnav || item.current_nav || item.currentNav || 0);
-            const prevNav = Number(item.prev_nav || item.prevNav || item.avgnav || item.avgNav || nav);
+            const nav = Number(item.nav ?? item.currentnav ?? item.current_nav ?? item.currentNav ?? 0);
+            const avgNav = Number(item.avgnav ?? item.avg_nav ?? item.avgNav ?? 0);
+            const prevNav = Number(item.prev_nav ?? item.prevNav ?? nav);
             const amt = Number(item.amount || (units * nav) || 0);
             
             gpfTotal += amt;
-            gpfDailyProfit += (nav - prevNav) * units;
+            gpfCost += (units * avgNav);
+            gpfDailyProfit += ((nav - prevNav) * units);
         });
     }
 
-    gpfProfit = gpfTotal - gpfCost;
+    // กำไรสะสม = ยอดรวม - ต้นทุน (ถ้าไม่มีต้นทุนให้เป็น 0)
+    gpfProfit = gpfCost > 0 ? (gpfTotal - gpfCost) : 0;
     const gpfPrevTotal = gpfTotal - gpfDailyProfit;
     gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
     
@@ -1262,17 +1265,24 @@ async function loadDashboard() {
     if (scbData && Array.isArray(scbData)) {
         scbData.forEach(f => {
             const units = Number(f.units || 0);
-            const currentNav = Number(f.currentnav !== undefined ? f.currentnav : (f.currentNav || 0));
-            const avgNav = Number(f.avgnav !== undefined ? f.avgnav : (f.avgNav || 0));
-            const dailyPct = Number(f.daily_pct !== undefined ? f.daily_pct : (f.dailyPct || 0));
+            const currentNav = Number(f.currentnav ?? f.currentNav ?? f.nav ?? 0);
+            const avgNav = Number(f.avgnav ?? f.avgNav ?? 0);
+            const prevNav = Number(f.prev_nav ?? f.prevNav ?? 0);
+            const dailyPct = Number(f.daily_pct ?? f.dailyPct ?? 0);
 
             const fVal = units * currentNav;
             const cost = units * avgNav;
-            const valYesterday = dailyPct !== 0 ? (fVal / (1 + (dailyPct / 100))) : fVal;
-
+            
             scbTotal += fVal;
             scbCost += cost;
-            scbTotalValYesterday += valYesterday;
+
+            if (dailyPct !== 0) {
+                scbTotalValYesterday += fVal / (1 + (dailyPct / 100));
+            } else if (prevNav > 0) {
+                scbTotalValYesterday += (units * prevNav);
+            } else {
+                scbTotalValYesterday += fVal;
+            }
         });
     }
 
@@ -1285,30 +1295,35 @@ async function loadDashboard() {
         dimeTotalUSD = Number(dimeSummary.value || dimeSummary.total || 0);
         dimeCostUSD = Number(dimeSummary.cost || 0);
         dimeProfitUSD = Number(dimeSummary.profit || (dimeTotalUSD - dimeCostUSD));
-        dimeDailyProfitUSD = Number(dimeSummary.daily_profit || dimeSummary.dailyProfit || dimeSummary.today_gain || dimeSummary.todayGain || 0);
-        dimeDailyProfitPct = Number(dimeSummary.daily_profit_pct || dimeSummary.dailyProfitPct || 0);
+        dimeDailyProfitUSD = Number(dimeSummary.daily_profit ?? dimeSummary.dailyProfit ?? dimeSummary.today_gain ?? dimeSummary.todayGain ?? 0);
+        dimeDailyProfitPct = Number(dimeSummary.daily_profit_pct ?? dimeSummary.dailyProfitPct ?? 0);
     } else if (Array.isArray(dimeAnalyticsData) && dimeAnalyticsData.length > 0) {
-        // สำรอง: คำนวณยอดรวมสุทธิและกำไรประจำวันจาก dime_ports ใน Supabase โดยตรง
         dimeCostUSD = 0;
         dimeTotalUSD = 0;
         dimeDailyProfitUSD = 0;
         
         dimeAnalyticsData.forEach(item => {
             const shares = Number(item.shares || item.units || item.amount || 1);
-            const avgNav = Number(item.avgnav !== undefined ? item.avgnav : (item.avgNav || 0));
-            const currentNav = Number(item.currentnav !== undefined ? item.currentnav : (item.currentNav || 0));
-            const prevNav = Number(item.prev_nav !== undefined ? item.prev_nav : (item.prevNav || avgNav));
+            const avgNav = Number(item.avgnav ?? item.avgNav ?? 0);
+            const currentNav = Number(item.currentnav ?? item.currentNav ?? 0);
+            // prevNav ต้อง fallback ไปที่ currentNav (ไม่ใช้ avgNav เพื่อป้องกันไม่ให้คิดเป็นกำไรสะสมรวม)
+            const prevNav = Number(item.prev_nav ?? item.prevNav ?? currentNav);
+            const dailyProfitItem = Number(item.daily_profit ?? item.dailyProfit ?? item.today_gain ?? item.todayGain ?? 0);
             
             dimeCostUSD += (avgNav * shares);
             dimeTotalUSD += (currentNav * shares);
-            dimeDailyProfitUSD += ((currentNav - prevNav) * shares);
+
+            if (dailyProfitItem !== 0) {
+                dimeDailyProfitUSD += dailyProfitItem;
+            } else {
+                dimeDailyProfitUSD += ((currentNav - prevNav) * shares);
+            }
         });
         
         dimeProfitUSD = dimeTotalUSD - dimeCostUSD;
         const dimePrevTotal = dimeTotalUSD - dimeDailyProfitUSD;
         dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfitUSD / dimePrevTotal) * 100 : 0;
     }
-
     // ---------------- สกัด DIME Analytics ----------------
     console.log("แอบดูข้อมูล DIME Analytics:", dimeAnalyticsData); // 👈 เพิ่มบรรทัดนี้
     if (dimeAnalyticsData) {
