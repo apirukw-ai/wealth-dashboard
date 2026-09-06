@@ -1222,6 +1222,33 @@ async function loadDashboard() {
     mfcTotal = Number(summary.mfc_total || 0);
     mfcProfit = Number(summary.mfc_profit || 0);
     mfcDailyProfit = Number(summary.mfc_daily_profit || 0);
+
+    // ==========================================
+    // 2. คำนวณเปอร์เซ็นต์ (%) สำหรับแสดงบน UI
+    // ==========================================
+    
+    // MFC
+    let mfcCost = mfcTotal - mfcProfit;
+    mfcProfitPct = mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0;
+    let mfcPrevTotal = mfcTotal - mfcDailyProfit;
+    mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
+
+    // SCB
+    let scbCost = scbTotal - scbProfit;
+    scbProfitPct = scbCost > 0 ? (scbProfit / scbCost) * 100 : 0;
+    let scbPrevTotal = scbTotal - scbDailyProfit;
+    scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
+
+    // DIME
+    let dimeCostUSD = dimeTotalUSD - dimeProfitUSD;
+    dimeProfitPct = dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0;
+    let dimePrevTotal = dimeTotalUSD - dimeDailyProfitUSD;
+    dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfitUSD / dimePrevTotal) * 100 : 0;
+    
+    // GPF (ถ้าไม่ได้เก็บกำไรไว้ ให้ % เป็น 0 ไปก่อน)
+    gpfProfitPct = 0;
+    gpfDailyProfitPct = 0;
+    
     // ---------------- สกัด DIME Analytics ----------------
     console.log("แอบดูข้อมูล DIME Analytics:", dimeAnalyticsData); // 👈 เพิ่มบรรทัดนี้
     if (dimeAnalyticsData) {
