@@ -1160,7 +1160,7 @@ async function loadDashboard() {
             return res.data;
         }), 
         fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json').then(r => r.json()),
-        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_analytics/current.json').then(r => r.json()),
+        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_ports/my-real-dime-port.json').then(r => r.json()),
         fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
     ]);
 
