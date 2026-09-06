@@ -1237,17 +1237,15 @@ async function loadDashboard() {
     gpfCost = 0;
     gpfDailyProfit = 0;
 
-    console.log("GPF Data from Supabase:", gpfData); // สำหรับตรวจสอบข้อมูลใน Console (F12)
-
     if (Array.isArray(gpfData) && gpfData.length > 0) {
         gpfData.forEach(item => {
-            const amt = Number(item.amount || item.value || 0);
             const units = Number(item.units || 0);
-            const nav = Number(item.nav || item.currentnav || item.currentNav || 0);
+            const nav = Number(item.nav || item.currentnav || item.current_nav || item.currentNav || 0);
+            const prevNav = Number(item.prev_nav || item.prevNav || item.avgnav || item.avgNav || nav);
+            const amt = Number(item.amount || (units * nav) || 0);
             
-            // ใช้ยอด amount ก่อน ถ้าไม่มีให้ใช้ units * nav
-            const fundValue = (amt > 0) ? amt : (units * nav);
-            gpfTotal += fundValue;
+            gpfTotal += amt;
+            gpfDailyProfit += (nav - prevNav) * units;
         });
     }
 
@@ -1256,51 +1254,59 @@ async function loadDashboard() {
     gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
     
     // ---------------- สกัด SCB ----------------
-    if (scbData && Array.isArray(scbData)) {
-        scbTotal = 0;
-        scbCost = 0;
-        let totalValYesterday = 0;
+    scbTotal = 0;
+    scbCost = 0;
+    scbDailyProfit = 0;
+    let scbTotalValYesterday = 0;
 
+    if (scbData && Array.isArray(scbData)) {
         scbData.forEach(f => {
             const units = Number(f.units || 0);
-            const currentNav = Number(f.currentNav || 0);
-            const avgNav = Number(f.avgNav || 0);
-            const dailyPct = Number(f.dailyPct || 0); 
+            const currentNav = Number(f.currentnav !== undefined ? f.currentnav : (f.currentNav || 0));
+            const avgNav = Number(f.avgnav !== undefined ? f.avgnav : (f.avgNav || 0));
+            const dailyPct = Number(f.daily_pct !== undefined ? f.daily_pct : (f.dailyPct || 0));
 
             const fVal = units * currentNav;
             const cost = units * avgNav;
-            const valYesterday = fVal / (1 + (dailyPct / 100));
+            const valYesterday = dailyPct !== 0 ? (fVal / (1 + (dailyPct / 100))) : fVal;
 
             scbTotal += fVal;
             scbCost += cost;
-            totalValYesterday += valYesterday;
-        }); // 👈 ปิดลูป forEach ของ SCB ตรงนี้ (จุดที่ลืมใส่ในโค้ดเดิม)
-
-        scbProfit = scbTotal - scbCost;
-        scbDailyProfit = scbTotal - totalValYesterday;
-        scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
+            scbTotalValYesterday += valYesterday;
+        });
     }
 
+    scbProfit = scbTotal - scbCost;
+    scbDailyProfit = scbTotal - scbTotalValYesterday;
+    scbDailyProfitPct = scbTotalValYesterday > 0 ? (scbDailyProfit / scbTotalValYesterday) * 100 : 0;
+    
     // ---------------- สกัด DIME ----------------
     if (dimeSummary && (dimeSummary.value || dimeSummary.total_thb || dimeSummary.total)) {
         dimeTotalUSD = Number(dimeSummary.value || dimeSummary.total || 0);
         dimeCostUSD = Number(dimeSummary.cost || 0);
         dimeProfitUSD = Number(dimeSummary.profit || (dimeTotalUSD - dimeCostUSD));
-        dimeDailyProfitUSD = Number(dimeSummary.dailyProfit || dimeSummary.todayGain || 0);
-        dimeDailyProfitPct = Number(dimeSummary.dailyProfitPct || 0);
+        dimeDailyProfitUSD = Number(dimeSummary.daily_profit || dimeSummary.dailyProfit || dimeSummary.today_gain || dimeSummary.todayGain || 0);
+        dimeDailyProfitPct = Number(dimeSummary.daily_profit_pct || dimeSummary.dailyProfitPct || 0);
     } else if (Array.isArray(dimeAnalyticsData) && dimeAnalyticsData.length > 0) {
-        // สำรอง: คำนวณยอดรวมสุทธิจากตาราง dime_ports ใน Supabase โดยตรง
+        // สำรอง: คำนวณยอดรวมสุทธิและกำไรประจำวันจาก dime_ports ใน Supabase โดยตรง
         dimeCostUSD = 0;
         dimeTotalUSD = 0;
+        dimeDailyProfitUSD = 0;
+        
         dimeAnalyticsData.forEach(item => {
-            const shares = Number(item.shares || item.units || 1);
+            const shares = Number(item.shares || item.units || item.amount || 1);
             const avgNav = Number(item.avgnav !== undefined ? item.avgnav : (item.avgNav || 0));
             const currentNav = Number(item.currentnav !== undefined ? item.currentnav : (item.currentNav || 0));
+            const prevNav = Number(item.prev_nav !== undefined ? item.prev_nav : (item.prevNav || avgNav));
             
             dimeCostUSD += (avgNav * shares);
             dimeTotalUSD += (currentNav * shares);
+            dimeDailyProfitUSD += ((currentNav - prevNav) * shares);
         });
+        
         dimeProfitUSD = dimeTotalUSD - dimeCostUSD;
+        const dimePrevTotal = dimeTotalUSD - dimeDailyProfitUSD;
+        dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfitUSD / dimePrevTotal) * 100 : 0;
     }
 
     // ---------------- สกัด DIME Analytics ----------------
