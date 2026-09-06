@@ -1237,13 +1237,17 @@ async function loadDashboard() {
     gpfCost = 0;
     gpfDailyProfit = 0;
 
+    console.log("GPF Data from Supabase:", gpfData); // สำหรับตรวจสอบข้อมูลใน Console (F12)
+
     if (Array.isArray(gpfData) && gpfData.length > 0) {
         gpfData.forEach(item => {
+            const amt = Number(item.amount || item.value || 0);
             const units = Number(item.units || 0);
-            const currentNav = Number(item.nav || item.currentnav || item.currentNav || 0);
-            const amt = Number(item.amount || (units * currentNav) || 0);
+            const nav = Number(item.nav || item.currentnav || item.currentNav || 0);
             
-            gpfTotal += amt;
+            // ใช้ยอด amount ก่อน ถ้าไม่มีให้ใช้ units * nav
+            const fundValue = (amt > 0) ? amt : (units * nav);
+            gpfTotal += fundValue;
         });
     }
 
