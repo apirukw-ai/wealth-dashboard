@@ -1224,28 +1224,22 @@ async function loadDashboard() {
     mfcDailyProfit = Number(summary.mfc_daily_profit || 0);
 
     // ==========================================
-    // 2. คำนวณเปอร์เซ็นต์ (%) สำหรับแสดงบน UI
+    // คำนวณ % กำไรสะสม และ % รายวัน (อัปเดตเข้าตัวแปรหลัก)
     // ==========================================
-    
-    // MFC
-    let mfcCost = mfcTotal - mfcProfit;
-    mfcProfitPct = mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0;
-    let mfcPrevTotal = mfcTotal - mfcDailyProfit;
-    mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
 
-    // SCB
-    let scbCost = scbTotal - scbProfit;
-    scbProfitPct = scbCost > 0 ? (scbProfit / scbCost) * 100 : 0;
-    let scbPrevTotal = scbTotal - scbDailyProfit;
-    scbDailyProfitPct = scbPrevTotal > 0 ? (scbDailyProfit / scbPrevTotal) * 100 : 0;
+    // 1. MFC
+    mfcProfitPct = (mfcTotal - mfcProfit) > 0 ? (mfcProfit / (mfcTotal - mfcProfit)) * 100 : 0;
+    mfcDailyProfitPct = (mfcTotal - mfcDailyProfit) > 0 ? (mfcDailyProfit / (mfcTotal - mfcDailyProfit)) * 100 : 0;
 
-    // DIME
-    let dimeCostUSD = dimeTotalUSD - dimeProfitUSD;
-    dimeProfitPct = dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0;
-    let dimePrevTotal = dimeTotalUSD - dimeDailyProfitUSD;
-    dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfitUSD / dimePrevTotal) * 100 : 0;
-    
-    // GPF (ถ้าไม่ได้เก็บกำไรไว้ ให้ % เป็น 0 ไปก่อน)
+    // 2. SCB
+    scbProfitPct = (scbTotal - scbProfit) > 0 ? (scbProfit / (scbTotal - scbProfit)) * 100 : 0;
+    scbDailyProfitPct = (scbTotal - scbDailyProfit) > 0 ? (scbDailyProfit / (scbTotal - scbDailyProfit)) * 100 : 0;
+
+    // 3. DIME (คิด % จาก USD)
+    dimeProfitPct = (dimeTotalUSD - dimeProfitUSD) > 0 ? (dimeProfitUSD / (dimeTotalUSD - dimeProfitUSD)) * 100 : 0;
+    dimeDailyProfitPct = (dimeTotalUSD - dimeDailyProfitUSD) > 0 ? (dimeDailyProfitUSD / (dimeTotalUSD - dimeDailyProfitUSD)) * 100 : 0;
+
+    // 4. GPF
     gpfProfitPct = 0;
     gpfDailyProfitPct = 0;
 
@@ -1261,11 +1255,9 @@ async function loadDashboard() {
     const totalProfitVal = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
     const totalCostVal = totalWealthVal - totalProfitVal;
 
-    // คำนวณค่า % และส่งไปยัง Global Scope โดยตรงเพื่อป้องกัน Error
-    const calcTotalProfitPct = totalCostVal > 0 ? (totalProfitVal / totalCostVal) * 100 : 0;
-    
-    window.totalProfitPct = calcTotalProfitPct;
-    window.portfolioGainPct = calcTotalProfitPct;
+    // อัปเดต % กำไรภาพรวมพอร์ต
+    totalProfitPct = totalCostVal > 0 ? (totalProfitVal / totalCostVal) * 100 : 0;
+    if (typeof portfolioGainPct !== 'undefined') portfolioGainPct = totalProfitPct;
     
     // ---------------- สกัด DIME Analytics ----------------
     console.log("แอบดูข้อมูล DIME Analytics:", dimeAnalyticsData); // 👈 เพิ่มบรรทัดนี้
