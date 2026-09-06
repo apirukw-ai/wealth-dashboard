@@ -64,12 +64,11 @@ def create_daily_snapshot():
             "createdAt": datetime.now().isoformat()
         }
 
-        # 7. ส่งบันทึกเข้า Supabase (แทนที่ Firebase เดิม)
-        # ปรับชื่อคีย์ใน dict ให้ตรงกับคอลัมน์ของตาราง wealth_history ใน Supabase
+        # 7. ส่งบันทึกเข้า Supabase
         supabase_payload = [{
-            "snapshot_date": date_str,  # หรือใช้ snapshot_key (รูปแบบ YYYY-MM-DD)
+            "snapshot_date": date_str,
             "total_wealth": float(total_wealth),
-            "mfc": float(mfc_total),    # ปรับชื่อตัวแปรฝั่งขวาให้ตรงกับตัวแปรที่คุณคำนวณไว้ในสคริปต์
+            "mfc": float(mfc_total),
             "gpf": float(gpf_total),
             "scb": float(scb_total),
             "dime": float(dime_total)
@@ -79,12 +78,12 @@ def create_daily_snapshot():
             "apikey": SUPABASE_KEY,
             "Authorization": f"Bearer {SUPABASE_KEY}",
             "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"  # หากมีข้อมูลวันที่นี้อยู่แล้ว จะอัปเดตทับให้อัตโนมัติ
+            "Prefer": "resolution=merge-duplicates"
         }
 
         save_res = requests.post(f"{SUPABASE_URL}/rest/v1/wealth_history", headers=headers, json=supabase_payload)
 
-       if save_res.status_code in [200, 201, 204]:
+        if save_res.status_code in [200, 201, 204]:
             print(f"✅ บันทึก Snapshot ลง Supabase ของวันที่ {date_str} สำเร็จ: ยอดรวม ฿{total_wealth:,.2f}")
         else:
             print(f"⚠️ บันทึกไม่สำเร็จ HTTP {save_res.status_code}: {save_res.text}")
