@@ -1150,151 +1150,112 @@ async function loadDashboard() {
 
     try {
     const [mfcData, gpfData, scbData, dimeSummary, dimeAnalytics, wealthHistory] = await Promise.all([
-        // ดึง MFC จากตาราง policies
         supabaseClient.from('policies').select('*').then(res => {
-            if (res.error) throw res.error; // ถ้า Supabase แจ้ง Error ให้โยนเข้า catch
+            if (res.error) throw res.error;
             return res.data;
         }), 
-        
         fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json').then(r => r.json()),
-        
-        // ดึง SCB จากตาราง scb_funds
         supabaseClient.from('scb_funds').select('*').then(res => {
-            if (res.error) throw res.error; // ถ้า Supabase แจ้ง Error ให้โยนเข้า catch
+            if (res.error) throw res.error;
             return res.data;
         }), 
-        
         fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json').then(r => r.json()),
         fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_analytics/current.json').then(r => r.json()),
         fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
     ]);
 
-    // 🟢 ถ้าดึงสำเร็จทั้งหมด โค้ดส่วนคำนวณและแสดงผลบน Dashboard จะทำงานตรงนี้
-    console.log("MFC Data:", mfcData);
-    console.log("SCB Data:", scbData);
-    // ... นำข้อมูลไป render ลงหน้าเว็บ ...
+    // ---------------- สกัด MFC ----------------
+    if (mfcData && Array.isArray(mfcData)) {
+        mfcTotal = 0;
+        mfcCost = 0;
+        mfcDailyProfit = 0;
 
-} catch (error) {
-    // 🔴 ถ้ามีอันไหนพัง จะเด้งมาทำงานตรงนี้แทน ทำให้หน้าเว็บไม่ค้าง
-    console.error("❌ เกิดข้อผิดพลาดในการดึงข้อมูล Dashboard:", error);
-    // อาจจะทำ UI แจ้งเตือนผู้ใช้งาน เช่น alert("ไม่สามารถโหลดข้อมูลได้ในขณะนี้");
-}
+        mfcData.forEach(item => {
+            const units = parseFloat(item.units || 0);
+            const nav = parseFloat(item.nav || 0);
+            const prevAmt = parseFloat(item.prev_amt || 0);
+            const costVal = parseFloat(item.cost || item.cost_val || item.initial_cost || prevAmt || (units * nav));
+            const currentVal = units * nav;
+            
+            mfcTotal += currentVal;
+            mfcCost += costVal;
+            if (prevAmt > 0) {
+                mfcDailyProfit += (currentVal - prevAmt);
+            }
+        });
 
-        // ---------------- สกัด MFC ----------------
-// เช็กแค่ว่า mfcData มีค่าและเป็น Array หรือไม่
-if (mfcData && Array.isArray(mfcData)) {
-    mfcTotal = 0;
-    mfcCost = 0;
-    mfcDailyProfit = 0;
-
-    mfcData.forEach(item => {
-        // ดึงค่าจาก Column ใน Supabase
-        const units = parseFloat(item.units || 0);
-        const nav = parseFloat(item.nav || 0);
-        const prevAmt = parseFloat(item.prev_amt || 0);
-        
-        const costVal = parseFloat(item.cost || item.cost_val || item.initial_cost || prevAmt || (units * nav));
-
-        const currentVal = units * nav;
-        mfcTotal += currentVal;
-        mfcCost += costVal;
-
-        if (prevAmt > 0) {
-            mfcDailyProfit += (currentVal - prevAmt);
-        }
-    });
-
-    mfcProfit = mfcTotal - mfcCost;
-    const mfcPrevTotal = mfcTotal - mfcDailyProfit;
-    mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
-}
-
-        // ---------------- สกัด GPF ----------------
-// เช็กว่า gpfData มีค่าและมี object funds อยู่ข้างใน
-if (gpfData && gpfData.funds) {
-    gpfTotal = 0;
-    gpfCost = 0;
-    gpfDailyProfit = 0;
-
-            gpfRes.value.funds.forEach(f => {
-                const units = Number(f.units || 0);
-                const currentNav = Number(f.currentNav || 0);
-                const avgNav = Number(f.avgNav || f.costNav || currentNav);
-                const prevNav = Number(f.prevNav || avgNav || currentNav);
-
-                gpfTotal += units * currentNav;
-                gpfCost += units * avgNav;
-                gpfDailyProfit += (currentNav - prevNav) * units;
-            });
-
-            gpfProfit = gpfTotal - gpfCost;
-            const gpfPrevTotal = gpfTotal - gpfDailyProfit;
-            gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
-        }
-
-        // ---------------- สกัด SCB (ถอดสูตรตรงจากแอป SCB) ----------------
-// เช็กแค่ว่า scbData มีค่าและเป็น Array หรือไม่
-if (scbData && Array.isArray(scbData)) {
-    
-    // Supabase ส่งค่ากลับมาเป็น Array อยู่แล้ว จับใส่ตัวแปรได้เลย
-    const scbFunds = scbData;
-
-    scbTotal = 0;
-    scbCost = 0;
-    let totalValYesterday = 0;
-
-    scbFunds.forEach(f => {
-        const units = Number(f.units || 0);
-        const currentNav = Number(f.currentNav || 0);
-        const avgNav = Number(f.avgNav || 0);
-        const dailyPct = Number(f.dailyPct || 0); // ตรวจสอบให้ชัวร์ว่าในตาราง scb_funds มีคอลัมน์ dailyPct
-
-        const fVal = units * currentNav;
-        const cost = units * avgNav;
-        const valYesterday = fVal / (1 + (dailyPct / 100));
-
-        scbTotal += fVal;
-        scbCost += cost;
-        totalValYesterday += valYesterday;
-    
-
-    // 1. กำไรสะสมรวม (Portfolio Gain Total)
-    scbProfit = scbTotal - scbCost;
-
-    // 2. กำไรรายวันวันนี้ (Daily Profit Today)
-    scbDailyProfit = scbTotal - totalValYesterday;
-    scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
-}
-        // ---------------- สกัด DIME (USD) ----------------
-// เช็กว่า dimeSummary มีค่า
-if (dimeSummary) {
-    dimeTotalUSD = Number(dimeSummary.value || 0);
-            dimeTotalUSD = Number(dimeRes.value.value || 0);
-            dimeCostUSD = Number(dimeRes.value.cost || 0);
-            dimeProfitUSD = Number(dimeRes.value.profit || (dimeTotalUSD - dimeCostUSD));
-
-            dimeDailyProfitUSD = Number(dimeRes.value.dailyProfit || dimeRes.value.todayGain || 0);
-            dimeDailyProfitPct = Number(dimeRes.value.dailyProfitPct || 0);
-        }
-
-        // ---------------- สกัด DIME Analytics ----------------
-// เช็กว่ามีข้อมูล Analytics
-if (dimeAnalytics) {
-            dimeAnalytics = dimeAnalyticsRes.value;
-        }
-
-        // ---------------- สกัด Wealth History ----------------
-// เช็กว่า wealthHistory มีค่า
-if (wealthHistory) {
-    historyDataRaw = wealthHistory || {};
-            historyDataRaw = historyRes.value || {};
-            history = Object.values(historyDataRaw);
-        }
-
-    } catch (err) {
-        console.error('⚠️ ไม่สามารถเชื่อมต่อ Cloud ได้:', err);
+        mfcProfit = mfcTotal - mfcCost;
+        const mfcPrevTotal = mfcTotal - mfcDailyProfit;
+        mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
     }
 
+    // ---------------- สกัด GPF ----------------
+    if (gpfData && gpfData.funds) {
+        gpfTotal = 0;
+        gpfCost = 0;
+        gpfDailyProfit = 0;
+
+        const gpfFundsArray = Array.isArray(gpfData.funds) ? gpfData.funds : Object.values(gpfData.funds);
+        gpfFundsArray.forEach(f => {
+            const units = Number(f.units || 0);
+            const currentNav = Number(f.currentNav || 0);
+            const avgNav = Number(f.avgNav || f.costNav || currentNav);
+            const prevNav = Number(f.prevNav || avgNav || currentNav);
+
+            gpfTotal += units * currentNav;
+            gpfCost += units * avgNav;
+            gpfDailyProfit += (currentNav - prevNav) * units;
+        });
+
+        gpfProfit = gpfTotal - gpfCost;
+        const gpfPrevTotal = gpfTotal - gpfDailyProfit;
+        gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
+    }
+
+    // ---------------- สกัด SCB ----------------
+    if (scbData && Array.isArray(scbData)) {
+        scbTotal = 0;
+        scbCost = 0;
+        let totalValYesterday = 0;
+
+        scbData.forEach(f => {
+            const units = Number(f.units || 0);
+            const currentNav = Number(f.currentNav || 0);
+            const avgNav = Number(f.avgNav || 0);
+            const dailyPct = Number(f.dailyPct || 0); 
+
+            const fVal = units * currentNav;
+            const cost = units * avgNav;
+            const valYesterday = fVal / (1 + (dailyPct / 100));
+
+            scbTotal += fVal;
+            scbCost += cost;
+            totalValYesterday += valYesterday;
+        }); // 👈 ปิดลูป forEach ของ SCB ตรงนี้ (จุดที่ลืมใส่ในโค้ดเดิม)
+
+        scbProfit = scbTotal - scbCost;
+        scbDailyProfit = scbTotal - totalValYesterday;
+        scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
+    }
+
+    // ---------------- สกัด DIME (USD) ----------------
+    if (dimeSummary) {
+        dimeTotalUSD = Number(dimeSummary.value || 0);
+        dimeCostUSD = Number(dimeSummary.cost || 0);
+        dimeProfitUSD = Number(dimeSummary.profit || (dimeTotalUSD - dimeCostUSD));
+        dimeDailyProfitUSD = Number(dimeSummary.dailyProfit || dimeSummary.todayGain || 0);
+        dimeDailyProfitPct = Number(dimeSummary.dailyProfitPct || 0);
+    }
+
+    // ---------------- สกัด Wealth History ----------------
+    if (wealthHistory) {
+        historyDataRaw = wealthHistory || {};
+        history = Object.values(historyDataRaw);
+    }
+
+} catch (err) {
+    console.error('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูล Dashboard:', err);
+}
     // 📍 1. แปลงมูลค่า DIME (USD) เป็น THB
     const dimeTHB = dimeTotalUSD * fxRate;
     const dimeDailyProfitTHB = dimeDailyProfitUSD * fxRate;
