@@ -1198,132 +1198,30 @@ async function loadDashboard() {
     let historyDataRaw = {};
 
     try {
-    const [mfcData, gpfData, scbData, dimeSummary, dimeAnalyticsData, wealthHistory] = await Promise.all([
-    supabaseClient.from('policies').select('*').then(res => res.data || []),
-    supabaseClient.from('gpf_ports').select('*').then(res => res.data || []),
-    supabaseClient.from('scb_funds').select('*').then(res => res.data || []),
-    supabaseClient.from('dime_summary').select('*').then(res => res.data ? res.data[0] : null),
-    supabaseClient.from('dime_ports').select('*').then(res => res.data || []),
-    supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
-]);
+    const [summaryRes, dimeAnalyticsData, wealthHistory] = await Promise.all([
+        supabaseClient.from('v_portfolio_summary').select('*').single(),
+        supabaseClient.from('dime_ports').select('*').then(res => res.data || []),
+        supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
+    ]);
 
-    // ---------------- สกัด MFC ----------------
-    if (mfcData && Array.isArray(mfcData)) {
-        mfcTotal = 0;
-        mfcCost = 0;
-        mfcDailyProfit = 0;
+    const summary = summaryRes.data || {};
 
-        mfcData.forEach(item => {
-            const units = parseFloat(item.units || 0);
-            const nav = parseFloat(item.nav || 0);
-            const prevAmt = parseFloat(item.prev_amt || 0);
-            const costVal = parseFloat(item.cost || item.cost_val || item.initial_cost || prevAmt || (units * nav));
-            const currentVal = units * nav;
-            
-            mfcTotal += currentVal;
-            mfcCost += costVal;
-            if (prevAmt > 0) {
-                mfcDailyProfit += (currentVal - prevAmt);
-            }
-        });
+    // 1. ดึงค่ายอดสรุปไปใช้งานได้ทันที (ไม่ต้องวนลูปคำนวณซ้ำ)
+    gpfTotal = Number(summary.gpf_total || 0);
+    gpfProfit = Number(summary.gpf_profit || 0);
+    gpfDailyProfit = Number(summary.gpf_daily_profit || 0);
 
-        mfcProfit = mfcTotal - mfcCost;
-        const mfcPrevTotal = mfcTotal - mfcDailyProfit;
-        mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
-    }
+    scbTotal = Number(summary.scb_total || 0);
+    scbProfit = Number(summary.scb_profit || 0);
+    scbDailyProfit = Number(summary.scb_daily_profit || 0);
 
-    // ---------------- 1. สกัด GPF ----------------
-    gpfTotal = 0;
-    gpfCost = 0;
-    gpfDailyProfit = 0;
+    dimeTotalUSD = Number(summary.dime_total || 0);
+    dimeProfitUSD = Number(summary.dime_profit || 0);
+    dimeDailyProfitUSD = Number(summary.dime_daily_profit || 0);
 
-    if (Array.isArray(gpfData) && gpfData.length > 0) {
-        gpfData.forEach(item => {
-            const units = Number(item.units || 0);
-            const nav = Number(item.nav ?? item.currentnav ?? item.current_nav ?? item.currentNav ?? 0);
-            const avgNav = Number(item.avgnav ?? item.avg_nav ?? item.avgNav ?? 0);
-            const prevNav = Number(item.prev_nav ?? item.prevNav ?? nav);
-            const amt = Number(item.amount || (units * nav) || 0);
-            
-            gpfTotal += amt;
-            gpfCost += (units * avgNav);
-            gpfDailyProfit += ((nav - prevNav) * units);
-        });
-    }
-
-    // กำไรสะสม = ยอดรวม - ต้นทุน (ถ้าไม่มีต้นทุนให้เป็น 0)
-    gpfProfit = gpfCost > 0 ? (gpfTotal - gpfCost) : 0;
-    const gpfPrevTotal = gpfTotal - gpfDailyProfit;
-    gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
-    
-    // ---------------- สกัด SCB ----------------
-    scbTotal = 0;
-    scbCost = 0;
-    scbDailyProfit = 0;
-    let scbTotalValYesterday = 0;
-
-    if (scbData && Array.isArray(scbData)) {
-        scbData.forEach(f => {
-            const units = Number(f.units || 0);
-            const currentNav = Number(f.currentnav ?? f.currentNav ?? f.nav ?? 0);
-            const avgNav = Number(f.avgnav ?? f.avgNav ?? 0);
-            const prevNav = Number(f.prev_nav ?? f.prevNav ?? 0);
-            const dailyPct = Number(f.daily_pct ?? f.dailyPct ?? 0);
-
-            const fVal = units * currentNav;
-            const cost = units * avgNav;
-            
-            scbTotal += fVal;
-            scbCost += cost;
-
-            if (dailyPct !== 0) {
-                scbTotalValYesterday += fVal / (1 + (dailyPct / 100));
-            } else if (prevNav > 0) {
-                scbTotalValYesterday += (units * prevNav);
-            } else {
-                scbTotalValYesterday += fVal;
-            }
-        });
-    }
-
-    scbProfit = scbTotal - scbCost;
-    scbDailyProfit = scbTotal - scbTotalValYesterday;
-    scbDailyProfitPct = scbTotalValYesterday > 0 ? (scbDailyProfit / scbTotalValYesterday) * 100 : 0;
-    
-    // ---------------- สกัด DIME ----------------
-    if (dimeSummary && (dimeSummary.value || dimeSummary.total_thb || dimeSummary.total)) {
-        dimeTotalUSD = Number(dimeSummary.value || dimeSummary.total || 0);
-        dimeCostUSD = Number(dimeSummary.cost || 0);
-        dimeProfitUSD = Number(dimeSummary.profit || (dimeTotalUSD - dimeCostUSD));
-        dimeDailyProfitUSD = Number(dimeSummary.daily_profit ?? dimeSummary.dailyProfit ?? dimeSummary.today_gain ?? dimeSummary.todayGain ?? 0);
-        dimeDailyProfitPct = Number(dimeSummary.daily_profit_pct ?? dimeSummary.dailyProfitPct ?? 0);
-    } else if (Array.isArray(dimeAnalyticsData) && dimeAnalyticsData.length > 0) {
-        dimeCostUSD = 0;
-        dimeTotalUSD = 0;
-        dimeDailyProfitUSD = 0;
-        
-        dimeAnalyticsData.forEach(item => {
-            const shares = Number(item.shares || item.units || item.amount || 1);
-            const avgNav = Number(item.avgnav ?? item.avgNav ?? 0);
-            const currentNav = Number(item.currentnav ?? item.currentNav ?? 0);
-            // prevNav ต้อง fallback ไปที่ currentNav (ไม่ใช้ avgNav เพื่อป้องกันไม่ให้คิดเป็นกำไรสะสมรวม)
-            const prevNav = Number(item.prev_nav ?? item.prevNav ?? currentNav);
-            const dailyProfitItem = Number(item.daily_profit ?? item.dailyProfit ?? item.today_gain ?? item.todayGain ?? 0);
-            
-            dimeCostUSD += (avgNav * shares);
-            dimeTotalUSD += (currentNav * shares);
-
-            if (dailyProfitItem !== 0) {
-                dimeDailyProfitUSD += dailyProfitItem;
-            } else {
-                dimeDailyProfitUSD += ((currentNav - prevNav) * shares);
-            }
-        });
-        
-        dimeProfitUSD = dimeTotalUSD - dimeCostUSD;
-        const dimePrevTotal = dimeTotalUSD - dimeDailyProfitUSD;
-        dimeDailyProfitPct = dimePrevTotal > 0 ? (dimeDailyProfitUSD / dimePrevTotal) * 100 : 0;
-    }
+    mfcTotal = Number(summary.mfc_total || 0);
+    mfcProfit = Number(summary.mfc_profit || 0);
+    mfcDailyProfit = Number(summary.mfc_daily_profit || 0);
     // ---------------- สกัด DIME Analytics ----------------
     console.log("แอบดูข้อมูล DIME Analytics:", dimeAnalyticsData); // 👈 เพิ่มบรรทัดนี้
     if (dimeAnalyticsData) {
