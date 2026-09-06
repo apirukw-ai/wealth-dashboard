@@ -1194,19 +1194,13 @@ async function loadDashboard() {
 
     try {
     const [mfcData, gpfData, scbData, dimeSummary, dimeAnalyticsData, wealthHistory] = await Promise.all([
-        supabaseClient.from('policies').select('*').then(res => {
-            if (res.error) throw res.error;
-            return res.data;
-        }), 
-        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json').then(r => r.json()),
-        supabaseClient.from('scb_funds').select('*').then(res => {
-            if (res.error) throw res.error;
-            return res.data;
-        }), 
-        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json').then(r => r.json()),
-        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_ports/my-real-dime-port.json').then(r => r.json()),
-        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
-    ]);
+    supabaseClient.from('policies').select('*').then(res => res.data || []),
+    supabaseClient.from('gpf_funds').select('*').then(res => res.data || []),
+    supabaseClient.from('scb_funds').select('*').then(res => res.data || []),
+    supabaseClient.from('dime_summary').select('*').then(res => res.data ? res.data[0] : null),
+    fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_ports/my-real-dime-port.json').then(r => r.json()), // คงไว้เฉพาะพอร์ตหุ้น Dime รายตัว
+    supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
+]);
 
     // ---------------- สกัด MFC ----------------
     if (mfcData && Array.isArray(mfcData)) {
@@ -1299,10 +1293,9 @@ async function loadDashboard() {
 
          
     // ---------------- สกัด Wealth History ----------------
-    if (wealthHistory) {
-        historyDataRaw = wealthHistory || {};
-        history = Object.values(historyDataRaw);
-    }
+if (wealthHistory && Array.isArray(wealthHistory)) {
+    history = wealthHistory; // ใช้ Array จาก Supabase ได้เลยตรงๆ
+}
 
 } catch (err) {
     console.error('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูล Dashboard:', err);
