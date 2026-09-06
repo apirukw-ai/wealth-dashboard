@@ -969,9 +969,14 @@ function renderDimeAnalytics(data) {
     let portfolioData = data.map(item => {
         // ใช้จำนวนหุ้น (ถ้าไม่มีฟิลด์นี้ ให้คำนวณจากสัดส่วนพื้นฐาน)
         const shares = item.shares || item.units || item.amount || item.volume || 1; 
-        const costValue = (item.avgNav || 0) * shares;
-        const marketValue = item.marketValue || ((item.currentNav || 0) * shares);
-        const returnPct = item.avgNav ? ((item.currentNav - item.avgNav) / item.avgNav) * 100 : 0;
+        
+        // ดึงค่าแบบรองรับทั้ง Supabase (ตัวพิมพ์เล็ก) และ Firebase (ตัวพิมพ์ใหญ่-เล็ก)
+        const avgNav = item.avgnav !== undefined ? item.avgnav : (item.avgNav || 0);
+        const currentNav = item.currentnav !== undefined ? item.currentnav : (item.currentNav || 0);
+
+        const costValue = avgNav * shares;
+        const marketValue = item.marketValue || (currentNav * shares);
+        const returnPct = avgNav ? ((currentNav - avgNav) / avgNav) * 100 : 0;
         
         return {
             code: item.code,
@@ -1195,10 +1200,10 @@ async function loadDashboard() {
     try {
     const [mfcData, gpfData, scbData, dimeSummary, dimeAnalyticsData, wealthHistory] = await Promise.all([
     supabaseClient.from('policies').select('*').then(res => res.data || []),
-    supabaseClient.from('gpf_funds').select('*').then(res => res.data || []),
+    supabaseClient.from('gpf_ports').select('*').then(res => res.data || []),
     supabaseClient.from('scb_funds').select('*').then(res => res.data || []),
     supabaseClient.from('dime_summary').select('*').then(res => res.data ? res.data[0] : null),
-    fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_ports/my-real-dime-port.json').then(r => r.json()), // คงไว้เฉพาะพอร์ตหุ้น Dime รายตัว
+    supabaseClient.from('dime_ports').select('*').then(res => res.data || []),
     supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
 ]);
 
