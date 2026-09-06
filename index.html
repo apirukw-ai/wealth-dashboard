@@ -1622,6 +1622,84 @@ if ('serviceWorker' in navigator) {
         }
     });
 }
+function updateUI() {
+    // ฟังก์ชันช่วยจัดรูปแบบตัวเลข (ลูกน้ำ + ทศนิยม 2 ตำแหน่ง)
+    const fmt = (num) => Number(num || 0).toLocaleString('th-TH', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+    });
+
+    const fmtSigned = (num, symbol = '฿') => {
+        const val = Number(num) || 0;
+        const sign = val >= 0 ? '+' : '';
+        return `${sign}${symbol}${fmt(val)}`;
+    };
+
+    const fmtPct = (num) => {
+        const val = Number(num) || 0;
+        const sign = val >= 0 ? '▲ +' : '▼ ';
+        return `${sign}${fmt(val)}%`;
+    };
+
+    // 1. อัปเดต ยอดรวม Total Wealth หน้าหลัก
+    const totalWealthEl = document.getElementById('totalWealth') 
+        || document.querySelector('.total-wealth-val') 
+        || Array.from(document.querySelectorAll('div, h1, span')).find(el => el.children.length === 0 && el.textContent.trim().includes('฿0.00'));
+    if (totalWealthEl) totalWealthEl.innerText = `฿${fmt(totalWealth)}`;
+
+    // 2. อัปเดต Portfolio Gain (Total)
+    const totalProfitEl = document.getElementById('totalProfit');
+    if (totalProfitEl) totalProfitEl.innerText = fmtSigned(totalProfit);
+
+    const totalProfitPctEl = document.getElementById('totalProfitPct');
+    if (totalProfitPctEl) {
+        totalProfitPctEl.innerText = fmtPct(totalProfitPct);
+        totalProfitPctEl.className = totalProfitPct >= 0 ? 'text-green-400' : 'text-red-400';
+    }
+
+    // 3. อัปเดต Daily Profit (Today)
+    const totalDailyProfitEl = document.getElementById('totalDailyProfit') || document.getElementById('totalDailyProfitToday');
+    if (totalDailyProfitEl) totalDailyProfitEl.innerText = fmtSigned(totalDailyProfit);
+
+    const totalDailyProfitPctEl = document.getElementById('totalDailyProfitPct');
+    if (totalDailyProfitPctEl) {
+        totalDailyProfitPctEl.innerText = fmtPct(totalDailyProfitPct);
+        totalDailyProfitPctEl.className = totalDailyProfitPct >= 0 ? 'text-green-400' : 'text-red-400';
+    }
+
+    // 4. อัปเดต ยอดแยกรายพอร์ต (Asset Allocation Cards)
+    // MFC
+    if (document.getElementById('mfcTotal')) document.getElementById('mfcTotal').innerText = `฿${fmt(mfcTotal)}`;
+    if (document.getElementById('mfcProfit')) document.getElementById('mfcProfit').innerText = fmtSigned(mfcProfit);
+    if (document.getElementById('mfcDailyProfit')) document.getElementById('mfcDailyProfit').innerText = fmtSigned(mfcDailyProfit);
+
+    // GPF
+    if (document.getElementById('gpfTotal')) document.getElementById('gpfTotal').innerText = `฿${fmt(gpfTotal)}`;
+    if (document.getElementById('gpfProfit')) document.getElementById('gpfProfit').innerText = fmtSigned(gpfProfit);
+    if (document.getElementById('gpfDailyProfit')) document.getElementById('gpfDailyProfit').innerText = fmtSigned(gpfDailyProfit);
+
+    // SCB
+    if (document.getElementById('scbTotal')) document.getElementById('scbTotal').innerText = `฿${fmt(scbTotal)}`;
+    if (document.getElementById('scbProfit')) document.getElementById('scbProfit').innerText = fmtSigned(scbProfit);
+    if (document.getElementById('scbDailyProfit')) document.getElementById('scbDailyProfit').innerText = fmtSigned(scbDailyProfit);
+
+    // DIME
+    if (document.getElementById('dimeTotal')) document.getElementById('dimeTotal').innerText = `$${fmt(dimeTotalUSD)} (฿${fmt(dimeTHB)})`;
+    if (document.getElementById('dimeProfit')) document.getElementById('dimeProfit').innerText = fmtSigned(dimeProfitUSD, '$');
+    if (document.getElementById('dimeDailyProfit')) document.getElementById('dimeDailyProfit').innerText = fmtSigned(dimeDailyProfitUSD, '$');
+
+    // 5. อัปเดตเปอร์เซ็นต์สัดส่วนพอร์ต (Asset Allocation %)
+    if (totalWealth > 0) {
+        const setPct = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = `${fmt((val / totalWealth) * 100)}%`;
+        };
+        setPct('mfcAllocPct', mfcTotal);
+        setPct('gpfAllocPct', gpfTotal);
+        setPct('scbAllocPct', scbTotal);
+        setPct('dimeAllocPct', dimeTHB);
+    }
+}
 </script>
 </body>
 </html>
