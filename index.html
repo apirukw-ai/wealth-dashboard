@@ -3,1686 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- PWA Settings -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#020617">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Wealth Terminal">
+    <title>Wealth Terminal</title>
     <link rel="icon" type="image/png" href="icon-192.png">
-    <title>Wealth Dashboard - Bloomberg x Apple</title>
-    <!-- โหลด Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            background-color: #020617; /* bg-slate-950 */
-            color: #f3f4f6;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .dashboard-wrapper {
-            width: 100%;
-            max-width: 1200px;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            font-weight: 700;
-            font-size: 26px;
-            letter-spacing: -0.5px;
-            color: #ffffff;
-            margin-bottom: 24px;
-            text-align: left;
-        }
-
-        /* ระบบ CSS Grid Responsive ป้องกันล้นหน้าจอ */
-        .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* เปลี่ยนบรรทัดนี้เพื่อล็อคเป็น 3 คอลัมน์ */
-    gap: 20px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-        /* Apple + Bloomberg Hybrid Card Style */
-        .luxury-card {
-            background: rgba(15, 23, 42, 0.8); /* bg-slate-900/80 */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid #334155; /* border-slate-700 */
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-            transition: transform 0.2s ease, border-color 0.2s ease;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-        .luxury-card:hover {
-            border-color: #475569;
-        }
-
-        /* Hero Card ใหญ่เต็มพื้นที่ด้านบน */
-        .hero-card {
-            grid-column: 1 / -1;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid #475569;
-            border-radius: 24px;
-            padding: 36px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-            position: relative;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-
-        .card-full {
-            grid-column: 1 / -1;
-        }
-
-        /* สไตล์ตัวเลข Financial สไตล์ Bloomberg */
-        .financial-val {
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            color: #ffffff;
-            word-break: break-word;
-        }
-                
-        /* บังคับคอนเทนเนอร์ Dropdown ให้ขยายเต็ม 100% ขั้นเด็ดขาด */
-details, 
-details[open] {
-    display: block !important;
-    width: 100% !important;
-    min-width: 100% !important;
-    grid-column: 1 / -1 !important;
-}
-
-/* บังคับกริดด้านในให้กาง 100% และล็อค 3 คอลัมน์ */
-.dashboard-grid {
-    display: grid; /* ลบ !important ออกจากบรรทัดนี้บรรทัดเดียว */
-    grid-template-columns: repeat(3, 1fr) !important;
-    width: 100% !important;
-    min-width: 100% !important;
-    gap: 20px !important;
-    box-sizing: border-box !important;
-}
-.card-full {
-    grid-column: 1 / -1 !important;
-}        
-        /* Responsive Fixes - Specially for Number Overflow */
-@media (max-width: 768px) {
-    /* บังคับระยะห่างบรรทัดเวลาอัปเดตบนมือถือให้ชิดกัน */
-.timestamp-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 4px !important; /* ปรับลด-เพิ่ม ตัวเลขนี้ได้ตามต้องการ */
-}
-
-.timestamp-list div {
-    margin: 0 !important;
-    line-height: 1.2 !important;
-}      
-  /* 1. บังคับ Layout หลักเป็นแนวยาว 1 คอลัมน์ */
-  #mainDashboard,
-  .dashboard-grid,
-  .grid {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-    gap: 16px !important;
-  }
-
-  /* 2. แก้ตัวเลขล้นในช่องการ์ดย่อย Asset Allocation (MFC, GPF, SCB, DIME) */
-  .asset-card-val,
-  div[style*="font-size: 28px"],
-  div[style*="font-size: 24px"],
-  div[style*="font-size: 22px"] {
-    font-size: 16px !important; /* ปรับย่อขนาดตัวเลขในการ์ดย่อยลงให้พอดีช่อง */
-    line-height: 1.3 !important;
-    white-space: nowrap !important;
-    word-break: keep-all !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  /* 3. แก้การ์ด FIRE Progress ตัวเลขโดนตัด ... */
-  .fire-card-val,
-  #fireCurrentVal {
-    font-size: 22px !important;
-    white-space: nowrap !important;
-  }
-
-  /* ปรับให้ Current / Target ในการ์ด FIRE ขึ้นบรรทัดใหม่ ไม่ดันกันออกขวา */
-  .fire-target-container {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 4px !important;
-  }
-
-  /* 4. ปรับ Padding ของการ์ดรวมไม่ให้ดันขอบจอ */
-  .card, .hero-card {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 14px !important;
-  }
-}
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-6 font-sans">
 
-<div class="dashboard-wrapper">
-    <h1>⚡ WEALTH TERMINAL</h1>
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- HEADER / TOTAL WEALTH -->
+        <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-1">Total Wealth</h2>
+                    <div id="totalWealth" class="text-4xl md:text-5xl font-extrabold text-white">฿0.00</div>
+                    <div class="flex items-center gap-3 mt-3 text-xs">
+                        <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full font-medium">• LIVE DATA</span>
+                        <span id="totalProfitPct" class="text-emerald-400 font-semibold">▲ +0.00%</span>
+                    </div>
+                </div>
+                <div class="text-xs text-slate-400 space-y-1 bg-slate-950/50 p-3 rounded-lg border border-slate-800/60" id="timestampBox">
+                    <div>MFC: <span id="tsMFC">-</span></div>
+                    <div>GPF: <span id="tsGPF">-</span></div>
+                    <div>SCB: <span id="tsSCB">-</span></div>
+                    <div>DIME: <span id="tsDIME">-</span></div>
+                </div>
+            </div>
+        </header>
 
-    <!-- ================= DASHBOARD GRID ================= -->
-    <div id="mainDashboard" class="dashboard-grid">
-
-        <!-- HERO CARD หลัก (Total Wealth) -->
-        <div class="hero-card">
-            <div style="color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Total Wealth</div>
-            <div id="totalWealth" class="financial-val" style="font-size: 38px; margin-top: 12px;">Loading...</div>
+        <!-- MAIN CARDS GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                <!-- ฝั่งซ้าย: ป้าย LIVE DATA และ FIRE Progress -->
-                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                    <div style="background: rgba(16, 185, 129, 0.15); color: #34d399; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">
-                        ● LIVE DATA
-                    </div>
-                    <div id="heroFireBadge" style="color: #38bdf8; font-size: 14px; font-weight: 600;">
-                        🎯 --% to ฿2M
-                    </div>
-                </div>
-
-                <!-- ฝั่งขวา: -->
-<div style="font-size: 11px; line-height: 1.3;" class="timestamp-list text-slate-400">
-    <div id="mfcNavTime">MFC: <span class="val">-</span></div>
-    <div id="gpfNavTime">GPF: <span class="val">-</span></div>
-    <div id="scbNavTime">SCB: <span class="val">-</span></div>
-    <div id="dimePriceTime">DIME: <span class="val">-</span></div>
-</div>
-            </div>
-        </div>
-
-        <!-- ================= แถวที่ 1 ================= -->
-
-<!-- 1.1 Portfolio Gain Card (กำไรสะสมรวม) -->
-<div id="portfolioGainCard" class="luxury-card">
-    <div style="color:#94a3b8; font-size:13px; font-weight:500;">Portfolio Gain (Total)</div>
-    <div id="totalGainValue" class="financial-val" style="font-size:28px; margin-top:10px;">Loading...</div>
-    <div id="totalGainPct" class="financial-val" style="margin-top:4px; font-size:15px;">-</div>
-
-    <!-- 📍 4 การ์ดย่อย: กำไรสะสมรวมแยกรายแอป -->
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">MFC</div>
-            <div id="mfcTotalGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-            <div id="mfcTotalGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">GPF</div>
-            <div id="gpfTotalGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-            <div id="gpfTotalGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">SCB</div>
-            <div id="scbTotalGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-            <div id="scbTotalGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">DIME</div>
-            <div id="dimeTotalGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-            <div id="dimeTotalGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-        </div>
-    </div>
-</div>
-
-<!-- 1.2 Daily Profit Card (กำไรรายวัน) -->
-<div id="dailyProfitCard" class="luxury-card">
-    <div style="color:#94a3b8; font-size:13px; font-weight:500;">Daily Profit (Today)</div>
-    <div id="dailyChangeValue" class="financial-val" style="font-size:28px; margin-top:10px;">Loading...</div>
-    <div id="dailyChangePct" class="financial-val" style="margin-top:4px; font-size:15px;">-</div>
-
-    <!-- 📍 4 การ์ดย่อย: กำไรรายวันแยกรายแอป -->
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">MFC</div>
-            <div id="mfcGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-            <div id="mfcGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">GPF</div>
-            <div id="gpfGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-            <div id="gpfGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">SCB</div>
-            <div id="scbGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-            <div id="scbGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-        </div>
-        <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">DIME</div>
-            <div id="dimeGainVal" style="font-size: 12px; font-weight: 600; margin-top: 2px; color: #e2e8f0;">-</div>
-            <div id="dimeGainPct" style="font-size: 10px; margin-top: 1px; color: #94a3b8;">-</div>
-        </div>
-    </div>
-</div>
-
-<!-- 1.3 Asset Allocation Card -->
-<div class="luxury-card">
-    <div style="font-size:13px; color:#94a3b8; font-weight:500; margin-bottom:12px;">Asset Allocation</div>
-    <div style="display:flex; height:10px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,0.05);">
-        <div id="mfcBar" style="background:#3b82f6; width:0%; transition: width 0.4s;"></div>
-        <div id="gpfBar" style="background:#10b981; width:0%; transition: width 0.4s;"></div>
-        <div id="scbBar" style="background:#a855f7; width:0%; transition: width 0.4s;"></div>
-        <div id="dimeBar" style="background:#f59e0b; width:0%; transition: width 0.4s;"></div>
-    </div>
-    <div id="allocationLegend" style="margin-top:12px; font-size:12px; color:#94a3b8;"></div>
-    
-    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; margin-top:16px;">
-        <div onclick="openTracker('https://apirukw-ai.github.io/MFCN-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
-            <div style="color:#94a3b8; font-size:11px;">MFC ↗</div>
-            <div id="mfcVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-            <div id="mfcPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-        </div>
-
-        <div onclick="openTracker('https://apirukw-ai.github.io/GPF-Tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
-            <div style="color:#94a3b8; font-size:11px;">GPF ↗</div>
-            <div id="gpfVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-            <div id="gpfPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-        </div>
-
-        <div onclick="openTracker('https://apirukw-ai.github.io/scb-portfolio-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
-            <div style="color:#94a3b8; font-size:11px;">SCB ↗</div>
-            <div id="scbVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-            <div id="scbPct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-        </div>
-
-        <div onclick="openTracker('https://apirukw-ai.github.io/dime-tracker/')" style="background:rgba(255,255,255,0.02); border:1px solid #334155; border-radius:12px; padding:10px; cursor:pointer;">
-            <div style="color:#94a3b8; font-size:11px;">DIME ↗</div>
-            <div id="dimeVal" class="financial-val" style="font-size:13px; margin-top:4px;">-</div>
-            <div id="dimePct" style="color:#3b82f6; font-size:11px; font-weight:600; margin-top:2px;"></div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= แถวที่ 2 ================= -->
-
-<!-- 2.1 FIRE Progress Card -->
-<div id="fireProgressCard" class="luxury-card">
-    <div style="color:#94a3b8; font-size:13px; font-weight:600;">FIRE Progress</div>
-    <div style="margin-top:12px; color:#94a3b8; font-size:12px;">Current / Target</div>
-    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:2px;">
-        <span id="fireCurrentWealth" class="financial-val" style="font-size:16px;">-</span>
-        <span id="fireTarget" style="font-size:13px; color:#64748b;">-</span>
-    </div>
-    
-    <div id="firePct" class="financial-val" style="font-size:32px; margin-top:10px; color:#34d399;">-</div>
-    <div id="fireLevel" style="font-size:12px; font-weight:600; color:#38bdf8; margin-top:2px;">-</div>
-    
-    <div style="height:10px; background:rgba(255,255,255,0.05); border-radius:999px; overflow:hidden; margin-top:12px;">
-        <div id="fireBar" style="height:100%; width:0%; background: linear-gradient(to right, #10b981, #06b6d4); transition: width 0.4s;"></div>
-    </div>
-
-    <hr style="border:none; border-top:1px solid #334155; margin: 14px 0;">
-
-    <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px;">
-        <div>
-            <div style="color:#94a3b8; font-size:11px;">Next Milestone</div>
-            <div style="color:#38bdf8; font-weight:600; margin-top:2px;">🎯 FIRE 75%</div>
-        </div>
-        <div style="text-align:right;">
-            <div id="fire75CompletePct" class="financial-val" style="color:#fff;">-</div>
-            <div id="fire75NeedPct" style="color:#f87171; font-size:11px; margin-top:2px;">-</div>
-        </div>
-    </div>
-    
-    <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:#94a3b8;">
-        <span>Remaining: <strong id="fireRemaining" class="financial-val" style="color:#f87171;">-</strong></span>
-        <span id="fireNeedPct" style="color:#f87171; font-weight:600;">-</span>
-    </div>
-</div>
-
-<!-- 2.2 FIRE Forecast Card -->
-<div id="fireForecastCard" class="luxury-card">
-    <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🔥 FIRE Forecast</div>
-    
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-        <div>
-            <div style="color:#94a3b8; font-size:11px;">Current</div>
-            <div id="forecastCurrent" class="financial-val" style="font-size:16px; margin-top:2px;">-</div>
-        </div>
-        <div style="text-align: right;">
-            <div style="color:#94a3b8; font-size:11px;">Target</div>
-            <div id="forecastTarget" class="financial-val" style="font-size:16px; margin-top:2px;">฿5.00M</div>
-        </div>
-    </div>
-
-    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: #94a3b8; font-size: 12px;">Current Contribution:</span>
-        <span class="financial-val" style="color: #38bdf8; font-size: 13px;">฿25,000/mo</span>
-    </div>
-
-    <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="color: #94a3b8;">🐢 Conservative <strong style="color: #cbd5e1;">5%</strong></span>
-            <span id="etaConservative" class="financial-val" style="color: #facc15;">-</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="color: #94a3b8;">🚶 Base Case <strong style="color: #cbd5e1;">7%</strong></span>
-            <span id="etaBase" class="financial-val" style="color: #38bdf8;">-</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="color: #94a3b8;">🚀 Optimistic <strong style="color: #cbd5e1;">10%</strong></span>
-            <span id="etaOptimistic" class="financial-val" style="color: #34d399;">-</span>
-        </div>
-    </div>
-
-    <hr style="border:none; border-top:1px solid #334155; margin: 10px 0;">
-
-    <div style="font-size: 11px; color: #94a3b8; display:flex; flex-direction:column; gap:3px;">
-        <div style="color:#38bdf8;">+฿5,000/mo → FIRE เร็วขึ้น 6 เดือน</div>
-        <div style="color:#38bdf8;">+฿10,000/mo → FIRE เร็วขึ้น 14 เดือน</div>
-    </div>
-</div>
-
-<!-- 2.3 Goal ETA Card -->
-<div id="goalEtaCard" class="luxury-card">
-    <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:12px;">🎯 Goal ETA</div>
-    
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="color:#94a3b8; font-size:12px;">Current Pace</span>
-        <span id="etaStatus" class="financial-val" style="font-size:16px; color:#38bdf8;">2031</span>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <span style="color:#94a3b8; font-size:12px;">Need to Save</span>
-        <span id="etaMonthlyNeed" class="financial-val" style="font-size:15px; color:#fff;">-</span>
-    </div>
-
-    <hr style="border:none; border-top:1px solid #334155; margin: 10px 0;">
-
-    <div style="font-size:12px; color:#94a3b8; font-weight:600; margin-bottom:8px;">Scenarios</div>
-    <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
-        <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
-            <span>+฿10k/month</span>
-            <span id="scenario10k" class="financial-val" style="color:#38bdf8;">-</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
-            <span>+฿25k/month</span>
-            <span id="scenario25k" class="financial-val" style="color:#38bdf8;">-</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; color:#cbd5e1;">
-            <span>+฿50k/month</span>
-            <span id="scenario50k" class="financial-val" style="color:#34d399;">-</span>
-        </div>
-    </div>
-</div>
-
-<!-- ================= แถวที่ 3 ================= -->
-
-<!-- 3.1 Performance Badges Card -->
-<div class="luxury-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(245, 158, 11, 0.3);">
-    <div style="color:#fbbf24; font-size:15px; font-weight:700; margin-bottom:14px;">🏅 Performance Badges</div>
-    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
-            <span>✅</span><span>First Million Gain</span>
-        </div>
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600;">
-            <span>✅</span><span>25% Portfolio Return</span>
-        </div>
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-            <span>🔒</span><span>100 Tracking Days</span>
-        </div>
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-            <span>🔒</span><span>1 Year Tracking Streak</span>
-        </div>
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; font-weight: 500;">
-            <span>🔒</span><span>5M Wealth Reached</span>
-        </div>
-    </div>
-</div>
-
-<!-- 3.2 Achievements Card -->
-<div class="luxury-card" style="grid-column: span 2;">
-    <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">🏆 Achievements</div>
-    <div style="margin-bottom: 12px;">
-        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; color: #34d399; font-weight: 600; font-size: 14px; width: fit-content;">
-            <span>✅</span><span>DIME Connected / Multi-Broker Portfolio</span>
-        </div>
-    </div>
-    <div id="achievementsGridList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 14px;"></div>
-</div>
-
-    <!-- ================= ADVANCED ANALYTICS (Accordion) ================= -->
-    <div style="margin-top:24px; width:100%; grid-column: 1 / -1;">
-        <div onclick="toggleAnalytics()" style="
-            font-size:15px; font-weight:600; cursor:pointer; padding:16px 20px;
-            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid #334155; 
-            display:flex; align-items:center; gap:10px; user-select:none; color:#f3f4f6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-        ">
-            <span id="analyticsArrow" style="color:#38bdf8;">▶</span> Advanced Analytics Module
-        </div>
-
-        <div id="analyticsContainer" style="display:none; margin-top:16px;" class="dashboard-grid">
-
-            <!-- Wealth Trend Card -->
-            <div id="wealthTrendCard" class="luxury-card">
-                <div style="color:#94a3b8; font-size:13px; font-weight:500;">Wealth Trend</div>
-                <div id="trendDirection" class="financial-val" style="font-size:24px; margin-top:10px;">-</div>
-                <div id="trendPct" class="financial-val" style="font-size:15px; margin-top:4px;">-</div>
-            </div>
-
-            <!-- Financial Health Score Card -->
-            <div id="financialHealthCard" class="luxury-card" style="
-                background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.8) 100%);
-                border-color: rgba(16, 185, 129, 0.3);
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-            ">
+            <!-- CARD 1: PORTFOLIO GAIN (TOTAL) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
                 <div>
-                    <div style="color:#94a3b8; font-size:13px;">Financial Health Score</div>
-                    <div id="healthScoreLabel" class="financial-val" style="font-size:18px; color:#34d399; margin-top:4px;">Excellent</div>
-                    <div style="font-size:11px; color:#059669; margin-top:4px;">High Progress • Positive Trend</div>
+                    <h3 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Portfolio Gain (Total)</h3>
+                    <div id="totalProfit" class="text-2xl font-bold text-emerald-400 mb-1">+฿0.00</div>
+                    <div id="totalProfitPctSub" class="text-xs text-emerald-400 mb-4">▲ +0.00%</div>
                 </div>
-                <div id="healthScoreGrade" class="financial-val" style="
-                    font-size:26px; color:#ffffff; background:#059669;
-                    width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center;
-                    box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
-                ">A+</div>
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/80 text-xs">
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">MFC</div>
+                        <div id="mfcProfit" class="font-bold text-slate-200">+฿0.00</div>
+                        <div id="mfcProfitPct" class="text-[10px] text-slate-400">0.00%</div>
+                    </div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">GPF</div>
+                        <div id="gpfProfit" class="font-bold text-slate-200">+฿0.00</div>
+                        <div id="gpfProfitPct" class="text-[10px] text-slate-400">0.00%</div>
+                    </div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">SCB</div>
+                        <div id="scbProfit" class="font-bold text-slate-200">+฿0.00</div>
+                        <div id="scbProfitPct" class="text-[10px] text-slate-400">0.00%</div>
+                    </div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">DIME</div>
+                        <div id="dimeProfit" class="font-bold text-slate-200">+$0.00</div>
+                        <div id="dimeProfitPct" class="text-[10px] text-slate-400">0.00%</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Snapshots Card -->
-            <div id="historyCard" class="luxury-card">
-                <div style="color:#94a3b8; font-size:13px;">Snapshots Metrics</div>
-                <div id="historyCount" class="financial-val" style="font-size:22px; margin-top:6px;">-</div>
-                <div style="margin-top:10px; color:#94a3b8; font-size:12px;">Tracking Started: <strong style="color:#fff;">26 Aug 2026</strong></div>
-                <div style="margin-top:6px; color:#94a3b8; font-size:12px;">Latest Snapshot: <strong id="latestSnapshotDate" style="color:#fff;">-</strong></div>    
-                <div style="margin-top:6px; color:#94a3b8; font-size:12px;">Days Tracking: <strong id="trackingAge" style="color:#fff;">-</strong></div>
-                <div style="margin-top:6px; color:#94a3b8; font-size:12px;">Latest Wealth: <strong id="latestWealth" class="financial-val" style="color:#fff;">-</strong></div>    
-                <div style="margin-top:6px; color:#94a3b8; font-size:12px;">Best Day: <span id="bestDayValue" class="financial-val" style="color:#34d399;">-</span></div>
-            </div>
-
-            <!-- Diversification Score Card -->
-            <div class="luxury-card">
-                <div style="color:#94a3b8; font-size:13px;">Diversification Score</div>
-                <div id="diversificationScore" class="financial-val" style="margin-top:6px; font-size:32px;">-</div>
-                <div id="diversificationRating" class="financial-val" style="margin-top:2px;">-</div>
-                <div id="diversificationDesc" style="margin-top:4px; font-size:11px; color:#94a3b8;">-</div>
-            </div>
-
-            <!-- Concentration Risk Card -->
-            <div class="luxury-card">
-                <div style="color:#94a3b8; font-size:13px; font-weight:600;">Top Concentration Risk</div>
-                <div style="color:#94a3b8; font-size:11px; margin-top:2px;">Concentration Risk</div>
-                <div id="concentrationPct" class="financial-val" style="font-size:32px; margin-top:6px;">-</div>
-                <div id="concentrationLevel" class="financial-val" style="font-size:16px; margin-top:2px;">-</div>
-            </div>
-
-            <!-- Portfolio Intelligence Card -->
-            <div class="luxury-card" style="display:flex; justify-content:space-between; align-items:center;">
+            <!-- CARD 2: DAILY PROFIT (TODAY) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
                 <div>
-                    <div style="color:#94a3b8; font-size:13px;">Portfolio Intelligence</div>
-                    <div id="portfolioIntelligenceScore" class="financial-val" style="font-size:28px; margin-top:4px; color:#38bdf8;">-</div>
+                    <h3 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Daily Profit (Today)</h3>
+                    <div id="totalDailyProfit" class="text-2xl font-bold text-emerald-400 mb-1">+฿0.00</div>
+                    <div id="totalDailyProfitPct" class="text-xs text-emerald-400 mb-4">▲ +0.00%</div>
                 </div>
-                <div id="portfolioIntelligenceGrade" class="financial-val" style="
-                    font-size:26px; color:#ffffff; background:#0284c7;
-                    width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center;
-                    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
-                ">-</div>
-            </div>
-
-            <!-- Net Worth Ranking Card -->
-            <div class="luxury-card">
-                <div style="color:#94a3b8; font-size:13px; font-weight:600;">Net Worth Ranking</div>
-                <div style="color:#94a3b8; font-size:11px; margin-top:2px; margin-bottom:12px;">Portfolio Ranking</div>
-                <div id="rankingList" style="display:flex; flex-direction:column; gap:10px;">-</div>
-            </div>
-
-            <!-- Largest Asset Card -->
-            <div class="luxury-card">
-                <div style="color:#94a3b8; font-size:13px;">Largest Asset</div>
-                <div id="largestAssetName" class="financial-val" style="font-size:22px; margin-top:6px;">-</div>
-                <div id="largestAssetPct" class="financial-val" style="margin-top:2px; color:#34d399;">-</div>
-                <div id="largestAssetValue" class="financial-val" style="margin-top:2px; font-size:13px; color:#94a3b8;"></div>
-            </div>
-
-            <!-- US DIME HOLDINGS ANALYTICS CARD -->
-            <div id="dimeAnalyticsCard" class="luxury-card card-full" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(15, 23, 42, 0.8) 100%); border-color: rgba(56, 189, 248, 0.3);">
-                <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">US DIME Holdings Analytics</div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">🏆 Top Holding</div>
-                        <div id="topHolding" class="financial-val" style="font-size:18px; margin-top:6px;">-</div>
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/80 text-xs">
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">MFC</div>
+                        <div id="mfcDailyProfit" class="font-bold text-slate-200">+฿0.00</div>
+                        <div id="mfcDailyProfitPct" class="text-[10px] text-slate-400">0.00%</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">🚀 Best Performer</div>
-                        <div id="bestPerformer" class="financial-val" style="font-size:18px; margin-top:6px; color:#34d399;">-</div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">GPF</div>
+                        <div id="gpfDailyProfit" class="font-bold text-slate-200">+฿0.00</div>
+                        <div id="gpfDailyProfitPct" class="text-[10px] text-slate-400">0.00%</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">⚠️ Top 3 Concentration Risk</div>
-                        <div id="top3Concentration" class="financial-val" style="font-size:18px; margin-top:6px; color:#fbbf24;">-</div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">SCB</div>
+                        <div id="scbDailyProfit" class="font-bold text-slate-200">+฿0.00</div>
+                        <div id="scbDailyProfitPct" class="text-[10px] text-slate-400">0.00%</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">📈 DIME Return</div>
-                        <div id="dimeReturn" class="financial-val" style="font-size:18px; margin-top:6px; color:#38bdf8;">-</div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">DIME</div>
+                        <div id="dimeDailyProfit" class="font-bold text-slate-200">+$0.00</div>
+                        <div id="dimeDailyProfitPct" class="text-[10px] text-slate-400">0.00%</div>
                     </div>
                 </div>
             </div>
 
-            <!-- WEEKLY ANALYTICS CARD -->
-            <div id="weeklyAnalyticsCard" class="luxury-card card-full">
-                <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px;">📅 Weekly Analytics</div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">7D Gain</div>
-                        <div id="weeklyGain" class="financial-val" style="font-size:20px; margin-top:6px;">-</div>
+            <!-- CARD 3: ASSET ALLOCATION -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Asset Allocation</h3>
+                    <div class="text-xs text-slate-400 mb-6">สัดส่วนมูลค่าพอร์ตการลงทุนรวม</div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800/80 text-xs">
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">MFC</div>
+                        <div id="mfcTotal" class="font-bold text-slate-200">฿0.00</div>
+                        <div id="mfcAllocPct" class="text-[10px] text-indigo-400 font-semibold">0.00%</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">7D Return</div>
-                        <div id="weeklyReturn" class="financial-val" style="font-size:20px; margin-top:6px;">-</div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">GPF</div>
+                        <div id="gpfTotal" class="font-bold text-slate-200">฿0.00</div>
+                        <div id="gpfAllocPct" class="text-[10px] text-indigo-400 font-semibold">0.00%</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">Best Day</div>
-                        <div id="weeklyBestDay" class="financial-val" style="font-size:20px; margin-top:6px; color:#34d399;">-</div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">SCB</div>
+                        <div id="scbTotal" class="font-bold text-slate-200">฿0.00</div>
+                        <div id="scbAllocPct" class="text-[10px] text-indigo-400 font-semibold">0.00%</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">Worst Day</div>
-                        <div id="weeklyWorstDay" class="financial-val" style="font-size:20px; margin-top:6px; color:#f87171;">-</div>
+                    <div class="bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/40">
+                        <div class="text-slate-400 font-medium">DIME</div>
+                        <div id="dimeTotal" class="font-bold text-slate-200">$0.00</div>
+                        <div id="dimeAllocPct" class="text-[10px] text-indigo-400 font-semibold">0.00%</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- MONTHLY ANALYTICS CARD -->
-            <div id="monthlyAnalyticsCard" class="luxury-card card-full">
-                <div style="color:#38bdf8; font-size:15px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>📆 Monthly Analytics</span>
-                    <span id="monthlyDataDaysTag" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: rgba(51, 65, 85, 0.5); color: #94a3b8; font-weight: 400;">(30D)</span>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">30D Gain</div>
-                        <div id="monthlyGain" class="financial-val" style="font-size:20px; margin-top:6px;">-</div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">30D Return</div>
-                        <div id="monthlyReturn" class="financial-val" style="font-size:20px; margin-top:6px;">-</div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">Average Daily Change</div>
-                        <div id="monthlyAvgDaily" class="financial-val" style="font-size:20px; margin-top:6px;">-</div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-                        <div style="color:#94a3b8; font-size:12px;">Projected Month End</div>
-                        <div id="monthlyProjectedEnd" class="financial-val" style="font-size:20px; margin-top:6px; color:#38bdf8;">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Wealth History Chart Card -->
-            <div class="luxury-card card-full">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <div style="color:#94a3b8; font-size:13px; font-weight:500;">Wealth History Terminal</div>
-                    <div style="display: flex; gap: 6px;">
-                        <button onclick="setTrendFilter('7D')" id="btn-7D" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">7D</button>
-                        <button onclick="setTrendFilter('30D')" id="btn-30D" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #334155; color: #94a3b8; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">30D</button>
-                        <button onclick="setTrendFilter('90D')" id="btn-90D" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #334155; color: #94a3b8; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">90D</button>
-                        <button onclick="setTrendFilter('ALL')" id="btn-ALL" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #334155; color: #94a3b8; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;">ALL</button>
-                    </div>
-                </div>
-                <canvas id="wealthChart" height="90"></canvas>
-                <div id="chartSummary" style="margin-top:12px; color:#94a3b8; font-size:12px;"></div>
             </div>
 
         </div>
     </div>
-</div>
 
-<!-- โหลด Supabase SDK และ Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-// ประกาศตัวแปรหลักสำหรับใช้งานทั่วทั้งไฟล์ (Global Scope)
-let totalWealth = 0;
-let totalProfit = 0;
-let totalDailyProfit = 0;
-let totalDailyProfitToday = 0; // 👈 เพิ่มบรรทัดนี้
-let totalProfitPct = 0;
-let totalDailyProfitPct = 0;
-
-let mfcTotal = 0, mfcProfit = 0, mfcDailyProfit = 0, mfcProfitPct = 0, mfcDailyProfitPct = 0;
-let gpfTotal = 0, gpfProfit = 0, gpfDailyProfit = 0, gpfProfitPct = 0, gpfDailyProfitPct = 0;
-let scbTotal = 0, scbProfit = 0, scbDailyProfit = 0, scbProfitPct = 0, scbDailyProfitPct = 0;
-let dimeTotalUSD = 0, dimeProfitUSD = 0, dimeDailyProfitUSD = 0, dimeProfitPct = 0, dimeDailyProfitPct = 0;
-let dimeTHB = 0; // 👈 เพิ่มบรรทัดนี้
-let fxRate = 32.89; // 👈 เพิ่มบรรทัดนี้ไว้บนสุดร่วมกับกลุ่มตัวแปร Global อื่นๆ
-let dimeAnalytics = null; // 👈 เพิ่มบรรทัดนี้ไว้บนสุดร่วมกับกลุ่มตัวแปร Global อื่นๆ
-let history = []; // 👈 เพิ่มบรรทัดนี้ไว้บนสุดร่วมกับกลุ่มตัวแปร Global อื่นๆ
-
-const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw';
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-async function getUsdThbRate() {
-    try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
-        const data = await res.json();
-        return data?.rates?.THB || 36.5;
-    } catch (e) {
-        console.warn("FX Rate fetch failed, fallback to 36.5:", e);
-        return 36.5;
-    }
-}
-
-function toggleAnalytics() {
-    const container = document.getElementById('analyticsContainer');
-    const arrow = document.getElementById('analyticsArrow');
-    
-    if (container.style.display === 'none' || container.style.display === '') {
-        container.style.display = 'grid';
-        arrow.innerText = '▼';
-    } else {
-        container.style.display = 'none';
-        arrow.innerText = '▶';
-    }
-}
-
-function setTrendFilter(period) {
-    ['7D', '30D', '90D', 'ALL'].forEach(p => {
-        const btn = document.getElementById('btn-' + p);
-        if (btn) {
-            if (p === period) {
-                btn.style.background = 'rgba(56, 189, 248, 0.2)';
-                btn.style.borderColor = '#38bdf8';
-                btn.style.color = '#38bdf8';
-            } else {
-                btn.style.background = 'rgba(255, 255, 255, 0.05)';
-                btn.style.borderColor = '#334155';
-                btn.style.color = '#94a3b8';
-            }
-        }
-    });
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return '-';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return dateStr;
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-}
-
-function calculateFireEta(currentWealth, targetWealth, monthlyContribution, annualRate) {
-    if (currentWealth >= targetWealth) return 'Achieved';
-    
-    let months = 0;
-    let wealth = currentWealth;
-    const r = annualRate / 12;
-    
-    while (wealth < targetWealth && months < 1200) { 
-        wealth = (wealth + monthlyContribution) * (1 + r);
-        months++;
-    }
-    
-    if (months >= 1200) return '50+ Years';
-    
-    const currentYear = new Date().getFullYear();
-    const targetYear = currentYear + Math.ceil(months / 12);
-    return targetYear.toString();
-}
-
-function renderFireForecast(currentWealth) {
-    const FIRE_TARGET = 5000000;
-    const MONTHLY_CONTRIBUTION = 25000;
-
-    const curEl = document.getElementById('forecastCurrent');
-    if (curEl) {
-        curEl.innerText = '฿' + (currentWealth >= 1000000 ? (currentWealth / 1000000).toFixed(2) + 'M' : currentWealth.toLocaleString());
-    }
-
-    const etaCons = calculateFireEta(currentWealth, FIRE_TARGET, MONTHLY_CONTRIBUTION, 0.05);
-    const etaBase = calculateFireEta(currentWealth, FIRE_TARGET, MONTHLY_CONTRIBUTION, 0.07);
-    const etaOpt = calculateFireEta(currentWealth, FIRE_TARGET, MONTHLY_CONTRIBUTION, 0.10);
-
-    document.getElementById('etaConservative').innerText = etaCons;
-    document.getElementById('etaBase').innerText = etaBase;
-    document.getElementById('etaOptimistic').innerText = etaOpt;
-}
-
-function renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue) {
-    const nameEl = document.getElementById('largestAssetName');
-    if (nameEl) nameEl.innerHTML = '<span style="color:#34d399;">' + largestAsset + '</span>';
-
-    const pctEl = document.getElementById('largestAssetPct');
-    if (pctEl) pctEl.innerText = largestAssetPctVal.toFixed(2) + '%';
-
-    const valEl = document.getElementById('largestAssetValue');
-    if (valEl) valEl.innerText = '฿' + largestAssetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotalUSD, totalWealth, fxRate) {
-    if (!totalWealth || totalWealth === 0) return;
-
-    const dimeTotalTHB = dimeTotalUSD * fxRate;
-
-    const mfcPctVal = (mfcTotal / totalWealth) * 100;
-    const gpfPctVal = (gpfTotal / totalWealth) * 100;
-    const scbPctVal = (scbTotal / totalWealth) * 100;
-    const dimePctVal = (dimeTotalTHB / totalWealth) * 100;
-
-    const mfcValEl = document.getElementById('mfcVal');
-    if (mfcValEl) mfcValEl.innerText = '฿' + mfcTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const mfcPctEl = document.getElementById('mfcPct');
-    if (mfcPctEl) mfcPctEl.innerText = mfcPctVal.toFixed(2) + '%';
-
-    const gpfValEl = document.getElementById('gpfVal');
-    if (gpfValEl) gpfValEl.innerText = '฿' + gpfTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const gpfPctEl = document.getElementById('gpfPct');
-    if (gpfPctEl) gpfPctEl.innerText = gpfPctVal.toFixed(2) + '%';
-
-    const scbValEl = document.getElementById('scbVal');
-    if (scbValEl) scbValEl.innerText = '฿' + scbTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const scbPctEl = document.getElementById('scbPct');
-    if (scbPctEl) scbPctEl.innerText = scbPctVal.toFixed(2) + '%';
-
-    const dimeValEl = document.getElementById('dimeVal');
-    if (dimeValEl) dimeValEl.innerText = '$' + dimeTotalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const dimePctEl = document.getElementById('dimePct');
-    if (dimePctEl) dimePctEl.innerText = dimePctVal.toFixed(2) + '%';
-
-    const mfcBarEl = document.getElementById('mfcBar');
-    if (mfcBarEl) mfcBarEl.style.width = mfcPctVal + '%';
-    const gpfBarEl = document.getElementById('gpfBar');
-    if (gpfBarEl) gpfBarEl.style.width = gpfPctVal + '%';
-    const scbBarEl = document.getElementById('scbBar');
-    if (scbBarEl) scbBarEl.style.width = scbPctVal + '%';
-    const dimeBarEl = document.getElementById('dimeBar');
-    if (dimeBarEl) dimeBarEl.style.width = dimePctVal + '%';
-
-    const legendEl = document.getElementById('allocationLegend');
-    if (legendEl) {
-        legendEl.innerHTML = `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                <span><span style="color:#3b82f6;">■</span> MFC ${mfcPctVal.toFixed(2)}%</span>
-                <span><span style="color:#10b981;">■</span> GPF ${gpfPctVal.toFixed(2)}%</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span><span style="color:#a855f7;">■</span> SCB ${scbPctVal.toFixed(2)}%</span>
-                <span><span style="color:#f59e0b;">■</span> DIME ${dimePctVal.toFixed(2)}%</span>
-            </div>
-        `;
-    }
-}
-
-function renderFireProgress(totalWealth, dailyChange, fireRemaining) {
-    const fireTarget = 5000000;
-    const fireProgress = (totalWealth / fireTarget) * 100;
-    const fireNeedPct = 100 - fireProgress;
-
-    const curEl = document.getElementById('fireCurrentWealth');
-    if (curEl) curEl.innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    const targetEl = document.getElementById('fireTarget');
-    if (targetEl) targetEl.innerText = 'Target: ฿' + fireTarget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    const pctEl = document.getElementById('firePct');
-    if (pctEl) pctEl.innerText = fireProgress.toFixed(2) + '%';
-
-    const fire75Target = 3750000;
-    const fire75Complete = Math.min((totalWealth / fire75Target) * 100, 100);
-    const fire75Need = Math.max(100 - fire75Complete, 0);
-
-    const f75CompEl = document.getElementById('fire75CompletePct');
-    if (f75CompEl) f75CompEl.innerText = fire75Complete.toFixed(1) + '% Complete';
-
-    const f75NeedEl = document.getElementById('fire75NeedPct');
-    if (f75NeedEl) f75NeedEl.innerText = 'Need +' + fire75Need.toFixed(2) + '%';
-
-    const heroFireBadge = document.getElementById('heroFireBadge');
-    const targetThreeMillion = 3000000; 
-    const fireToThreeMilPct = (totalWealth / targetThreeMillion) * 100;
-    if (heroFireBadge) {
-        heroFireBadge.innerText = `🎯 ${fireToThreeMilPct.toFixed(2)}% to ฿3M`;
-    }
-
-    let fireLevelText = '';
-    if (fireProgress < 20) fireLevelText = '🌱 Level 1 • Beginner';
-    else if (fireProgress < 40) fireLevelText = '🛠️ Level 2 • Builder';
-    else if (fireProgress < 60) fireLevelText = '💼 Level 3 • Investor';
-    else if (fireProgress < 80) fireLevelText = '📈 Level 4 • Advanced';
-    else if (fireProgress < 100) fireLevelText = '🔥 Level 5 • FIRE Ready';
-    else fireLevelText = '🏆 Level 6 • Financial Freedom';
-
-    const levelEl = document.getElementById('fireLevel');
-    if (levelEl) levelEl.innerText = fireLevelText;
-
-    const fireBar = document.getElementById('fireBar');
-    if (fireBar) {
-        fireBar.style.width = Math.min(fireProgress, 100) + '%';
-    }
-
-    const remEl = document.getElementById('fireRemaining');
-    if (remEl) remEl.innerText = '฿' + fireRemaining.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    const needPctEl = document.getElementById('fireNeedPct');
-    if (needPctEl) needPctEl.innerText = 'Need ' + fireNeedPct.toFixed(2) + '%';
-}
-
-function renderGoalEta(totalWealth) {
-    const target = 5000000;
-    const current = totalWealth;
-    const remaining = Math.max(target - current, 0);
-
-    const monthsLeft = 12;
-    const monthlyNeed = remaining / monthsLeft;
-
-    const save10k = remaining / 10000;
-    const save25k = remaining / 25000;
-    const save50k = remaining / 50000;
-
-    const currentYear = new Date().getFullYear();
-    const scenario10kYear = currentYear + Math.ceil(save10k / 12);
-    const scenario25kYear = currentYear + Math.ceil(save25k / 12);
-    const scenario50kYear = currentYear + Math.ceil(save50k / 12);
-
-    const etaStatusEl = document.getElementById('etaStatus');
-    if (etaStatusEl) etaStatusEl.innerText = scenario10kYear;
-
-    const monthlyNeedEl = document.getElementById('etaMonthlyNeed');
-    if (monthlyNeedEl) {
-        monthlyNeedEl.innerText = '฿' + Math.round(monthlyNeed).toLocaleString('en-US') + '/month';
-    }
-
-    const s10 = document.getElementById('scenario10k');
-    if (s10) s10.innerText = `→ ${scenario10kYear}`;
-
-    const s25 = document.getElementById('scenario25k');
-    if (s25) s25.innerText = `→ ${scenario25kYear}`;
-
-    const s50 = document.getElementById('scenario50k');
-    if (s50) s50.innerText = `→ ${scenario50kYear}`;
-}
-
-function renderAchievementsList(totalWealth, fireProgress) {
-    const achievementsEl = document.getElementById('achievementsGridList');
-    if (!achievementsEl) return;
-
-    const list = [
-        { name: 'Millionaire', unlocked: totalWealth >= 1000000, target: 1000000 },
-        { name: 'Two Million Club', unlocked: totalWealth >= 2000000, target: 2000000 },
-        { name: 'FIRE 50%', unlocked: fireProgress >= 50, target: 2500000 },
-        { name: 'Three Million Club', unlocked: totalWealth >= 3000000, target: 3000000 },
-        { name: 'FIRE 75%', unlocked: fireProgress >= 75, target: 3750000 },
-        { name: 'FIRE Achieved', unlocked: fireProgress >= 100, target: 5000000 }
-    ];
-
-    const closestIdx = list.findIndex(item => !item.unlocked);
-
-    let html = '';
-    list.forEach((item, index) => {
-        const icon = item.unlocked ? '✅' : '🔒';
-        const isClosest = (index === closestIdx);
-
-        let cardBg = 'rgba(255,255,255,0.02)';
-        let cardBorder = '#334155';
-        let textColor = item.unlocked ? '#34d399' : '#cbd5e1';
-        let fontWeight = item.unlocked ? '600' : '500';
-
-        if (isClosest) {
-            cardBg = 'rgba(245, 158, 11, 0.05)';
-            cardBorder = '#fbbf24';
-            textColor = '#fbbf24';
-        }
-
-        let extraDetails = '';
-        if (!item.unlocked) {
-            if (item.name === 'FIRE 75%') {
-                const fire75Complete = Math.min((totalWealth / 3750000) * 100, 100).toFixed(1);
-                extraDetails = `
-                    <div style="font-size: 12px; color: ${isClosest ? '#facc15' : '#38bdf8'}; margin-top: 6px; font-weight: 600;">
-                        ${fire75Complete}% Complete
-                    </div>
-                `;
-            } else if (isClosest) {
-                const pct = Math.min((totalWealth / item.target) * 100, 100).toFixed(2);
-                const remainingVal = Math.max(item.target - totalWealth, 0);
-                extraDetails = `
-                    <div style="font-size: 12px; color: #facc15; margin-top: 6px; font-weight: 600;">
-                        ${pct}% &bull; ฿${remainingVal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Remaining
-                    </div>
-                `;
-            }
-        }
-
-        html += `
-            <div style="background: ${cardBg}; border: 1.5px solid ${cardBorder}; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; color: ${textColor}; font-weight: ${fontWeight};">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span>${icon}</span>
-                    <span>${item.name} ${isClosest ? '⭐' : ''}</span>
-                </div>
-                ${extraDetails}
-            </div>
-        `;
-    });
-
-    achievementsEl.innerHTML = html;
-}
-
-function renderDimeAnalytics(data) {
-    // เช็กว่ามีข้อมูลและเป็น Array จริงๆ
-    if (!data || !Array.isArray(data) || data.length === 0) return;
-
-    let bestStock = '-';
-    let maxReturnPct = -Infinity;
-    
-    // 1. แปลงข้อมูลและคำนวณมูลค่าของหุ้นแต่ละตัว
-    let portfolioData = data.map(item => {
-        // ใช้จำนวนหุ้น (ถ้าไม่มีฟิลด์นี้ ให้คำนวณจากสัดส่วนพื้นฐาน)
-        const shares = item.shares || item.units || item.amount || item.volume || 1; 
-        
-        // ดึงค่าแบบรองรับทั้ง Supabase (ตัวพิมพ์เล็ก) และ Firebase (ตัวพิมพ์ใหญ่-เล็ก)
-        const avgNav = item.avgnav !== undefined ? item.avgnav : (item.avgNav || 0);
-        const currentNav = item.currentnav !== undefined ? item.currentnav : (item.currentNav || 0);
-
-        const costValue = avgNav * shares;
-        const marketValue = item.marketValue || (currentNav * shares);
-        const returnPct = avgNav ? ((currentNav - avgNav) / avgNav) * 100 : 0;
-        
-        return {
-            code: item.code,
-            costValue: costValue,
-            marketValue: marketValue,
-            returnPct: returnPct
-        };
-    });
-
-    // 2. หา Best Performer (ตัวที่บวก % เยอะสุด)
-    portfolioData.forEach(item => {
-        if (item.returnPct > maxReturnPct) {
-            maxReturnPct = item.returnPct;
-            bestStock = `${item.code} (+${maxReturnPct.toFixed(2)}%)`;
-        }
-    });
-
-    // 3. เรียงลำดับตามมูลค่า (Market Value) จากมากไปน้อย
-    portfolioData.sort((a, b) => b.marketValue - a.marketValue);
-    
-    const totalPortValue = portfolioData.reduce((sum, item) => sum + item.marketValue, 0);
-    const totalCostValue = portfolioData.reduce((sum, item) => sum + item.costValue, 0);
-    
-    // หุ้นสัดส่วนอันดับ 1
-    const topHolding = portfolioData.length > 0 ? portfolioData[0].code : '-';
-    
-    // 4. คำนวณ Top 3 Concentration (ความกระจุกตัว 3 อันดับแรก)
-    let top3Value = 0;
-    for (let i = 0; i < Math.min(3, portfolioData.length); i++) {
-        top3Value += portfolioData[i].marketValue;
-    }
-    const top3Concentration = totalPortValue > 0 ? (top3Value / totalPortValue) * 100 : 0;
-
-    // 5. คำนวณผลตอบแทนพอร์ตโดยรวม (Portfolio Return)
-    const portfolioReturn = totalCostValue > 0 ? ((totalPortValue - totalCostValue) / totalCostValue) * 100 : 0;
-
-    // --- ส่งค่าทั้งหมดไปวาดบนหน้าเว็บ ---
-    const topHoldingEl = document.getElementById('topHolding');
-    if (topHoldingEl) topHoldingEl.innerText = topHolding;
-
-    const bestPerformerEl = document.getElementById('bestPerformer');
-    if (bestPerformerEl) bestPerformerEl.innerText = bestStock;
-
-    const top3ConcEl = document.getElementById('top3Concentration');
-    if (top3ConcEl) top3ConcEl.innerText = top3Concentration.toFixed(2) + '%';
-
-    const dimeReturnEl = document.getElementById('dimeReturn');
-    if (dimeReturnEl) dimeReturnEl.innerText = portfolioReturn.toFixed(2) + '%';
-}
-
-function renderWeeklyAnalytics(history) {
-    if (!history || history.length === 0) return;
-
-    const recent = history.slice(-7);
-    const startWealth = Number(recent[0].wealth || 0);
-    const endWealth = Number(recent[recent.length - 1].wealth || 0);
-
-    const gain7D = endWealth - startWealth;
-    const return7D = startWealth > 0 ? (gain7D / startWealth) * 100 : 0;
-
-    let bestDay = 0;
-    let worstDay = 0;
-
-    for (let i = 1; i < recent.length; i++) {
-        const diff = Number(recent[i].wealth) - Number(recent[i - 1].wealth);
-        if (diff > bestDay) bestDay = diff;
-        if (diff < worstDay) worstDay = diff;
-    }
-
-    const gainEl = document.getElementById('weeklyGain');
-    if (gainEl) {
-        gainEl.innerText = (gain7D >= 0 ? '+฿' : '-฿') + Math.abs(gain7D).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        gainEl.style.color = gain7D >= 0 ? '#34d399' : '#f87171';
-    }
-
-    const returnEl = document.getElementById('weeklyReturn');
-    if (returnEl) {
-        returnEl.innerText = (return7D >= 0 ? '+' : '') + return7D.toFixed(2) + '%';
-        returnEl.style.color = return7D >= 0 ? '#34d399' : '#f87171';
-    }
-
-    const bestEl = document.getElementById('weeklyBestDay');
-    if (bestEl) {
-        bestEl.innerText = (bestDay >= 0 ? '+฿' : '-฿') + Math.abs(bestDay).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    const worstEl = document.getElementById('weeklyWorstDay');
-    if (worstEl) {
-        worstEl.innerText = (worstDay >= 0 ? '+฿' : '-฿') + Math.abs(worstDay).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-}
-
-function renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPct) {
-    const portfolioIntelligenceScore = (fireProgress * 0.5 + diversificationScore * 0.3 + (100 - largestAssetPct) * 0.2);
-    let piGrade = 'C';
-    if (portfolioIntelligenceScore >= 80) piGrade = 'A+';
-    else if (portfolioIntelligenceScore >= 70) piGrade = 'A';
-    else if (portfolioIntelligenceScore >= 60) piGrade = 'B+';
-    else if (portfolioIntelligenceScore >= 50) piGrade = 'B';
-
-    const scoreEl = document.getElementById('portfolioIntelligenceScore');
-    if (scoreEl) scoreEl.innerText = portfolioIntelligenceScore.toFixed(0) + '/100';
-
-    const gradeEl = document.getElementById('portfolioIntelligenceGrade');
-    if (gradeEl) gradeEl.innerText = piGrade;
-}
-
-function renderHistory(history, dailyChange, dailyChangePct, yesterdayWealth, today) {
-    const countEl = document.getElementById('historyCount');
-    if (countEl) countEl.innerText = history.length + (history.length > 1 ? ' Snapshots' : ' Snapshot');
-
-    if (history.length > 0) {
-        const latestSnapshot = history[history.length - 1];
-        const lwEl = document.getElementById('latestWealth');
-        if (lwEl) lwEl.innerText = '฿' + Number(latestSnapshot.wealth).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        const dateEl = document.getElementById('latestSnapshotDate');
-        if (dateEl) dateEl.innerText = formatDate(latestSnapshot.date);
-
-        const startDate = new Date('2026-08-26');
-        const diffDays = Math.floor(Math.abs(new Date(latestSnapshot.date || today) - startDate) / (1000 * 60 * 60 * 24)) + 1;
-        const ageEl = document.getElementById('trackingAge');
-        if (ageEl) ageEl.innerText = diffDays;
-
-        const bestEl = document.getElementById('bestDayValue');
-        if (bestEl) {
-            if (yesterdayWealth === null) {
-                bestEl.innerText = "Waiting for tomorrow's snapshot...";
-            } else {
-                let maxGainVal = dailyChange > 0 ? dailyChange : 0;
-                let maxGainPct = dailyChangePct > 0 ? dailyChangePct : 0;
-                bestEl.innerHTML = '▲ ฿' + maxGainVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' (+' + maxGainPct.toFixed(2) + '%)';
-            }
-        }
-    }
-}
-
-function renderMonthlyAnalytics(history) {
-    if (!history || history.length < 2) return;
-
-    const sortedHistory = [...history].sort((a, b) => new Date(a.date) - new Date(b.date));
-    const current = sortedHistory[sortedHistory.length - 1];
-
-    const baseIndex = Math.max(0, sortedHistory.length - 30);
-    const base = sortedHistory[baseIndex];
-
-    const actualDays = (sortedHistory.length - 1) - baseIndex;
-
-    const tagEl = document.getElementById('monthlyDataDaysTag');
-    if (tagEl) {
-        tagEl.innerText = actualDays < 30 ? `(${actualDays}D Data)` : '(30D)';
-    }
-
-    const gain30d = Number(current.wealth || 0) - Number(base.wealth || 0);
-    const return30d = Number(base.wealth || 0) > 0 ? (gain30d / Number(base.wealth)) * 100 : 0;
-    const avgDaily = actualDays > 0 ? gain30d / actualDays : 0;
-
-    const today = new Date();
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    const remainingDays = lastDayOfMonth - today.getDate();
-    const projectedEnd = Number(current.wealth || 0) + (avgDaily * remainingDays);
-
-    const isPositive = gain30d >= 0;
-    const gainColor = isPositive ? '#34d399' : '#f87171';
-    const sign = isPositive ? '+฿' : '-฿';
-
-    const gainEl = document.getElementById('monthlyGain');
-    if (gainEl) {
-        gainEl.innerText = sign + Math.abs(gain30d).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        gainEl.style.color = gainColor;
-    }
-
-    const returnEl = document.getElementById('monthlyReturn');
-    if (returnEl) {
-        returnEl.innerText = (isPositive ? '+' : '') + return30d.toFixed(2) + '%';
-        returnEl.style.color = gainColor;
-    }
-
-    const avgEl = document.getElementById('monthlyAvgDaily');
-    if (avgEl) {
-        avgEl.innerText = (avgDaily >= 0 ? '+฿' : '-฿') + Math.abs(Math.round(avgDaily)).toLocaleString('en-US') + '/day';
-        avgEl.style.color = gainColor;
-    }
-
-    const projEl = document.getElementById('monthlyProjectedEnd');
-    if (projEl) {
-        projEl.innerText = '฿' + (projectedEnd / 1000000).toFixed(2) + 'M';
-        projEl.style.color = '#38bdf8';
-    }
-}
-
-function openTracker(url) {
-    window.open(url, '_blank');
-}
-
-// --- ฟังก์ชันหลัก ---
-async function loadDashboard() {
-    console.log('🚀 START LOAD (Network Only)');
-    if (typeof updateDashboardTimestamps === 'function') updateDashboardTimestamps();
-
-    // 1. ดึงอัตราแลกเปลี่ยน USD/THB พร้อมระบบ Fallback
-    let fxRate = 32.89;
-    try {
-        if (typeof getUsdThbRate === 'function') {
-            fxRate = await Promise.race([
-                getUsdThbRate(),
-                new Promise(resolve => setTimeout(() => resolve(32.89), 3000)) // Timeout 3 วิ
-            ]);
-        }
-    } catch (e) {
-        console.warn('⚠️ ดึง FX Rate ไม่สำเร็จ ใช้ค่าเริ่มต้น:', fxRate);
-    }
-    window.fxRate = fxRate;
-
-    try {
-        // 2. ดึงข้อมูลจาก Supabase แบบ Parallel
-        console.log('📡 Fetching data from Supabase...');
-        const [summaryRes, dimeAnalyticsData, wealthHistory] = await Promise.all([
-            supabaseClient.from('v_portfolio_summary').select('*').single(),
-            supabaseClient.from('dime_ports').select('*').then(res => res.data || []),
-            supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
-        ]);
-
-        if (summaryRes.error) {
-            console.error('❌ Supabase View Error:', summaryRes.error);
-        }
-
-        const summary = summaryRes.data || {};
-        console.log('📊 Summary Data Received:', summary);
-
-        // 3. กำหนดค่าลงตัวแปรหลัก (Global Scope)
-        gpfTotal = Number(summary.gpf_total || 0);
-        gpfProfit = Number(summary.gpf_profit || 0);
-        gpfDailyProfit = Number(summary.gpf_daily_profit || 0);
-
-        scbTotal = Number(summary.scb_total || 0);
-        scbProfit = Number(summary.scb_profit || 0);
-        scbDailyProfit = Number(summary.scb_daily_profit || 0);
-
-        dimeTotalUSD = Number(summary.dime_total_usd || 0);
-        dimeProfitUSD = Number(summary.dime_profit_usd || 0);
-        dimeDailyProfitUSD = Number(summary.dime_daily_profit_usd || 0);
-
-        mfcTotal = Number(summary.mfc_total || 0);
-        mfcProfit = Number(summary.mfc_profit || 0);
-        mfcDailyProfit = Number(summary.mfc_daily_profit || 0);
-
-        // 4. แปลงมูลค่า DIME (USD) เป็น บาท (THB)
-        dimeTHB = dimeTotalUSD * fxRate;
-        const dimeProfitTHB = dimeProfitUSD * fxRate;
-        const dimeDailyProfitTHB = dimeDailyProfitUSD * fxRate;
-        window.dimeTHB = dimeTHB;
-
-        // 5. คำนวณ % กำไรสะสม และ % รายวัน ของแต่ละพอร์ต
-        const gpfCost = gpfTotal - gpfProfit;
-        gpfProfitPct = gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0;
-        gpfDailyProfitPct = (gpfTotal - gpfDailyProfit) > 0 ? (gpfDailyProfit / (gpfTotal - gpfDailyProfit)) * 100 : 0;
-
-        const scbCost = scbTotal - scbProfit;
-        scbProfitPct = scbCost > 0 ? (scbProfit / scbCost) * 100 : 0;
-        scbDailyProfitPct = (scbTotal - scbDailyProfit) > 0 ? (scbDailyProfit / (scbTotal - scbDailyProfit)) * 100 : 0;
-
-        const mfcCost = mfcTotal - mfcProfit;
-        mfcProfitPct = mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0;
-        mfcDailyProfitPct = (mfcTotal - mfcDailyProfit) > 0 ? (mfcDailyProfit / (mfcTotal - mfcDailyProfit)) * 100 : 0;
-
-        const dimeCostUSD = dimeTotalUSD - dimeProfitUSD;
-        dimeProfitPct = dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0;
-        dimeDailyProfitPct = (dimeTotalUSD - dimeDailyProfitUSD) > 0 ? (dimeDailyProfitUSD / (dimeTotalUSD - dimeDailyProfitUSD)) * 100 : 0;
-
-        // 6. คำนวณยอดรวมภาพรวมทั้งพอร์ต (Total Portfolio)
-        totalWealth = mfcTotal + gpfTotal + scbTotal + dimeTHB;
-        totalProfit = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
-        totalDailyProfit = mfcDailyProfit + gpfDailyProfit + scbDailyProfit + dimeDailyProfitTHB;
-        totalDailyProfitToday = totalDailyProfit;
-
-        const totalCost = totalWealth - totalProfit;
-        totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
-
-        const prevTotalWealth = totalWealth - totalDailyProfit;
-        totalDailyProfitPct = prevTotalWealth > 0 ? (totalDailyProfit / prevTotalWealth) * 100 : 0;
-
-        // ส่งตัวแปรเข้า Window Scope
-        window.totalWealth = totalWealth;
-        window.totalProfit = totalProfit;
-        window.totalDailyProfit = totalDailyProfit;
-        window.totalDailyProfitToday = totalDailyProfitToday;
-        window.totalProfitPct = totalProfitPct;
-        window.portfolioGainPct = totalProfitPct;
-        window.totalDailyProfitPct = totalDailyProfitPct;
-
-        // 7. จัดการ DIME Analytics & History
-        if (dimeAnalyticsData) {
-            dimeAnalytics = dimeAnalyticsData;
-            window.dimeAnalytics = dimeAnalyticsData;
-        }
-
-        if (wealthHistory && Array.isArray(wealthHistory)) {
-            history = wealthHistory.map(item => {
-                const dateVal = item.snapshot_date || item.date || item.created_at || '';
-                const totalVal = Number(item.total_wealth ?? item.totalWealth ?? item.total ?? 0);
-                return {
-                    ...item,
-                    date: dateVal,
-                    snapshot_date: dateVal,
-                    total: totalVal,
-                    total_wealth: totalVal,
-                    mfc: Number(item.mfc || 0),
-                    gpf: Number(item.gpf || 0),
-                    scb: Number(item.scb || 0),
-                    dime: Number(item.dime || 0)
-                };
+    <script>
+        // ==========================================
+        // 1. GLOBAL SCOPE VARIABLES (ประกาศไว้บนสุด)
+        // ==========================================
+        let fxRate = 32.89;
+        let totalWealth = 0;
+        let totalProfit = 0;
+        let totalDailyProfit = 0;
+        let totalDailyProfitToday = 0;
+        let totalProfitPct = 0;
+        let totalDailyProfitPct = 0;
+
+        let mfcTotal = 0, mfcProfit = 0, mfcDailyProfit = 0, mfcProfitPct = 0, mfcDailyProfitPct = 0;
+        let gpfTotal = 0, gpfProfit = 0, gpfDailyProfit = 0, gpfProfitPct = 0, gpfDailyProfitPct = 0;
+        let scbTotal = 0, scbProfit = 0, scbDailyProfit = 0, scbProfitPct = 0, scbDailyProfitPct = 0;
+        let dimeTotalUSD = 0, dimeProfitUSD = 0, dimeDailyProfitUSD = 0, dimeProfitPct = 0, dimeDailyProfitPct = 0;
+        let dimeTHB = 0;
+
+        let dimeAnalytics = null;
+        let history = []; // ใช้ชื่อนี้แทนการเรียก window.history Direct Array
+
+        // ==========================================
+        // 2. SUPABASE INITIALIZATION
+        // ==========================================
+        const SUPABASE_URL = 'https://iproktvvetsbxxmpptuj.supabase.co'; // <--- เปลี่ยนเป็น URL ของคุณ
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw';                         // <--- เปลี่ยนเป็น KEY ของคุณ
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ==========================================
+        // 3. UPDATE UI FUNCTION (อัปเดตตรงตาม ID 100%)
+        // ==========================================
+        function updateUI() {
+            const fmt = (num) => Number(num || 0).toLocaleString('th-TH', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
             });
-        } else {
-            history = [];
-        }
 
-        console.log('✅ Calculated Total Wealth:', totalWealth);
+            const fmtSigned = (num, sym = '฿') => {
+                const val = Number(num) || 0;
+                return `${val >= 0 ? '+' : ''}${sym}${fmt(val)}`;
+            };
 
-        // 8. สั่ง Render หน้าจอและกราฟ
-        if (typeof updateUI === 'function') updateUI();
-        if (typeof renderCharts === 'function') renderCharts();
+            const fmtPct = (num) => `${(Number(num) || 0) >= 0 ? '▲ +' : '▼ '}${fmt(num)}%`;
 
-    } catch (err) {
-        console.error('⚠️ เกิดข้อผิดพลาดใน loadDashboard:', err);
-    }
-}
-
-    // 📍 5. แสดงผลการ์ดใหญ่ Portfolio Gain
-    const totalGainValEl = document.getElementById('totalGainValue');
-    const totalGainPctEl = document.getElementById('totalGainPct');
-    if (totalGainValEl) {
-        const isPos = totalProfit >= 0;
-        totalGainValEl.innerHTML = (isPos ? '▲ ฿' : '▼ ฿') + Math.abs(totalProfit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        totalGainValEl.style.color = isPos ? '#10b981' : '#ef4444';
-    }
-    if (totalGainPctEl) {
-        const isPos = totalProfitPct >= 0;
-        totalGainPctEl.innerHTML = (isPos ? '▲ ' : '▼ ') + totalProfitPct.toFixed(2) + '%';
-        totalGainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
-    }
-
-    // 📍 6. แสดงผลการ์ดใหญ่ Daily Profit
-    const gainValEl = document.getElementById('dailyChangeValue');
-    const gainPctEl = document.getElementById('dailyChangePct');
-    if (gainValEl) {
-        const isPos = totalDailyProfitToday >= 0;
-        gainValEl.innerHTML = (isPos ? '▲ ฿' : '▼ ฿') + Math.abs(totalDailyProfitToday).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        gainValEl.style.color = isPos ? '#10b981' : '#ef4444';
-    }
-    if (gainPctEl) {
-        const isPos = totalDailyProfitPct >= 0;
-        gainPctEl.innerHTML = (isPos ? '▲ ' : '▼ ') + totalDailyProfitPct.toFixed(2) + '%';
-        gainPctEl.style.color = isPos ? '#10b981' : '#ef4444';
-    }
-
-    // 📍 7. อัปเดต 4 การ์ดย่อย Portfolio Gain
-    try { updateGainUI('mfcTotalGainVal', 'mfcTotalGainPct', mfcProfit, mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0, '฿'); } catch (err) {}
-    try { updateGainUI('gpfTotalGainVal', 'gpfTotalGainPct', gpfProfit, gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0, '฿'); } catch (err) {}
-    try { updateGainUI('scbTotalGainVal', 'scbTotalGainPct', scbProfit, scbCost > 0 ? (scbProfit / scbCost) * 100 : 0, '฿'); } catch (err) {}
-    try { updateGainUI('dimeTotalGainVal', 'dimeTotalGainPct', dimeProfitUSD, dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0, '$'); } catch (err) {}
-
-    // 📍 8. อัปเดต 4 การ์ดย่อย Daily Profit
-    try { updateGainUI('mfcGainVal', 'mfcGainPct', mfcDailyProfit, mfcDailyProfitPct, '฿'); } catch (err) {}
-    try { updateGainUI('gpfGainVal', 'gpfGainPct', gpfDailyProfit, gpfDailyProfitPct, '฿'); } catch (err) {}
-    try { updateGainUI('scbGainVal', 'scbGainPct', scbDailyProfit, scbDailyProfitPct, '฿'); } catch (err) {}
-    try { updateGainUI('dimeGainVal', 'dimeGainPct', dimeDailyProfitUSD, dimeDailyProfitPct, '$'); } catch (err) {}
-
-    // 📍 9. คำนวณความเปลี่ยนแปลงจาก Wealth History
-    let yesterdayWealth = null;
-    let dailyChange = 0;
-    let dailyChangePct = 0;
-
-    if (Array.isArray(history) && history.length > 0) {
-        history.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        if (history.length >= 2) {
-            yesterdayWealth = history[history.length - 2].wealth;
-        }
-
-        if (yesterdayWealth !== null) {
-            dailyChange = totalWealth - yesterdayWealth;
-            dailyChangePct = (yesterdayWealth > 0) ? (dailyChange / yesterdayWealth) * 100 : 0;
-        }
-    }
-    
-    const mfcPctVal = totalWealth > 0 ? (mfcTotal / totalWealth) * 100 : 0;
-    const gpfPctVal = totalWealth > 0 ? (gpfTotal / totalWealth) * 100 : 0;
-    const scbPctVal = totalWealth > 0 ? (scbTotal / totalWealth) * 100 : 0;
-    const dimePctVal = totalWealth > 0 ? (dimeTHB / totalWealth) * 100 : 0;
-
-    const ports = [
-        { name: 'GPF', value: gpfTotal, pct: gpfPctVal },
-        { name: 'MFC', value: mfcTotal, pct: mfcPctVal },
-        { name: 'SCB', value: scbTotal, pct: scbPctVal },
-        { name: 'DIME', value: dimeTHB, pct: dimePctVal }
-    ];
-    ports.sort((a, b) => b.value - a.value);
-
-    const today = new Date().toLocaleDateString('en-CA');
-    const now = new Date();
-                
-    renderAllocation(mfcTotal, gpfTotal, scbTotal, dimeTotalUSD, totalWealth, fxRate);
-    renderFireForecast(totalWealth);
-
-    const largestAsset = ports[0].name;
-    const largestAssetPctVal = totalWealth > 0 ? (ports[0].value / totalWealth) * 100 : 0;
-    const largestAssetValue = ports[0].value;
-    renderLargestAsset(largestAsset, largestAssetPctVal, largestAssetValue);
-
-    const fireTarget = 5000000;
-    const fireRemaining = fireTarget - totalWealth;
-    renderFireProgress(totalWealth, dailyChange, fireRemaining);
-
-    renderGoalEta(totalWealth);
-
-    const fireProgress = (totalWealth / fireTarget) * 100;
-    const diversificationScore = 100 - largestAssetPctVal;
-
-    renderAchievementsList(totalWealth, fireProgress);
-    renderDimeAnalytics(dimeAnalytics);
-    renderWeeklyAnalytics(history);
-
-    renderPortfolioIntel(fireProgress, diversificationScore, largestAssetPctVal);
-    renderHistory(history, dailyChange, dailyChangePct, yesterdayWealth, today);
-
-    let rankingHtml = '';
-    ports.forEach((p, index) => {
-        rankingHtml += `
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
-                <span><strong style="color:#38bdf8;">#${index + 1}</strong> ${p.name}</span>
-                <span class="financial-val" style="color:#fff;">฿${p.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${p.pct.toFixed(2)}%)</span>
-            </div>
-        `;
-    });
-    const rankEl = document.getElementById('rankingList');
-    if (rankEl) rankEl.innerHTML = rankingHtml;
-
-    let riskLevel = 'Low';
-    let riskColor = '#34d399';
-    if (largestAssetPctVal >= 80) { riskLevel = 'High'; riskColor = '#f87171'; }
-    else if (largestAssetPctVal >= 50) { riskLevel = 'Medium'; riskColor = '#fbbf24'; }
-
-    const concPctEl = document.getElementById('concentrationPct');
-    if (concPctEl) { concPctEl.innerText = largestAssetPctVal.toFixed(2) + '%'; concPctEl.style.color = riskColor; }
-
-    const concLvlEl = document.getElementById('concentrationLevel');
-    if (concLvlEl) { concLvlEl.innerText = riskLevel; concLvlEl.style.color = riskColor; }
-
-    let diversificationRating = '';
-    let divColor = '';
-    if (diversificationScore >= 80) { diversificationRating = 'Excellent'; divColor = '#34d399'; }
-    else if (diversificationScore >= 60) { diversificationRating = 'Good'; divColor = '#38bdf8'; }
-    else if (diversificationScore >= 40) { diversificationRating = 'Moderate'; divColor = '#fbbf24'; }
-    else if (diversificationScore >= 20) { diversificationRating = 'Weak'; divColor = '#fb923c'; }
-    else { diversificationRating = 'Highly Concentrated'; divColor = '#f87171'; }
-
-    const divScoreEl = document.getElementById('diversificationScore');
-    if (divScoreEl) { divScoreEl.innerText = diversificationScore.toFixed(0) + '/100'; divScoreEl.style.color = divColor; }
-
-    const divRatingEl = document.getElementById('diversificationRating');
-    if (divRatingEl) { divRatingEl.innerText = diversificationRating; divRatingEl.style.color = divColor; }
-
-    const divDescEl = document.getElementById('diversificationDesc');
-    if (divDescEl) divDescEl.innerText = `Portfolio heavily dependent on ${ports[0].name}`;
-
-    let trend = '';
-    let trendColor = '';
-    if (yesterdayWealth === null) {
-        trend = "Waiting for tomorrow's snapshot...";
-        trendColor = '#94a3b8';
-    } else {
-        if (dailyChangePct > 0) { trend = '↗ Increasing'; trendColor = '#34d399'; }
-        else if (dailyChangePct < 0) { trend = '↘ Decreasing'; trendColor = '#f87171'; }
-        else { trend = '→ Flat'; trendColor = '#94a3b8'; }
-    }
-
-    const trendDirEl = document.getElementById('trendDirection');
-    if (trendDirEl) { trendDirEl.innerText = trend; trendDirEl.style.color = trendColor; }
-
-    const trendPctEl = document.getElementById('trendPct');
-    if (trendPctEl) {
-        if (yesterdayWealth === null) {
-            trendPctEl.innerText = '-';
-        } else {
-            trendPctEl.innerText = (dailyChangePct >= 0 ? '+' : '') + dailyChangePct.toFixed(2) + '%';
-        }
-        trendPctEl.style.color = trendColor;
-    }
-
-    const totalWealthEl = document.getElementById('totalWealth');
-    if (totalWealthEl) totalWealthEl.innerText = '฿' + totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    const lastUpdEl = document.getElementById('lastUpdated');
-    if (lastUpdEl) lastUpdEl.innerText = 'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    // Chart.js
-    const ctx = document.getElementById('wealthChart');
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: history.map(h => h.date),
-                datasets: [{
-                    label: 'Total Wealth',
-                    data: history.map(h => h.wealth),
-                    borderColor: '#34d399',
-                    backgroundColor: 'rgba(52, 211, 153, 0.05)',
-                    borderWidth: 2.5,
-                    fill: true,
-                    tension: 0.35,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#34d399'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8' } },
-                    y: { grid: { color: 'rgba(255, 255, 255, 0.04)' }, ticks: { color: '#94a3b8', callback: function(value) { return '฿' + (value / 1000000).toFixed(1) + 'M'; } } }
+            const setVal = (id, text, className = null) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.textContent = text;
+                    if (className) el.className = className;
                 }
+            };
+
+            // 1. Header / Total
+            setVal('totalWealth', `฿${fmt(totalWealth)}`);
+
+            // 2. Portfolio Gain (Total)
+            setVal('totalProfit', fmtSigned(totalProfit));
+            setVal('totalProfitPct', fmtPct(totalProfitPct), totalProfitPct >= 0 ? 'text-emerald-400 font-semibold' : 'text-red-400 font-semibold');
+            setVal('totalProfitPctSub', fmtPct(totalProfitPct), totalProfitPct >= 0 ? 'text-xs text-emerald-400 mb-4' : 'text-xs text-red-400 mb-4');
+
+            setVal('mfcProfit', fmtSigned(mfcProfit));
+            setVal('mfcProfitPct', fmtPct(mfcProfitPct));
+            setVal('gpfProfit', fmtSigned(gpfProfit));
+            setVal('gpfProfitPct', fmtPct(gpfProfitPct));
+            setVal('scbProfit', fmtSigned(scbProfit));
+            setVal('scbProfitPct', fmtPct(scbProfitPct));
+            setVal('dimeProfit', fmtSigned(dimeProfitUSD, '$'));
+            setVal('dimeProfitPct', fmtPct(dimeProfitPct));
+
+            // 3. Daily Profit (Today)
+            setVal('totalDailyProfit', fmtSigned(totalDailyProfit));
+            setVal('totalDailyProfitPct', fmtPct(totalDailyProfitPct), totalDailyProfitPct >= 0 ? 'text-xs text-emerald-400 mb-4' : 'text-xs text-red-400 mb-4');
+
+            setVal('mfcDailyProfit', fmtSigned(mfcDailyProfit));
+            setVal('mfcDailyProfitPct', fmtPct(mfcDailyProfitPct));
+            setVal('gpfDailyProfit', fmtSigned(gpfDailyProfit));
+            setVal('gpfDailyProfitPct', fmtPct(gpfDailyProfitPct));
+            setVal('scbDailyProfit', fmtSigned(scbDailyProfit));
+            setVal('scbDailyProfitPct', fmtPct(scbDailyProfitPct));
+            setVal('dimeDailyProfit', fmtSigned(dimeDailyProfitUSD, '$'));
+            setVal('dimeDailyProfitPct', fmtPct(dimeDailyProfitPct));
+
+            // 4. Asset Allocation
+            setVal('mfcTotal', `฿${fmt(mfcTotal)}`);
+            setVal('gpfTotal', `฿${fmt(gpfTotal)}`);
+            setVal('scbTotal', `฿${fmt(scbTotal)}`);
+            setVal('dimeTotal', `$${fmt(dimeTotalUSD)} (฿${fmt(dimeTHB)})`);
+
+            if (totalWealth > 0) {
+                setVal('mfcAllocPct', `${fmt((mfcTotal / totalWealth) * 100)}%`);
+                setVal('gpfAllocPct', `${fmt((gpfTotal / totalWealth) * 100)}%`);
+                setVal('scbAllocPct', `${fmt((scbTotal / totalWealth) * 100)}%`);
+                setVal('dimeAllocPct', `${fmt((dimeTHB / totalWealth) * 100)}%`);
             }
-        });
-    
+        }
 
-    const chartSumEl = document.getElementById('chartSummary');
-    if (chartSumEl) chartSumEl.innerText = history.length < 2 ? 'Collecting data for trend analysis' : 'Tracking ' + history.length + ' Snapshots';
+        // ==========================================
+        // 4. LOAD DASHBOARD DATA
+        // ==========================================
+        async function loadDashboard() {
+            console.log('🚀 START LOAD (Network Only)');
 
-} // 👈 🎯 ปิดฟังก์ชัน loadDashboard() ตรงนี้อย่างถูกต้องครับ
+            // ดึงข้อมูล FX Rate
+            try {
+                if (typeof getUsdThbRate === 'function') {
+                    fxRate = await Promise.race([
+                        getUsdThbRate(),
+                        new Promise(resolve => setTimeout(() => resolve(32.89), 3000))
+                    ]);
+                }
+            } catch (e) {
+                fxRate = 32.89;
+            }
+            window.fxRate = fxRate;
 
-async function updateDashboardTimestamps() {
-    try {
-        try {
-            const mfcRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/mfc_summary/current.json');
-            const mfcData = await mfcRes.json();
-            const timeVal = mfcData?.updatedAt || mfcData?.lastUpdated;
-            if (timeVal) document.querySelector('#mfcNavTime .val').textContent = formatThaiDateTime(timeVal);
-        } catch(e){}
+            try {
+                const [summaryRes, dimeAnalyticsData, wealthHistory] = await Promise.all([
+                    supabaseClient.from('v_portfolio_summary').select('*').single(),
+                    supabaseClient.from('dime_ports').select('*').then(res => res.data || []),
+                    supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
+                ]);
 
-        try {
-            const gpfRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131/lastUpdated.json');
-            let gpfTimeStr = await gpfRes.json();
-            
-            if (gpfTimeStr) {
-                const match = gpfTimeStr.match(/\((?:Auto\s*)?([^)]+)\)/i);
-                if (match && match[1]) {
-                    const cleanTime = match[1].trim();
-                    gpfTimeStr = cleanTime.replace(/^(\d{2}\/\d{2})\s+/, '$1/69 ');
+                if (summaryRes.error) {
+                    console.error('❌ Supabase View Error:', summaryRes.error);
+                }
+
+                const summary = summaryRes.data || {};
+
+                // Map ข้อมูลเข้าตัวแปร Global
+                gpfTotal = Number(summary.gpf_total || 0);
+                gpfProfit = Number(summary.gpf_profit || 0);
+                gpfDailyProfit = Number(summary.gpf_daily_profit || 0);
+
+                scbTotal = Number(summary.scb_total || 0);
+                scbProfit = Number(summary.scb_profit || 0);
+                scbDailyProfit = Number(summary.scb_daily_profit || 0);
+
+                dimeTotalUSD = Number(summary.dime_total_usd || 0);
+                dimeProfitUSD = Number(summary.dime_profit_usd || 0);
+                dimeDailyProfitUSD = Number(summary.dime_daily_profit_usd || 0);
+
+                mfcTotal = Number(summary.mfc_total || 0);
+                mfcProfit = Number(summary.mfc_profit || 0);
+                mfcDailyProfit = Number(summary.mfc_daily_profit || 0);
+
+                // THB Conversions
+                dimeTHB = dimeTotalUSD * fxRate;
+                const dimeProfitTHB = dimeProfitUSD * fxRate;
+                const dimeDailyProfitTHB = dimeDailyProfitUSD * fxRate;
+                window.dimeTHB = dimeTHB;
+
+                // Profit Percentages
+                const gpfCost = gpfTotal - gpfProfit;
+                gpfProfitPct = gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0;
+                gpfDailyProfitPct = (gpfTotal - gpfDailyProfit) > 0 ? (gpfDailyProfit / (gpfTotal - gpfDailyProfit)) * 100 : 0;
+
+                const scbCost = scbTotal - scbProfit;
+                scbProfitPct = scbCost > 0 ? (scbProfit / scbCost) * 100 : 0;
+                scbDailyProfitPct = (scbTotal - scbDailyProfit) > 0 ? (scbDailyProfit / (scbTotal - scbDailyProfit)) * 100 : 0;
+
+                const mfcCost = mfcTotal - mfcProfit;
+                mfcProfitPct = mfcCost > 0 ? (mfcProfit / mfcCost) * 100 : 0;
+                mfcDailyProfitPct = (mfcTotal - mfcDailyProfit) > 0 ? (mfcDailyProfit / (mfcTotal - mfcDailyProfit)) * 100 : 0;
+
+                const dimeCostUSD = dimeTotalUSD - dimeProfitUSD;
+                dimeProfitPct = dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0;
+                dimeDailyProfitPct = (dimeTotalUSD - dimeDailyProfitUSD) > 0 ? (dimeDailyProfitUSD / (dimeTotalUSD - dimeDailyProfitUSD)) * 100 : 0;
+
+                // Total Calculations
+                totalWealth = mfcTotal + gpfTotal + scbTotal + dimeTHB;
+                totalProfit = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
+                totalDailyProfit = mfcDailyProfit + gpfDailyProfit + scbDailyProfit + dimeDailyProfitTHB;
+                totalDailyProfitToday = totalDailyProfit;
+
+                const totalCost = totalWealth - totalProfit;
+                totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
+
+                const prevTotalWealth = totalWealth - totalDailyProfit;
+                totalDailyProfitPct = prevTotalWealth > 0 ? (totalDailyProfit / prevTotalWealth) * 100 : 0;
+
+                // Set Global Window References
+                window.totalWealth = totalWealth;
+                window.totalProfit = totalProfit;
+                window.totalDailyProfit = totalDailyProfit;
+                window.totalDailyProfitToday = totalDailyProfitToday;
+                window.totalProfitPct = totalProfitPct;
+                window.totalDailyProfitPct = totalDailyProfitPct;
+
+                if (dimeAnalyticsData) {
+                    dimeAnalytics = dimeAnalyticsData;
+                    window.dimeAnalytics = dimeAnalyticsData;
+                }
+
+                if (wealthHistory && Array.isArray(wealthHistory)) {
+                    history = wealthHistory.map(item => ({
+                        ...item,
+                        date: item.snapshot_date || item.date || item.created_at || '',
+                        total: Number(item.total_wealth ?? item.totalWealth ?? item.total ?? 0)
+                    }));
                 } else {
-                    gpfTimeStr = gpfTimeStr.replace('/2569', '/69').replace('2569', '69');
+                    history = [];
                 }
-                document.querySelector('#gpfNavTime .val').textContent = gpfTimeStr;
+                window.historyData = history;
+
+                console.log('✅ Calculated Total Wealth:', totalWealth);
+
+                // Render UI & Charts
+                updateUI();
+                if (typeof renderCharts === 'function') renderCharts();
+
+            } catch (err) {
+                console.error('⚠️ เกิดข้อผิดพลาดใน loadDashboard:', err);
             }
-        } catch(e) {
-            console.error("GPF Time Format Error:", e);
         }
 
-        try {
-            const scbRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/scb_summary/current.json');
-            const scbData = await scbRes.json();
-            const timeVal = scbData?.updatedAt || scbData?.lastUpdated;
-            if (timeVal) document.querySelector('#scbNavTime .val').textContent = formatThaiDateTime(timeVal);
-        } catch(e){}
-
-        try {
-            const dimeRes = await fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json');
-            const dimeData = await dimeRes.json();
-            const timeVal = dimeData?.updatedAt || dimeData?.lastUpdated;
-            if (timeVal) document.querySelector('#dimePriceTime .val').textContent = formatThaiDateTime(timeVal);
-        } catch(e){}
-
-    } catch (err) {
-        console.error("Timestamp Update Error:", err);
-    }
-}
-
-function formatThaiDateTime(timeStr) {
-    if (!timeStr) return '-';
-    if (timeStr.includes('T') || timeStr.includes('-')) {
-        const date = new Date(timeStr);
-        if (!isNaN(date.getTime())) {
-            const thaiDate = date.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: '2-digit', month: '2-digit', year: '2-digit' });
-            const thaiTime = date.toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
-            return `${thaiDate} ${thaiTime} น.`;
-        }
-    }
-    return timeStr;
-}
-
-function updateGainUI(valElemId, pctElemId, gainVal, gainPct, currencySymbol = '฿') {
-    const valEl = document.getElementById(valElemId);
-    const pctEl = document.getElementById(pctElemId);
-    if (!valEl || !pctEl) return;
-
-    if (gainVal === null || gainVal === undefined || isNaN(gainVal)) {
-        valEl.textContent = '-';
-        pctEl.textContent = '-';
-        valEl.style.color = '#94a3b8';
-        pctEl.style.color = '#94a3b8';
-        return;
-    }
-
-    const isPositive = gainVal >= 0;
-    const sign = isPositive ? '+' : '-';
-    const arrow = isPositive ? '▲ ' : '▼ ';
-    const color = isPositive ? '#34d399' : '#f87171';
-
-    valEl.textContent = `${sign}${currencySymbol}${Math.abs(gainVal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    pctEl.textContent = `${arrow}${isPositive ? '+' : ''}${gainPct.toFixed(2)}%`;
-
-    valEl.style.color = color;
-    pctEl.style.color = color;
-}    
-
-// สั่งให้ฟังก์ชันเริ่มทำงาน
-loadDashboard();
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-            registration.unregister().then(() => {
-                console.log('PWA Service Worker unregistered successfully.');
-            });
-        }
-    });
-}
-function updateUI() {
-    const fmt = (num) => Number(num || 0).toLocaleString('th-TH', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-    });
-
-    const fmtSigned = (num, sym = '฿') => {
-        const val = Number(num) || 0;
-        return `${val >= 0 ? '+' : ''}${sym}${fmt(val)}`;
-    };
-
-    const fmtPct = (num) => `${(Number(num) || 0) >= 0 ? '▲ +' : '▼ '}${fmt(num)}%`;
-
-    const setById = (id, text, className = null) => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.textContent = text;
-            if (className) el.className = className;
-        }
-    };
-
-    // 1. ยอดรวมหลัก
-    setById('totalWealth', `฿${fmt(totalWealth)}`);
-    setById('totalProfit', fmtSigned(totalProfit));
-    setById('totalProfitPct', fmtPct(totalProfitPct), totalProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
-    setById('totalDailyProfit', fmtSigned(totalDailyProfit));
-    setById('totalDailyProfitPct', fmtPct(totalDailyProfitPct), totalDailyProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
-
-    // 2. กำไรสะสมรายพอร์ต (Portfolio Gain)
-    setById('mfcProfit', fmtSigned(mfcProfit));
-    setById('mfcProfitPct', fmtPct(mfcProfitPct));
-    setById('gpfProfit', fmtSigned(gpfProfit));
-    setById('gpfProfitPct', fmtPct(gpfProfitPct));
-    setById('scbProfit', fmtSigned(scbProfit));
-    setById('scbProfitPct', fmtPct(scbProfitPct));
-    setById('dimeProfit', fmtSigned(dimeProfitUSD, '$'));
-    setById('dimeProfitPct', fmtPct(dimeProfitPct));
-
-    // 3. กำไรรายวันรายพอร์ต (Daily Profit)
-    setById('mfcDailyProfit', fmtSigned(mfcDailyProfit));
-    setById('mfcDailyProfitPct', fmtPct(mfcDailyProfitPct));
-    setById('gpfDailyProfit', fmtSigned(gpfDailyProfit));
-    setById('gpfDailyProfitPct', fmtPct(gpfDailyProfitPct));
-    setById('scbDailyProfit', fmtSigned(scbDailyProfit));
-    setById('scbDailyProfitPct', fmtPct(scbDailyProfitPct));
-    setById('dimeDailyProfit', fmtSigned(dimeDailyProfitUSD, '$'));
-    setById('dimeDailyProfitPct', fmtPct(dimeDailyProfitPct));
-
-    // 4. สัดส่วนและมูลค่ารายพอร์ต (Asset Allocation)
-    setById('mfcTotal', `฿${fmt(mfcTotal)}`);
-    setById('gpfTotal', `฿${fmt(gpfTotal)}`);
-    setById('scbTotal', `฿${fmt(scbTotal)}`);
-    setById('dimeTotal', `$${fmt(dimeTotalUSD)}`);
-
-    if (totalWealth > 0) {
-        setById('mfcAllocPct', `${fmt((mfcTotal / totalWealth) * 100)}%`);
-        setById('gpfAllocPct', `${fmt((gpfTotal / totalWealth) * 100)}%`);
-        setById('scbAllocPct', `${fmt((scbTotal / totalWealth) * 100)}%`);
-        setById('dimeAllocPct', `${fmt((dimeTHB / totalWealth) * 100)}%`);
-    }
-}
-</script>
+        // เริ่มทำงานเมื่อโหลดหน้าเว็บ
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+    </script>
 </body>
 </html>
