@@ -959,23 +959,67 @@ function renderAchievementsList(totalWealth, fireProgress) {
 }
 
 function renderDimeAnalytics(data) {
-    if (!data) return;
+    // เช็กว่ามีข้อมูลและเป็น Array จริงๆ
+    if (!data || !Array.isArray(data) || data.length === 0) return;
 
+    let bestStock = '-';
+    let maxReturnPct = -Infinity;
+    
+    // 1. แปลงข้อมูลและคำนวณมูลค่าของหุ้นแต่ละตัว
+    let portfolioData = data.map(item => {
+        // ใช้จำนวนหุ้น (ถ้าไม่มีฟิลด์นี้ ให้คำนวณจากสัดส่วนพื้นฐาน)
+        const shares = item.shares || item.units || item.amount || item.volume || 1; 
+        const costValue = (item.avgNav || 0) * shares;
+        const marketValue = item.marketValue || ((item.currentNav || 0) * shares);
+        const returnPct = item.avgNav ? ((item.currentNav - item.avgNav) / item.avgNav) * 100 : 0;
+        
+        return {
+            code: item.code,
+            costValue: costValue,
+            marketValue: marketValue,
+            returnPct: returnPct
+        };
+    });
+
+    // 2. หา Best Performer (ตัวที่บวก % เยอะสุด)
+    portfolioData.forEach(item => {
+        if (item.returnPct > maxReturnPct) {
+            maxReturnPct = item.returnPct;
+            bestStock = `${item.code} (+${maxReturnPct.toFixed(2)}%)`;
+        }
+    });
+
+    // 3. เรียงลำดับตามมูลค่า (Market Value) จากมากไปน้อย
+    portfolioData.sort((a, b) => b.marketValue - a.marketValue);
+    
+    const totalPortValue = portfolioData.reduce((sum, item) => sum + item.marketValue, 0);
+    const totalCostValue = portfolioData.reduce((sum, item) => sum + item.costValue, 0);
+    
+    // หุ้นสัดส่วนอันดับ 1
+    const topHolding = portfolioData.length > 0 ? portfolioData[0].code : '-';
+    
+    // 4. คำนวณ Top 3 Concentration (ความกระจุกตัว 3 อันดับแรก)
+    let top3Value = 0;
+    for (let i = 0; i < Math.min(3, portfolioData.length); i++) {
+        top3Value += portfolioData[i].marketValue;
+    }
+    const top3Concentration = totalPortValue > 0 ? (top3Value / totalPortValue) * 100 : 0;
+
+    // 5. คำนวณผลตอบแทนพอร์ตโดยรวม (Portfolio Return)
+    const portfolioReturn = totalCostValue > 0 ? ((totalPortValue - totalCostValue) / totalCostValue) * 100 : 0;
+
+    // --- ส่งค่าทั้งหมดไปวาดบนหน้าเว็บ ---
     const topHoldingEl = document.getElementById('topHolding');
-    if (topHoldingEl) topHoldingEl.innerText = data.topHolding || '-';
+    if (topHoldingEl) topHoldingEl.innerText = topHolding;
 
     const bestPerformerEl = document.getElementById('bestPerformer');
-    if (bestPerformerEl) bestPerformerEl.innerText = data.bestPerformer || '-';
+    if (bestPerformerEl) bestPerformerEl.innerText = bestStock;
 
     const top3ConcEl = document.getElementById('top3Concentration');
-    if (top3ConcEl && data.top3Concentration !== undefined) {
-        top3ConcEl.innerText = Number(data.top3Concentration).toFixed(2) + '%';
-    }
+    if (top3ConcEl) top3ConcEl.innerText = top3Concentration.toFixed(2) + '%';
 
     const dimeReturnEl = document.getElementById('dimeReturn');
-    if (dimeReturnEl && data.portfolioReturn !== undefined) {
-        dimeReturnEl.innerText = Number(data.portfolioReturn).toFixed(2) + '%';
-    }
+    if (dimeReturnEl) dimeReturnEl.innerText = portfolioReturn.toFixed(2) + '%';
 }
 
 function renderWeeklyAnalytics(history) {
