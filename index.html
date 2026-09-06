@@ -1233,10 +1233,17 @@ async function loadDashboard() {
     }
 
     // ---------------- สกัด GPF ----------------
-    if (gpfData && gpfData.funds) {
-        gpfTotal = 0;
-        gpfCost = 0;
-        gpfDailyProfit = 0;
+    gpfTotal = 0;
+    gpfCost = 0;
+    gpfDailyProfit = 0;
+
+    if (Array.isArray(gpfData) && gpfData.length > 0) {
+        gpfData.forEach(item => {
+            // คำนวณมูลค่ารวมของแต่ละกองทุน (amount หรือ nav * units)
+            const amt = Number(item.amount || ((item.nav || 0) * (item.units || 0)) || 0);
+            gpfTotal += amt;
+        });
+    }
 
         const gpfFundsArray = Array.isArray(gpfData.funds) ? gpfData.funds : Object.values(gpfData.funds);
         gpfFundsArray.forEach(f => {
@@ -1281,13 +1288,26 @@ async function loadDashboard() {
         scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
     }
 
-    // ---------------- สกัด DIME (USD) ----------------
-    if (dimeSummary) {
-        dimeTotalUSD = Number(dimeSummary.value || 0);
+    // ---------------- สกัด DIME ----------------
+    if (dimeSummary && (dimeSummary.value || dimeSummary.total_thb || dimeSummary.total)) {
+        dimeTotalUSD = Number(dimeSummary.value || dimeSummary.total || 0);
         dimeCostUSD = Number(dimeSummary.cost || 0);
         dimeProfitUSD = Number(dimeSummary.profit || (dimeTotalUSD - dimeCostUSD));
         dimeDailyProfitUSD = Number(dimeSummary.dailyProfit || dimeSummary.todayGain || 0);
         dimeDailyProfitPct = Number(dimeSummary.dailyProfitPct || 0);
+    } else if (Array.isArray(dimeAnalyticsData) && dimeAnalyticsData.length > 0) {
+        // สำรอง: คำนวณยอดรวมสุทธิจากตาราง dime_ports ใน Supabase โดยตรง
+        dimeCostUSD = 0;
+        dimeTotalUSD = 0;
+        dimeAnalyticsData.forEach(item => {
+            const shares = Number(item.shares || item.units || 1);
+            const avgNav = Number(item.avgnav !== undefined ? item.avgnav : (item.avgNav || 0));
+            const currentNav = Number(item.currentnav !== undefined ? item.currentnav : (item.currentNav || 0));
+            
+            dimeCostUSD += (avgNav * shares);
+            dimeTotalUSD += (currentNav * shares);
+        });
+        dimeProfitUSD = dimeTotalUSD - dimeCostUSD;
     }
 
     // ---------------- สกัด DIME Analytics ----------------
