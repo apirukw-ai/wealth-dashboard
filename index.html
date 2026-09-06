@@ -1149,53 +1149,72 @@ async function loadDashboard() {
     let historyDataRaw = {};
 
     try {
-        const [mfcRes, gpfRes, scbRes, dimeRes, dimeAnalyticsRes, historyRes] = await Promise.allSettled([
-            fetch('https://iproktvvetsbxxmpptuj.supabase.co/rest/v1/policies?select=*', {
-                headers: {
-                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw',
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlwcm9rdHZ2ZXRzYnh4bXBwdHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyOTU3NDEsImV4cCI6MjEwMjg3MTc0MX0.Kc0USo30u4gvZNJ1bsOdD9k6nwEBcY7lNMAQxWEFzqw'
-                }
-            }).then(r => r.json()),
-            fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json').then(r => r.json()),
-            fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/ports/my-scb-port.json').then(r => r.json()), // 👈 แก้ตรงนี้เป็น ports/my-scb-port.json
-            fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json').then(r => r.json()),
-            fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_analytics/current.json').then(r => r.json()),
-            fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
-        ]);
+    const [mfcData, gpfData, scbData, dimeSummary, dimeAnalytics, wealthHistory] = await Promise.all([
+        // ดึง MFC จากตาราง policies
+        supabaseClient.from('policies').select('*').then(res => {
+            if (res.error) throw res.error; // ถ้า Supabase แจ้ง Error ให้โยนเข้า catch
+            return res.data;
+        }), 
+        
+        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/gpf_ports/my-gpf-4750131.json').then(r => r.json()),
+        
+        // ดึง SCB จากตาราง scb_funds
+        supabaseClient.from('scb_funds').select('*').then(res => {
+            if (res.error) throw res.error; // ถ้า Supabase แจ้ง Error ให้โยนเข้า catch
+            return res.data;
+        }), 
+        
+        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_summary/current.json').then(r => r.json()),
+        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/dime_analytics/current.json').then(r => r.json()),
+        fetch('https://scb-e-class-default-rtdb.asia-southeast1.firebasedatabase.app/wealth_history.json').then(r => r.json())
+    ]);
+
+    // 🟢 ถ้าดึงสำเร็จทั้งหมด โค้ดส่วนคำนวณและแสดงผลบน Dashboard จะทำงานตรงนี้
+    console.log("MFC Data:", mfcData);
+    console.log("SCB Data:", scbData);
+    // ... นำข้อมูลไป render ลงหน้าเว็บ ...
+
+} catch (error) {
+    // 🔴 ถ้ามีอันไหนพัง จะเด้งมาทำงานตรงนี้แทน ทำให้หน้าเว็บไม่ค้าง
+    console.error("❌ เกิดข้อผิดพลาดในการดึงข้อมูล Dashboard:", error);
+    // อาจจะทำ UI แจ้งเตือนผู้ใช้งาน เช่น alert("ไม่สามารถโหลดข้อมูลได้ในขณะนี้");
+}
 
         // ---------------- สกัด MFC ----------------
-        if (mfcRes.status === 'fulfilled' && mfcRes.value) {
-            const dataList = Array.isArray(mfcRes.value) ? mfcRes.value : (mfcRes.value.data || []);
-            mfcTotal = 0;
-            mfcCost = 0;
-            mfcDailyProfit = 0;
+// เช็กแค่ว่า mfcData มีค่าและเป็น Array หรือไม่
+if (mfcData && Array.isArray(mfcData)) {
+    mfcTotal = 0;
+    mfcCost = 0;
+    mfcDailyProfit = 0;
 
-            dataList.forEach(item => {
-                const units = parseFloat(item.units || 0);
-                const nav = parseFloat(item.nav || 0);
-                const prevAmt = parseFloat(item.prev_amt || 0);
-                
-                const costVal = parseFloat(item.cost || item.cost_val || item.initial_cost || prevAmt || (units * nav));
+    mfcData.forEach(item => {
+        // ดึงค่าจาก Column ใน Supabase
+        const units = parseFloat(item.units || 0);
+        const nav = parseFloat(item.nav || 0);
+        const prevAmt = parseFloat(item.prev_amt || 0);
+        
+        const costVal = parseFloat(item.cost || item.cost_val || item.initial_cost || prevAmt || (units * nav));
 
-                const currentVal = units * nav;
-                mfcTotal += currentVal;
-                mfcCost += costVal;
+        const currentVal = units * nav;
+        mfcTotal += currentVal;
+        mfcCost += costVal;
 
-                if (prevAmt > 0) {
-                    mfcDailyProfit += (currentVal - prevAmt);
-                }
-            });
-
-            mfcProfit = mfcTotal - mfcCost;
-            const mfcPrevTotal = mfcTotal - mfcDailyProfit;
-            mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
+        if (prevAmt > 0) {
+            mfcDailyProfit += (currentVal - prevAmt);
         }
+    });
+
+    mfcProfit = mfcTotal - mfcCost;
+    const mfcPrevTotal = mfcTotal - mfcDailyProfit;
+    mfcDailyProfitPct = mfcPrevTotal > 0 ? (mfcDailyProfit / mfcPrevTotal) * 100 : 0;
+}
 
         // ---------------- สกัด GPF ----------------
-        if (gpfRes.status === 'fulfilled' && gpfRes.value?.funds) {
-            gpfTotal = 0;
-            gpfCost = 0;
-            gpfDailyProfit = 0;
+// เช็กว่า gpfData มีค่าและมี object funds อยู่ข้างใน
+if (gpfData && gpfData.funds) {
+    gpfTotal = 0;
+    gpfCost = 0;
+    gpfDailyProfit = 0;
 
             gpfRes.value.funds.forEach(f => {
                 const units = Number(f.units || 0);
@@ -1214,45 +1233,42 @@ async function loadDashboard() {
         }
 
         // ---------------- สกัด SCB (ถอดสูตรตรงจากแอป SCB) ----------------
-        if (scbRes.status === 'fulfilled' && scbRes.value) {
-            let scbFunds = [];
-            
-            if (Array.isArray(scbRes.value)) {
-                scbFunds = scbRes.value;
-            } else if (scbRes.value && typeof scbRes.value === 'object') {
-                scbFunds = scbRes.value.funds || scbRes.value.items || Object.values(scbRes.value);
-            }
+// เช็กแค่ว่า scbData มีค่าและเป็น Array หรือไม่
+if (scbData && Array.isArray(scbData)) {
+    
+    // Supabase ส่งค่ากลับมาเป็น Array อยู่แล้ว จับใส่ตัวแปรได้เลย
+    const scbFunds = scbData;
 
-            scbFunds = scbFunds.filter(f => f && typeof f === 'object');
+    scbTotal = 0;
+    scbCost = 0;
+    let totalValYesterday = 0;
 
-            scbTotal = 0;
-            scbCost = 0;
-            let totalValYesterday = 0;
+    scbFunds.forEach(f => {
+        const units = Number(f.units || 0);
+        const currentNav = Number(f.currentNav || 0);
+        const avgNav = Number(f.avgNav || 0);
+        const dailyPct = Number(f.dailyPct || 0); // ตรวจสอบให้ชัวร์ว่าในตาราง scb_funds มีคอลัมน์ dailyPct
 
-            scbFunds.forEach(f => {
-                const units = Number(f.units || 0);
-                const currentNav = Number(f.currentNav || 0);
-                const avgNav = Number(f.avgNav || 0);
-                const dailyPct = Number(f.dailyPct || 0);
+        const fVal = units * currentNav;
+        const cost = units * avgNav;
+        const valYesterday = fVal / (1 + (dailyPct / 100));
 
-                const fVal = units * currentNav;
-                const cost = units * avgNav;
-                const valYesterday = fVal / (1 + (dailyPct / 100));
+        scbTotal += fVal;
+        scbCost += cost;
+        totalValYesterday += valYesterday;
+    });
 
-                scbTotal += fVal;
-                scbCost += cost;
-                totalValYesterday += valYesterday;
-            });
+    // 1. กำไรสะสมรวม (Portfolio Gain Total)
+    scbProfit = scbTotal - scbCost;
 
-            // 1. กำไรสะสมรวม (Portfolio Gain Total)
-            scbProfit = scbTotal - scbCost;
-
-            // 2. กำไรรายวันวันนี้ (Daily Profit Today)
-            scbDailyProfit = scbTotal - totalValYesterday;
-            scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
-        }
+    // 2. กำไรรายวันวันนี้ (Daily Profit Today)
+    scbDailyProfit = scbTotal - totalValYesterday;
+    scbDailyProfitPct = totalValYesterday > 0 ? (scbDailyProfit / totalValYesterday) * 100 : 0;
+}
         // ---------------- สกัด DIME (USD) ----------------
-        if (dimeRes.status === 'fulfilled' && dimeRes.value) {
+// เช็กว่า dimeSummary มีค่า
+if (dimeSummary) {
+    dimeTotalUSD = Number(dimeSummary.value || 0);
             dimeTotalUSD = Number(dimeRes.value.value || 0);
             dimeCostUSD = Number(dimeRes.value.cost || 0);
             dimeProfitUSD = Number(dimeRes.value.profit || (dimeTotalUSD - dimeCostUSD));
@@ -1262,12 +1278,15 @@ async function loadDashboard() {
         }
 
         // ---------------- สกัด DIME Analytics ----------------
-        if (dimeAnalyticsRes.status === 'fulfilled') {
+// เช็กว่ามีข้อมูล Analytics
+if (dimeAnalytics) {
             dimeAnalytics = dimeAnalyticsRes.value;
         }
 
         // ---------------- สกัด Wealth History ----------------
-        if (historyRes.status === 'fulfilled' && historyRes.value) {
+// เช็กว่า wealthHistory มีค่า
+if (wealthHistory) {
+    historyDataRaw = wealthHistory || {};
             historyDataRaw = historyRes.value || {};
             history = Object.values(historyDataRaw);
         }
