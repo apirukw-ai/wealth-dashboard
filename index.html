@@ -1191,24 +1191,40 @@ function openTracker(url) {
 
 // --- ฟังก์ชันหลัก ---
 async function loadDashboard() {
-    console.log('START LOAD (Network Only)');
+    console.log('🚀 START LOAD (Network Only)');
     if (typeof updateDashboardTimestamps === 'function') updateDashboardTimestamps();
-    
-    // 1. ดึงอัตราแลกเปลี่ยน USD/THB
-    fxRate = (typeof getUsdThbRate === 'function') ? await getUsdThbRate() : 32.89; // 👈 ลบ const หน้า fxRate ออก
-    window.fxRate = fxRate; // 👈 เพิ่มบรรทัดนี้
-    
+
+    // 1. ดึงอัตราแลกเปลี่ยน USD/THB พร้อมระบบ Fallback
+    let fxRate = 32.89;
+    try {
+        if (typeof getUsdThbRate === 'function') {
+            fxRate = await Promise.race([
+                getUsdThbRate(),
+                new Promise(resolve => setTimeout(() => resolve(32.89), 3000)) // Timeout 3 วิ
+            ]);
+        }
+    } catch (e) {
+        console.warn('⚠️ ดึง FX Rate ไม่สำเร็จ ใช้ค่าเริ่มต้น:', fxRate);
+    }
+    window.fxRate = fxRate;
+
     try {
         // 2. ดึงข้อมูลจาก Supabase แบบ Parallel
+        console.log('📡 Fetching data from Supabase...');
         const [summaryRes, dimeAnalyticsData, wealthHistory] = await Promise.all([
             supabaseClient.from('v_portfolio_summary').select('*').single(),
             supabaseClient.from('dime_ports').select('*').then(res => res.data || []),
             supabaseClient.from('wealth_history').select('*').order('snapshot_date', { ascending: true }).then(res => res.data || [])
         ]);
 
-        const summary = summaryRes.data || {};
+        if (summaryRes.error) {
+            console.error('❌ Supabase View Error:', summaryRes.error);
+        }
 
-        // 3. อัปเดตข้อมูลเข้าตัวแปรหลักโดยตรง (ไม่ใช้ let/const นำหน้าเพื่อเข้า Global Scope)
+        const summary = summaryRes.data || {};
+        console.log('📊 Summary Data Received:', summary);
+
+        // 3. กำหนดค่าลงตัวแปรหลัก (Global Scope)
         gpfTotal = Number(summary.gpf_total || 0);
         gpfProfit = Number(summary.gpf_profit || 0);
         gpfDailyProfit = Number(summary.gpf_daily_profit || 0);
@@ -1226,13 +1242,12 @@ async function loadDashboard() {
         mfcDailyProfit = Number(summary.mfc_daily_profit || 0);
 
         // 4. แปลงมูลค่า DIME (USD) เป็น บาท (THB)
-        dimeTHB = dimeTotalUSD * fxRate; // 👈 ลบ const ข้างหน้าออก
+        dimeTHB = dimeTotalUSD * fxRate;
         const dimeProfitTHB = dimeProfitUSD * fxRate;
         const dimeDailyProfitTHB = dimeDailyProfitUSD * fxRate;
+        window.dimeTHB = dimeTHB;
 
-        window.dimeTHB = dimeTHB; // 👈 เพิ่มบรรทัดนี้เพื่อส่งเข้า Global Scope
-
-        // 5. คำนวณ % กำไรสะสม และ % รายวัน แต่ละพอร์ต
+        // 5. คำนวณ % กำไรสะสม และ % รายวัน ของแต่ละพอร์ต
         const gpfCost = gpfTotal - gpfProfit;
         gpfProfitPct = gpfCost > 0 ? (gpfProfit / gpfCost) * 100 : 0;
         gpfDailyProfitPct = (gpfTotal - gpfDailyProfit) > 0 ? (gpfDailyProfit / (gpfTotal - gpfDailyProfit)) * 100 : 0;
@@ -1249,14 +1264,11 @@ async function loadDashboard() {
         dimeProfitPct = dimeCostUSD > 0 ? (dimeProfitUSD / dimeCostUSD) * 100 : 0;
         dimeDailyProfitPct = (dimeTotalUSD - dimeDailyProfitUSD) > 0 ? (dimeDailyProfitUSD / (dimeTotalUSD - dimeDailyProfitUSD)) * 100 : 0;
 
-        // 6. คำนวณยอดรวมภาพรวมทั้งพอร์ต (Total)
+        // 6. คำนวณยอดรวมภาพรวมทั้งพอร์ต (Total Portfolio)
         totalWealth = mfcTotal + gpfTotal + scbTotal + dimeTHB;
         totalProfit = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
         totalDailyProfit = mfcDailyProfit + gpfDailyProfit + scbDailyProfit + dimeDailyProfitTHB;
-
-        // 👈 เพิ่ม 2 บรรทัดนี้เพื่อรองรับโค้ด UI ที่เรียกใช้ชื่อเดิม
-        totalDailyProfitToday = totalDailyProfit; 
-        window.totalDailyProfitToday = totalDailyProfit;
+        totalDailyProfitToday = totalDailyProfit;
 
         const totalCost = totalWealth - totalProfit;
         totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
@@ -1264,19 +1276,23 @@ async function loadDashboard() {
         const prevTotalWealth = totalWealth - totalDailyProfit;
         totalDailyProfitPct = prevTotalWealth > 0 ? (totalDailyProfit / prevTotalWealth) * 100 : 0;
 
-        // ผูกเข้า Window Scope เพื่อป้องกัน ReferenceError บน UI
-        window.portfolioGainPct = totalProfitPct;
+        // ส่งตัวแปรเข้า Window Scope
+        window.totalWealth = totalWealth;
+        window.totalProfit = totalProfit;
+        window.totalDailyProfit = totalDailyProfit;
+        window.totalDailyProfitToday = totalDailyProfitToday;
         window.totalProfitPct = totalProfitPct;
+        window.portfolioGainPct = totalProfitPct;
         window.totalDailyProfitPct = totalDailyProfitPct;
 
-        // 7. จัดการ DIME Analytics & Wealth History
+        // 7. จัดการ DIME Analytics & History
         if (dimeAnalyticsData) {
             dimeAnalytics = dimeAnalyticsData;
             window.dimeAnalytics = dimeAnalyticsData;
         }
 
         if (wealthHistory && Array.isArray(wealthHistory)) {
-            history = wealthHistory.map(item => { // 👈 ลบ let ข้างหน้า history ออก
+            history = wealthHistory.map(item => {
                 const dateVal = item.snapshot_date || item.date || item.created_at || '';
                 const totalVal = Number(item.total_wealth ?? item.totalWealth ?? item.total ?? 0);
                 return {
@@ -1292,19 +1308,19 @@ async function loadDashboard() {
                 };
             });
         } else {
-            history = []; // กำหนดเป็น Array ว่างกรณีไม่มีข้อมูล
+            history = [];
         }
 
-        window.historyData = history; // ส่งเข้า Global Scope
+        console.log('✅ Calculated Total Wealth:', totalWealth);
+
         // 8. สั่ง Render หน้าจอและกราฟ
         if (typeof updateUI === 'function') updateUI();
         if (typeof renderCharts === 'function') renderCharts();
 
     } catch (err) {
-        console.error('⚠️ เกิดข้อผิดพลาดในการดึงข้อมูล Dashboard:', err);
+        console.error('⚠️ เกิดข้อผิดพลาดใน loadDashboard:', err);
     }
 }
-
 
     // 📍 5. แสดงผลการ์ดใหญ่ Portfolio Gain
     const totalGainValEl = document.getElementById('totalGainValue');
