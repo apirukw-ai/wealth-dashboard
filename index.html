@@ -1623,16 +1623,15 @@ if ('serviceWorker' in navigator) {
     });
 }
 function updateUI() {
-    // ฟังก์ชันช่วยจัดรูปแบบตัวเลข (ลูกน้ำ + ทศนิยม 2 ตำแหน่ง)
     const fmt = (num) => Number(num || 0).toLocaleString('th-TH', { 
         minimumFractionDigits: 2, 
         maximumFractionDigits: 2 
     });
 
-    const fmtSigned = (num, symbol = '฿') => {
+    const fmtSigned = (num, sym = '฿') => {
         const val = Number(num) || 0;
         const sign = val >= 0 ? '+' : '';
-        return `${sign}${symbol}${fmt(val)}`;
+        return `${sign}${sym}${fmt(val)}`;
     };
 
     const fmtPct = (num) => {
@@ -1641,63 +1640,65 @@ function updateUI() {
         return `${sign}${fmt(val)}%`;
     };
 
-    // 1. อัปเดต ยอดรวม Total Wealth หน้าหลัก
-    const totalWealthEl = document.getElementById('totalWealth') 
-        || document.querySelector('.total-wealth-val') 
-        || Array.from(document.querySelectorAll('div, h1, span')).find(el => el.children.length === 0 && el.textContent.trim().includes('฿0.00'));
-    if (totalWealthEl) totalWealthEl.innerText = `฿${fmt(totalWealth)}`;
+    // ฟังก์ชันช่วยสแกนหา Element จากหลายตัวเลือก ID / Class
+    const setVal = (selectors, text, className = null) => {
+        const list = Array.isArray(selectors) ? selectors : [selectors];
+        for (const s of list) {
+            const el = s.startsWith('.') || s.startsWith('#') || s.includes(' ') 
+                ? document.querySelector(s) 
+                : document.getElementById(s);
+            if (el) {
+                el.innerText = text;
+                if (className) el.className = className;
+                break;
+            }
+        }
+    };
 
-    // 2. อัปเดต Portfolio Gain (Total)
-    const totalProfitEl = document.getElementById('totalProfit');
-    if (totalProfitEl) totalProfitEl.innerText = fmtSigned(totalProfit);
+    // 1. Total Wealth (หน้าหลัก)
+    setVal(['#totalWealth', '.total-wealth-val'], `฿${fmt(totalWealth)}`);
 
-    const totalProfitPctEl = document.getElementById('totalProfitPct');
-    if (totalProfitPctEl) {
-        totalProfitPctEl.innerText = fmtPct(totalProfitPct);
-        totalProfitPctEl.className = totalProfitPct >= 0 ? 'text-green-400' : 'text-red-400';
-    }
+    // 2. Portfolio Gain (Total)
+    setVal(['#totalProfit', '#portfolioGainVal', '#totalGainVal'], fmtSigned(totalProfit));
+    setVal(['#totalProfitPct', '#portfolioGainPct', '#totalGainPct'], fmtPct(totalProfitPct), totalProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
 
-    // 3. อัปเดต Daily Profit (Today)
-    const totalDailyProfitEl = document.getElementById('totalDailyProfit') || document.getElementById('totalDailyProfitToday');
-    if (totalDailyProfitEl) totalDailyProfitEl.innerText = fmtSigned(totalDailyProfit);
+    // 3. Daily Profit (Today)
+    setVal(['#totalDailyProfit', '#totalDailyProfitToday', '#dailyProfitVal'], fmtSigned(totalDailyProfit));
+    setVal(['#totalDailyProfitPct', '#dailyProfitPct'], fmtPct(totalDailyProfitPct), totalDailyProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
 
-    const totalDailyProfitPctEl = document.getElementById('totalDailyProfitPct');
-    if (totalDailyProfitPctEl) {
-        totalDailyProfitPctEl.innerText = fmtPct(totalDailyProfitPct);
-        totalDailyProfitPctEl.className = totalDailyProfitPct >= 0 ? 'text-green-400' : 'text-red-400';
-    }
+    // 4. รายย่อย: Portfolio Gain (กำไรสะสม)
+    setVal(['#mfcProfit', '#mfcGainVal'], fmtSigned(mfcProfit));
+    setVal(['#gpfProfit', '#gpfGainVal'], fmtSigned(gpfProfit));
+    setVal(['#scbProfit', '#scbGainVal'], fmtSigned(scbProfit));
+    setVal(['#dimeProfit', '#dimeGainVal'], fmtSigned(dimeProfitUSD, '$'));
 
-    // 4. อัปเดต ยอดแยกรายพอร์ต (Asset Allocation Cards)
-    // MFC
-    if (document.getElementById('mfcTotal')) document.getElementById('mfcTotal').innerText = `฿${fmt(mfcTotal)}`;
-    if (document.getElementById('mfcProfit')) document.getElementById('mfcProfit').innerText = fmtSigned(mfcProfit);
-    if (document.getElementById('mfcDailyProfit')) document.getElementById('mfcDailyProfit').innerText = fmtSigned(mfcDailyProfit);
+    setVal(['#mfcProfitPct', '#mfcGainPct'], fmtPct(mfcProfitPct));
+    setVal(['#gpfProfitPct', '#gpfGainPct'], fmtPct(gpfProfitPct));
+    setVal(['#scbProfitPct', '#scbGainPct'], fmtPct(scbProfitPct));
+    setVal(['#dimeProfitPct', '#dimeGainPct'], fmtPct(dimeProfitPct));
 
-    // GPF
-    if (document.getElementById('gpfTotal')) document.getElementById('gpfTotal').innerText = `฿${fmt(gpfTotal)}`;
-    if (document.getElementById('gpfProfit')) document.getElementById('gpfProfit').innerText = fmtSigned(gpfProfit);
-    if (document.getElementById('gpfDailyProfit')) document.getElementById('gpfDailyProfit').innerText = fmtSigned(gpfDailyProfit);
+    // 5. รายย่อย: Daily Profit (กำไรรายวัน)
+    setVal(['#mfcDailyProfit', '#mfcDailyVal'], fmtSigned(mfcDailyProfit));
+    setVal(['#gpfDailyProfit', '#gpfDailyVal'], fmtSigned(gpfDailyProfit));
+    setVal(['#scbDailyProfit', '#scbDailyVal'], fmtSigned(scbDailyProfit));
+    setVal(['#dimeDailyProfit', '#dimeDailyVal'], fmtSigned(dimeDailyProfitUSD, '$'));
 
-    // SCB
-    if (document.getElementById('scbTotal')) document.getElementById('scbTotal').innerText = `฿${fmt(scbTotal)}`;
-    if (document.getElementById('scbProfit')) document.getElementById('scbProfit').innerText = fmtSigned(scbProfit);
-    if (document.getElementById('scbDailyProfit')) document.getElementById('scbDailyProfit').innerText = fmtSigned(scbDailyProfit);
+    setVal(['#mfcDailyProfitPct', '#mfcDailyPct'], fmtPct(mfcDailyProfitPct));
+    setVal(['#gpfDailyProfitPct', '#gpfDailyPct'], fmtPct(gpfDailyProfitPct));
+    setVal(['#scbDailyProfitPct', '#scbDailyPct'], fmtPct(scbDailyProfitPct));
+    setVal(['#dimeDailyProfitPct', '#dimeDailyPct'], fmtPct(dimeDailyProfitPct));
 
-    // DIME
-    if (document.getElementById('dimeTotal')) document.getElementById('dimeTotal').innerText = `$${fmt(dimeTotalUSD)} (฿${fmt(dimeTHB)})`;
-    if (document.getElementById('dimeProfit')) document.getElementById('dimeProfit').innerText = fmtSigned(dimeProfitUSD, '$');
-    if (document.getElementById('dimeDailyProfit')) document.getElementById('dimeDailyProfit').innerText = fmtSigned(dimeDailyProfitUSD, '$');
+    // 6. รายย่อย: Asset Allocation (สัดส่วนและยอดรวมแต่ละพอร์ต)
+    setVal(['#mfcTotal', '#mfcAllocVal', '#mfcWealth'], `฿${fmt(mfcTotal)}`);
+    setVal(['#gpfTotal', '#gpfAllocVal', '#gpfWealth'], `฿${fmt(gpfTotal)}`);
+    setVal(['#scbTotal', '#scbAllocVal', '#scbWealth'], `฿${fmt(scbTotal)}`);
+    setVal(['#dimeTotal', '#dimeAllocVal', '#dimeWealth'], `$${fmt(dimeTotalUSD)} (฿${fmt(dimeTHB)})`);
 
-    // 5. อัปเดตเปอร์เซ็นต์สัดส่วนพอร์ต (Asset Allocation %)
     if (totalWealth > 0) {
-        const setPct = (id, val) => {
-            const el = document.getElementById(id);
-            if (el) el.innerText = `${fmt((val / totalWealth) * 100)}%`;
-        };
-        setPct('mfcAllocPct', mfcTotal);
-        setPct('gpfAllocPct', gpfTotal);
-        setPct('scbAllocPct', scbTotal);
-        setPct('dimeAllocPct', dimeTHB);
+        setVal(['#mfcAllocPct', '#mfcPct'], `${fmt((mfcTotal / totalWealth) * 100)}%`);
+        setVal(['#gpfAllocPct', '#gpfPct'], `${fmt((gpfTotal / totalWealth) * 100)}%`);
+        setVal(['#scbAllocPct', '#scbPct'], `${fmt((scbTotal / totalWealth) * 100)}%`);
+        setVal(['#dimeAllocPct', '#dimePct'], `${fmt((dimeTHB / totalWealth) * 100)}%`);
     }
 }
 </script>
