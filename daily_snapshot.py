@@ -64,27 +64,12 @@ def create_daily_snapshot():
             "createdAt": datetime.now().isoformat()
         }
 
-        # 7. ส่งบันทึกเข้า Supabase
-        supabase_payload = [{
-            "snapshot_date": date_str,
-            "total_wealth": float(total_wealth),
-            "mfc": float(mfc_total),
-            "gpf": float(gpf_total),
-            "scb": float(scb_total),
-            "dime": float(dime_total)
-        }]
-
-        headers = {
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"
-        }
-
-        save_res = requests.post(f"{SUPABASE_URL}/rest/v1/wealth_history", headers=headers, json=supabase_payload)
-
-        if save_res.status_code in [200, 201, 204]:
-            print(f"✅ บันทึก Snapshot ลง Supabase ของวันที่ {date_str} สำเร็จ: ยอดรวม ฿{total_wealth:,.2f}")
+        # 7. ส่งบันทึกเข้า Firebase โดยแนบ Auth Secret เพื่อข้าม Security Rules
+        save_url = f"{FIREBASE_BASE_URL}/wealth_history/{snapshot_key}.json?auth={FIREBASE_SECRET}"
+        save_res = requests.put(save_url, json=payload)
+        
+        if save_res.status_code in [200, 201]:
+            print(f"✅ บันทึก Snapshot ของวันที่ {date_str} สำเร็จ: ยอดรวม ฿{total_wealth:,.2f}")
         else:
             print(f"⚠️ บันทึกไม่สำเร็จ HTTP {save_res.status_code}: {save_res.text}")
 
