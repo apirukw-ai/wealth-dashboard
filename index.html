@@ -1635,52 +1635,98 @@ function updateUI() {
 
     const fmtPct = (num) => `${(Number(num) || 0) >= 0 ? '▲ +' : '▼ '}${fmt(num)}%`;
 
-    const setById = (id, text, className = null) => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.textContent = text;
-            if (className) el.className = className;
-        }
+    // ค้นหาการ์ดเฉพาะใบ โดยจำกัดจำนวนโหนดเพื่อไม่ให้หลุดไปจับภาพรวมทั้งหน้า
+    const getCard = (keyword) => {
+        const containers = Array.from(document.querySelectorAll('div'));
+        return containers.find(el => {
+            const txt = el.innerText || el.textContent || '';
+            const hasKeyword = txt.includes(keyword);
+            const hasApps = txt.includes('MFC') && txt.includes('GPF') && txt.includes('SCB') && txt.includes('DIME');
+            const divCount = el.querySelectorAll('div').length;
+            return hasKeyword && hasApps && divCount >= 4 && divCount <= 20;
+        });
     };
 
-    // 1. ยอดรวมหลัก
-    setById('totalWealth', `฿${fmt(totalWealth)}`);
-    setById('totalProfit', fmtSigned(totalProfit));
-    setById('totalProfitPct', fmtPct(totalProfitPct), totalProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
-    setById('totalDailyProfit', fmtSigned(totalDailyProfit));
-    setById('totalDailyProfitPct', fmtPct(totalDailyProfitPct), totalDailyProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
+    // อัปเดตกล่องย่อย 4 พอร์ต (MFC, GPF, SCB, DIME)
+    const updateSubItems = (cardEl, dataMap) => {
+        if (!cardEl) return;
+        const subBoxes = Array.from(cardEl.querySelectorAll('div'));
+        
+        Object.keys(dataMap).forEach(app => {
+            const appBox = subBoxes.find(b => {
+                const txt = b.innerText || b.textContent || '';
+                return txt.includes(app) && txt.length < 80;
+            });
 
-    // 2. กำไรสะสมรายพอร์ต (Portfolio Gain)
-    setById('mfcProfit', fmtSigned(mfcProfit));
-    setById('mfcProfitPct', fmtPct(mfcProfitPct));
-    setById('gpfProfit', fmtSigned(gpfProfit));
-    setById('gpfProfitPct', fmtPct(gpfProfitPct));
-    setById('scbProfit', fmtSigned(scbProfit));
-    setById('scbProfitPct', fmtPct(scbProfitPct));
-    setById('dimeProfit', fmtSigned(dimeProfitUSD, '$'));
-    setById('dimeProfitPct', fmtPct(dimeProfitPct));
+            if (appBox) {
+                const nodes = Array.from(appBox.querySelectorAll('span, div, p'))
+                    .filter(n => n.children.length === 0 && !n.textContent.includes(app));
+                
+                if (nodes.length >= 2) {
+                    nodes[0].textContent = dataMap[app].val;
+                    nodes[1].textContent = dataMap[app].pct;
+                } else if (nodes.length === 1) {
+                    nodes[0].textContent = dataMap[app].val;
+                }
+            }
+        });
+    };
 
-    // 3. กำไรรายวันรายพอร์ต (Daily Profit)
-    setById('mfcDailyProfit', fmtSigned(mfcDailyProfit));
-    setById('mfcDailyProfitPct', fmtPct(mfcDailyProfitPct));
-    setById('gpfDailyProfit', fmtSigned(gpfDailyProfit));
-    setById('gpfDailyProfitPct', fmtPct(gpfDailyProfitPct));
-    setById('scbDailyProfit', fmtSigned(scbDailyProfit));
-    setById('scbDailyProfitPct', fmtPct(scbDailyProfitPct));
-    setById('dimeDailyProfit', fmtSigned(dimeDailyProfitUSD, '$'));
-    setById('dimeDailyProfitPct', fmtPct(dimeDailyProfitPct));
+    // --- 1. Portfolio Gain (Total) ---
+    const gainCard = getCard('Portfolio Gain');
+    if (gainCard) {
+        const mainNodes = Array.from(gainCard.querySelectorAll('div, span, h1, h2, h3'))
+            .filter(n => n.children.length === 0);
+        
+        const mainValNode = mainNodes.find(n => n.textContent.includes('0.00') || n.textContent.includes('฿'));
+        if (mainValNode) mainValNode.textContent = fmtSigned(totalProfit);
 
-    // 4. สัดส่วนและมูลค่ารายพอร์ต (Asset Allocation)
-    setById('mfcTotal', `฿${fmt(mfcTotal)}`);
-    setById('gpfTotal', `฿${fmt(gpfTotal)}`);
-    setById('scbTotal', `฿${fmt(scbTotal)}`);
-    setById('dimeTotal', `$${fmt(dimeTotalUSD)}`);
+        const mainPctNode = mainNodes.find(n => n.textContent.includes('%'));
+        if (mainPctNode) {
+            mainPctNode.textContent = fmtPct(totalProfitPct);
+            mainPctNode.className = totalProfitPct >= 0 ? 'text-emerald-400' : 'text-red-400';
+        }
 
-    if (totalWealth > 0) {
-        setById('mfcAllocPct', `${fmt((mfcTotal / totalWealth) * 100)}%`);
-        setById('gpfAllocPct', `${fmt((gpfTotal / totalWealth) * 100)}%`);
-        setById('scbAllocPct', `${fmt((scbTotal / totalWealth) * 100)}%`);
-        setById('dimeAllocPct', `${fmt((dimeTHB / totalWealth) * 100)}%`);
+        updateSubItems(gainCard, {
+            MFC: { val: fmtSigned(mfcProfit), pct: fmtPct(mfcProfitPct) },
+            GPF: { val: fmtSigned(gpfProfit), pct: fmtPct(gpfProfitPct) },
+            SCB: { val: fmtSigned(scbProfit), pct: fmtPct(scbProfitPct) },
+            DIME: { val: fmtSigned(dimeProfitUSD, '$'), pct: fmtPct(dimeProfitPct) }
+        });
+    }
+
+    // --- 2. Daily Profit (Today) ---
+    const dailyCard = getCard('Daily Profit');
+    if (dailyCard) {
+        const mainNodes = Array.from(dailyCard.querySelectorAll('div, span, h1, h2, h3'))
+            .filter(n => n.children.length === 0);
+        
+        const mainValNode = mainNodes.find(n => n.textContent.includes('0.00') || n.textContent.includes('฿'));
+        if (mainValNode) mainValNode.textContent = fmtSigned(totalDailyProfit);
+
+        const mainPctNode = mainNodes.find(n => n.textContent.includes('%'));
+        if (mainPctNode) {
+            mainPctNode.textContent = fmtPct(totalDailyProfitPct);
+            mainPctNode.className = totalDailyProfitPct >= 0 ? 'text-emerald-400' : 'text-red-400';
+        }
+
+        updateSubItems(dailyCard, {
+            MFC: { val: fmtSigned(mfcDailyProfit), pct: fmtPct(mfcDailyProfitPct) },
+            GPF: { val: fmtSigned(gpfDailyProfit), pct: fmtPct(gpfDailyProfitPct) },
+            SCB: { val: fmtSigned(scbDailyProfit), pct: fmtPct(scbDailyProfitPct) },
+            DIME: { val: fmtSigned(dimeDailyProfitUSD, '$'), pct: fmtPct(dimeDailyProfitPct) }
+        });
+    }
+
+    // --- 3. Asset Allocation ---
+    const allocCard = getCard('Asset Allocation');
+    if (allocCard) {
+        updateSubItems(allocCard, {
+            MFC: { val: `฿${fmt(mfcTotal)}`, pct: totalWealth > 0 ? `${fmt((mfcTotal / totalWealth) * 100)}%` : '0.00%' },
+            GPF: { val: `฿${fmt(gpfTotal)}`, pct: totalWealth > 0 ? `${fmt((gpfTotal / totalWealth) * 100)}%` : '0.00%' },
+            SCB: { val: `฿${fmt(scbTotal)}`, pct: totalWealth > 0 ? `${fmt((scbTotal / totalWealth) * 100)}%` : '0.00%' },
+            DIME: { val: `$${fmt(dimeTotalUSD)}`, pct: totalWealth > 0 ? `${fmt((dimeTHB / totalWealth) * 100)}%` : '0.00%' }
+        });
     }
 }
 </script>
