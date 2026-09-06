@@ -1640,7 +1640,6 @@ function updateUI() {
         return `${sign}${fmt(val)}%`;
     };
 
-    // ฟังก์ชันช่วยสแกนหา Element จากหลายตัวเลือก ID / Class
     const setVal = (selectors, text, className = null) => {
         const list = Array.isArray(selectors) ? selectors : [selectors];
         for (const s of list) {
@@ -1650,9 +1649,10 @@ function updateUI() {
             if (el) {
                 el.innerText = text;
                 if (className) el.className = className;
-                break;
+                return el;
             }
         }
+        return null;
     };
 
     // 1. Total Wealth (หน้าหลัก)
@@ -1666,40 +1666,46 @@ function updateUI() {
     setVal(['#totalDailyProfit', '#totalDailyProfitToday', '#dailyProfitVal'], fmtSigned(totalDailyProfit));
     setVal(['#totalDailyProfitPct', '#dailyProfitPct'], fmtPct(totalDailyProfitPct), totalDailyProfitPct >= 0 ? 'text-green-400' : 'text-red-400');
 
-    // 4. รายย่อย: Portfolio Gain (กำไรสะสม)
-    setVal(['#mfcProfit', '#mfcGainVal'], fmtSigned(mfcProfit));
-    setVal(['#gpfProfit', '#gpfGainVal'], fmtSigned(gpfProfit));
-    setVal(['#scbProfit', '#scbGainVal'], fmtSigned(scbProfit));
-    setVal(['#dimeProfit', '#dimeGainVal'], fmtSigned(dimeProfitUSD, '$'));
-
-    setVal(['#mfcProfitPct', '#mfcGainPct'], fmtPct(mfcProfitPct));
-    setVal(['#gpfProfitPct', '#gpfGainPct'], fmtPct(gpfProfitPct));
-    setVal(['#scbProfitPct', '#scbGainPct'], fmtPct(scbProfitPct));
-    setVal(['#dimeProfitPct', '#dimeGainPct'], fmtPct(dimeProfitPct));
-
-    // 5. รายย่อย: Daily Profit (กำไรรายวัน)
-    setVal(['#mfcDailyProfit', '#mfcDailyVal'], fmtSigned(mfcDailyProfit));
-    setVal(['#gpfDailyProfit', '#gpfDailyVal'], fmtSigned(gpfDailyProfit));
-    setVal(['#scbDailyProfit', '#scbDailyVal'], fmtSigned(scbDailyProfit));
-    setVal(['#dimeDailyProfit', '#dimeDailyVal'], fmtSigned(dimeDailyProfitUSD, '$'));
-
-    setVal(['#mfcDailyProfitPct', '#mfcDailyPct'], fmtPct(mfcDailyProfitPct));
-    setVal(['#gpfDailyProfitPct', '#gpfDailyPct'], fmtPct(gpfDailyProfitPct));
-    setVal(['#scbDailyProfitPct', '#scbDailyPct'], fmtPct(scbDailyProfitPct));
-    setVal(['#dimeDailyProfitPct', '#dimeDailyPct'], fmtPct(dimeDailyProfitPct));
-
-    // 6. รายย่อย: Asset Allocation (สัดส่วนและยอดรวมแต่ละพอร์ต)
-    setVal(['#mfcTotal', '#mfcAllocVal', '#mfcWealth'], `฿${fmt(mfcTotal)}`);
-    setVal(['#gpfTotal', '#gpfAllocVal', '#gpfWealth'], `฿${fmt(gpfTotal)}`);
-    setVal(['#scbTotal', '#scbAllocVal', '#scbWealth'], `฿${fmt(scbTotal)}`);
-    setVal(['#dimeTotal', '#dimeAllocVal', '#dimeWealth'], `$${fmt(dimeTotalUSD)} (฿${fmt(dimeTHB)})`);
-
+    // 4. Asset Allocation Percentages
     if (totalWealth > 0) {
         setVal(['#mfcAllocPct', '#mfcPct'], `${fmt((mfcTotal / totalWealth) * 100)}%`);
         setVal(['#gpfAllocPct', '#gpfPct'], `${fmt((gpfTotal / totalWealth) * 100)}%`);
         setVal(['#scbAllocPct', '#scbPct'], `${fmt((scbTotal / totalWealth) * 100)}%`);
         setVal(['#dimeAllocPct', '#dimePct'], `${fmt((dimeTHB / totalWealth) * 100)}%`);
     }
+
+    // 5. Smart Scanner: ค้นหาและหยอดตัวเลขลงการ์ดที่มีข้อความ "-" หรือ "฿0.00" ค้างอยู่
+    document.querySelectorAll('div').forEach(card => {
+        const text = card.innerText || '';
+
+        // การ์ด Portfolio Gain (Total)
+        if (text.includes('Portfolio Gain')) {
+            const mainVal = Array.from(card.querySelectorAll('div, span, h1, h2')).find(e => e.children.length === 0 && (e.innerText.includes('0.00') || e.innerText === '-'));
+            if (mainVal) mainVal.innerText = fmtSigned(totalProfit);
+
+            const appVals = { MFC: mfcProfit, GPF: gpfProfit, SCB: scbProfit, DIME: dimeProfitUSD };
+            const appSyms = { MFC: '฿', GPF: '฿', SCB: '฿', DIME: '$' };
+            ['MFC', 'GPF', 'SCB', 'DIME'].forEach(app => {
+                const subEl = Array.from(card.querySelectorAll('div, span')).find(e => e.children.length === 0 && e.closest('div')?.innerText.includes(app) && (e.innerText === '-' || e.innerText.includes('0.00')));
+                if (subEl) subEl.innerText = fmtSigned(appVals[app], appSyms[app]);
+            });
+        }
+
+        // การ์ด Daily Profit (Today)
+        if (text.includes('Daily Profit')) {
+            const mainVal = Array.from(card.querySelectorAll('div, span, h1, h2')).find(e => e.children.length === 0 && (e.innerText.includes('0.00') || e.innerText === '-'));
+            if (mainVal) mainVal.innerText = fmtSigned(totalDailyProfit);
+        }
+
+        // การ์ด Asset Allocation
+        if (text.includes('Asset Allocation')) {
+            const appTotals = { MFC: mfcTotal, GPF: gpfTotal, SCB: scbTotal, DIME: dimeTHB };
+            ['MFC', 'GPF', 'SCB', 'DIME'].forEach(app => {
+                const dashEl = Array.from(card.querySelectorAll('div, span')).find(e => e.children.length === 0 && e.innerText.trim() === '-' && e.closest('div')?.innerText.includes(app));
+                if (dashEl) dashEl.innerText = `฿${fmt(appTotals[app])}`;
+            });
+        }
+    });
 }
 </script>
 </body>
