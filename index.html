@@ -652,6 +652,7 @@ details[open] {
 let totalWealth = 0;
 let totalProfit = 0;
 let totalDailyProfit = 0;
+let totalDailyProfitToday = 0; // 👈 เพิ่มบรรทัดนี้
 let totalProfitPct = 0;
 let totalDailyProfitPct = 0;
 
@@ -1245,6 +1246,10 @@ async function loadDashboard() {
         totalWealth = mfcTotal + gpfTotal + scbTotal + dimeTHB;
         totalProfit = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
         totalDailyProfit = mfcDailyProfit + gpfDailyProfit + scbDailyProfit + dimeDailyProfitTHB;
+
+        // 👈 เพิ่ม 2 บรรทัดนี้เพื่อรองรับโค้ด UI ที่เรียกใช้ชื่อเดิม
+        totalDailyProfitToday = totalDailyProfit; 
+        window.totalDailyProfitToday = totalDailyProfit;
 
         const totalCost = totalWealth - totalProfit;
         totalProfitPct = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
