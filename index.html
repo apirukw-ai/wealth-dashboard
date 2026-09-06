@@ -1253,7 +1253,7 @@ async function loadDashboard() {
     // คำนวณ % กำไรสะสมภาพรวมทั้งพอร์ต (Portfolio Gain Total %)
     // ==========================================
     const currentUsdRate = (typeof usdRate !== 'undefined' && usdRate) ? usdRate : ((typeof usdToThb !== 'undefined' && usdToThb) ? usdToThb : 32.89);
-    
+
     const dimeTotalTHB = dimeTotalUSD * currentUsdRate;
     const dimeProfitTHB = dimeProfitUSD * currentUsdRate;
 
@@ -1261,9 +1261,11 @@ async function loadDashboard() {
     const totalProfitVal = mfcProfit + gpfProfit + scbProfit + dimeProfitTHB;
     const totalCostVal = totalWealthVal - totalProfitVal;
 
-    // ส่งค่าเปอร์เซ็นต์ภาพรวมพอร์ตไปแสดงผล
-    totalProfitPct = totalCostVal > 0 ? (totalProfitVal / totalCostVal) * 100 : 0;
-    if (typeof portfolioGainPct !== 'undefined') portfolioGainPct = totalProfitPct;
+    // คำนวณค่า % และส่งไปยัง Global Scope โดยตรงเพื่อป้องกัน Error
+    const calcTotalProfitPct = totalCostVal > 0 ? (totalProfitVal / totalCostVal) * 100 : 0;
+    
+    window.totalProfitPct = calcTotalProfitPct;
+    window.portfolioGainPct = calcTotalProfitPct;
     
     // ---------------- สกัด DIME Analytics ----------------
     console.log("แอบดูข้อมูล DIME Analytics:", dimeAnalyticsData); // 👈 เพิ่มบรรทัดนี้
