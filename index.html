@@ -1149,7 +1149,7 @@ async function loadDashboard() {
     let historyDataRaw = {};
 
     try {
-    const [mfcData, gpfData, scbData, dimeSummary, dimeAnalytics, wealthHistory] = await Promise.all([
+    const [mfcData, gpfData, scbData, dimeSummary, dimeAnalyticsData, wealthHistory] = await Promise.all([
         supabaseClient.from('policies').select('*').then(res => {
             if (res.error) throw res.error;
             return res.data;
@@ -1247,6 +1247,12 @@ async function loadDashboard() {
         dimeDailyProfitPct = Number(dimeSummary.dailyProfitPct || 0);
     }
 
+    // ---------------- สกัด DIME Analytics ----------------
+    if (dimeAnalyticsData) {
+        dimeAnalytics = dimeAnalyticsData; 
+    }
+
+         
     // ---------------- สกัด Wealth History ----------------
     if (wealthHistory) {
         historyDataRaw = wealthHistory || {};
