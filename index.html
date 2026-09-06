@@ -1239,29 +1239,18 @@ async function loadDashboard() {
 
     if (Array.isArray(gpfData) && gpfData.length > 0) {
         gpfData.forEach(item => {
-            // คำนวณมูลค่ารวมของแต่ละกองทุน (amount หรือ nav * units)
-            const amt = Number(item.amount || ((item.nav || 0) * (item.units || 0)) || 0);
+            const units = Number(item.units || 0);
+            const currentNav = Number(item.nav || item.currentnav || item.currentNav || 0);
+            const amt = Number(item.amount || (units * currentNav) || 0);
+            
             gpfTotal += amt;
         });
     }
 
-        const gpfFundsArray = Array.isArray(gpfData.funds) ? gpfData.funds : Object.values(gpfData.funds);
-        gpfFundsArray.forEach(f => {
-            const units = Number(f.units || 0);
-            const currentNav = Number(f.currentNav || 0);
-            const avgNav = Number(f.avgNav || f.costNav || currentNav);
-            const prevNav = Number(f.prevNav || avgNav || currentNav);
-
-            gpfTotal += units * currentNav;
-            gpfCost += units * avgNav;
-            gpfDailyProfit += (currentNav - prevNav) * units;
-        });
-
-        gpfProfit = gpfTotal - gpfCost;
-        const gpfPrevTotal = gpfTotal - gpfDailyProfit;
-        gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
-    }
-
+    gpfProfit = gpfTotal - gpfCost;
+    const gpfPrevTotal = gpfTotal - gpfDailyProfit;
+    gpfDailyProfitPct = gpfPrevTotal > 0 ? (gpfDailyProfit / gpfPrevTotal) * 100 : 0;
+    
     // ---------------- สกัด SCB ----------------
     if (scbData && Array.isArray(scbData)) {
         scbTotal = 0;
